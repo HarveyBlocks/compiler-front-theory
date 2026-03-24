@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.Set;
 
@@ -16,11 +17,17 @@ public interface DfaStatus {
      * @return null if no motion in this status' follow-up
      */
     DfaStatus move(SourceCharacter motion);
+
     Set<SourceCharacter> motions();
+
     /**
      * @return true if new motion
      * @throws IllegalStateException throw if motion is exist and value is different
      */
     boolean setNext(SourceCharacter motion, DfaStatus next);
-    boolean isAccept();
+
+    /**
+     * @return null for not accept
+     */
+    TokenType accept();
 }

@@ -1,5 +1,7 @@
 package org.harvey.vie.theory.lexical.analysis.token;
 
+import lombok.NonNull;
+
 /**
  * TODO
  *
@@ -8,5 +10,6 @@ package org.harvey.vie.theory.lexical.analysis.token;
  * @date 2026-03-24 15:30
  */
 public interface TokenType {
-    String name();
+    @NonNull
+    String hint();
 }

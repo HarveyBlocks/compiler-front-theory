@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.source;
+package org.harvey.vie.theory.source.character;
 
 /**
  * TODO

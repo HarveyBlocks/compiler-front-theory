@@ -1,9 +1,10 @@
 package org.harvey.vie.theory.lexical.dfa;
 
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatus;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 import org.harvey.vie.theory.util.IntArraySignature;
 
 import java.util.*;
@@ -17,6 +18,9 @@ import java.util.*;
  */
 public class DefaultDfaMinimizer implements DfaMinimizer {
 
+    /**
+     * DEAD
+     */
     private static final int UNKNOWN_CHAR_STATUS = DfaStatusTable.UNKNOWN_CHAR_STATUS;
 
     @Override
@@ -47,17 +51,30 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
     }
 
     private static Partition initDepart(Collection<DfaStatus> allStates) {
-        Block accepting = new Block();
-        Block nonAccepting = new Block();
-        for (DfaStatus s : allStates) {
-            (s.isAccept() ? accepting : nonAccepting).add(s);
-        }
+        Map<TokenType, Integer> typeIndexMap = new HashMap<>();
         Partition partition = new Partition();
+        // 1. non accept
+        Block nonAccepting = new Block(null);
+        // 2. some different accept
+        for (DfaStatus s : allStates) {
+            TokenType accept = s.accept();
+            if (accept == null) {
+                nonAccepting.add(s);
+                continue;
+            }
+            Integer index = typeIndexMap.get(accept);
+            if (index != null) {
+                partition.putStatusIdx(s, index);
+                partition.get(index).add(1, s);
+                continue;
+            }
+            typeIndexMap.put(accept, partition.size());
+            Block block = new Block(accept);
+            block.add(s);
+            partition.add(block);
+        }
         if (!nonAccepting.isEmpty()) {
             partition.add(nonAccepting);
-        }
-        if (!accepting.isEmpty()) {
-            partition.add(accepting);
         }
         return partition;
     }
@@ -71,6 +88,7 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
             }
             // 分割
             Collection<Block> group = groupByMotions(block, alphabet, partition.stateToBlockIdx);
+
             //noinspection UseBulkOperation
             group.forEach(newPartition::add);
         }
@@ -85,7 +103,7 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
             // 计算状态在字母表上的转移目标块索引的签名。
             // 签名由每个状态对应的目标块索引组合而成。
             IntArraySignature signature = computeSignature(s, alphabet, stateToBlockIdx);
-            groups.computeIfAbsent(signature, k -> new Block()).add(s);
+            groups.computeIfAbsent(signature, k -> new Block(block.accept)).add(s);
         }
         return groups.values();
     }
@@ -106,12 +124,10 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
         // 每个块对应一个新状态
         int newStatesLength = partition.size();
         int[][] newStates = new int[newStatesLength][alphabet.length];
-        BitSet acceptSet = new BitSet(newStatesLength);
+        TokenType[] accepts = new TokenType[newStatesLength];
         for (int i = 0; i < newStatesLength; i++) {
             Block block = partition.get(i);
-            if (block.accept) {
-                acceptSet.set(i);
-            }
+            accepts[i] = block.accept; // null 就是 null
             DfaStatus representative = block.iterator().next();// 任选一
             for (int j = 0; j < alphabet.length; j++) {
                 DfaStatus target = representative.move(alphabet[j]);
@@ -120,21 +136,13 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
         }
         // 定位新的起始状态
         int newStart = partition.getIndexByStatus(start);
-        return new DfaStatusTable(newStates, alphabet, newStart, acceptSet);
+        return new DfaStatusTable(newStates, alphabet, newStart, accepts);
     }
 
     private static class Block extends ArrayList<DfaStatus> implements List<DfaStatus> {
-        private boolean accept;
+        private final TokenType accept;
 
-        public void setAccept(boolean statusAccept) {
-            this.accept = this.accept || statusAccept;
-        }
-
-        @Override
-        public boolean add(DfaStatus dfaStatus) {
-            setAccept(dfaStatus.isAccept());
-            return super.add(dfaStatus);
-        }
+        private Block(TokenType accept) {this.accept = accept;}
 
         @Override
         public int hashCode() {
@@ -154,21 +162,19 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
             this.stateToBlockIdx = new HashMap<>();
         }
 
+        public Integer getIndexByStatus(DfaStatus target) {
+            return stateToBlockIdx.get(target);
+        }
+
         @Override
         public boolean add(Block block) {
-            int i = size();
-            block.forEach(s -> stateToBlockIdx.put(s, i));
+            int nextIndex = size();
+            block.forEach(s -> this.putStatusIdx(s, nextIndex));
             return super.add(block);
         }
 
-
-        public Block getByStatus(DfaStatus target) {
-            // 构建状态到块索引的映射，便于快速定位目标块
-            return get(stateToBlockIdx.get(target));
-        }
-
-        public Integer getIndexByStatus(DfaStatus target) {
-            return stateToBlockIdx.get(target);
+        public void putStatusIdx(DfaStatus status, int index) {
+            stateToBlockIdx.put(status, index);
         }
     }
 

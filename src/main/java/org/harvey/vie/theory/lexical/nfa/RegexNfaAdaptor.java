@@ -1,7 +1,10 @@
 package org.harvey.vie.theory.lexical.nfa;
 
-import org.harvey.vie.theory.lexical.nfa.status.NfaStatusTable;
+import org.harvey.vie.theory.lexical.RegexTypePair;
+import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
 import org.harvey.vie.theory.lexical.regex.node.RegexNode;
+
+import java.util.List;
 
 /**
  * TODO
@@ -11,5 +14,6 @@ import org.harvey.vie.theory.lexical.regex.node.RegexNode;
  * @date 2026-03-23 10:21
  */
 public interface RegexNfaAdaptor {
-    NfaStatusTable adapt(RegexNode node);
+    NfaStatusGraph adapt(List<RegexTypePair> pairs);
+    NfaStatusGraph adapt(RegexTypePair pair);
 }

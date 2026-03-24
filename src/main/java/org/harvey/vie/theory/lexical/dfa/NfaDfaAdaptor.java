@@ -1,7 +1,11 @@
 package org.harvey.vie.theory.lexical.dfa;
 
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
-import org.harvey.vie.theory.lexical.nfa.status.NfaStatusTable;
+import org.harvey.vie.theory.lexical.nfa.status.NfaStatus;
+import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
+
+import java.util.Map;
 
 /**
  * TODO
@@ -11,5 +15,5 @@ import org.harvey.vie.theory.lexical.nfa.status.NfaStatusTable;
  * @date 2026-03-23 15:24
  */
 public interface NfaDfaAdaptor {
-    DfaStatusGraph adapt(NfaStatusTable table);
+    DfaStatusGraph adapt(NfaStatusGraph nfaGraph);
 }

@@ -2,12 +2,13 @@ package org.harvey.vie.theory.lexical.dfa;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatus;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusImpl;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
+import org.harvey.vie.theory.lexical.dfa.status.DfaStatusImpl;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatus;
-import org.harvey.vie.theory.lexical.nfa.status.NfaStatusTable;
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,14 +21,9 @@ import java.util.stream.Collectors;
  * @date 2026-03-23 15:27
  */
 public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
-
-
-    public DefaultNfaDfaAdaptor() {
-    }
-
     @Override
-    public DfaStatusGraph adapt(NfaStatusTable table) {
-        NfaDfaContext ctx = new NfaDfaContext(table);
+    public DfaStatusGraph adapt(NfaStatusGraph nfaGraph) {
+        NfaDfaContext ctx = new NfaDfaContext(nfaGraph);
         // 1. 对起始做
         StatusCombination startCombination = epsilonClosure(ctx, ctx.startSet());
         // 2. loop
@@ -41,12 +37,12 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
     }
 
     @NonNull
-    private static StatusCombination epsilonClosure(NfaDfaContext ctx, Set<NfaStatus> nfaStartSet) {
+    private static StatusCombination epsilonClosure(NfaDfaContext ctx, Set<NfaStatus> statusSet) {
         Set<SourceCharacter> motions = new HashSet<>();
         Set<NfaStatus> visited = new HashSet<>();
-        boolean accept = false;
+        TokenType accept = null;
         Stack<NfaStatus> stack = new Stack<>();
-        for (NfaStatus nfaStatus : nfaStartSet) {
+        for (NfaStatus nfaStatus : statusSet) {
             stack.push(nfaStatus);
         }
         while (!stack.isEmpty()) {
@@ -55,8 +51,17 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
                 continue;
             }
             visited.add(top);
-            if (!accept && ctx.endEquals(top)) {
-                accept = true;
+            TokenType tryAccept = ctx.matchAccept(top);
+            if (tryAccept != null) {
+                if (accept == null) {
+                    accept = tryAccept;
+                } else if (tryAccept != accept) {
+                    throw new IllegalStateException(
+                            "It is not possible to confirm the type of token by the automaton, for ambiguity: " +
+                            accept.hint() +
+                            " and " +
+                            accept.hint());
+                }
             }
             motions.addAll(top.motions());
             List<NfaStatus> nextSteps = top.moveEpsilon();
@@ -64,7 +69,7 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
                 stack.push(nextStep);
             }
         }
-        boolean a = accept;
+        TokenType a = accept;
         DfaStatus dfaStatus = ctx.computeVisitedClosureIfAbsent(visited, () -> new DfaStatusImpl(a));
         return new StatusCombination(visited, motions, dfaStatus);
     }

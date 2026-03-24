@@ -3,7 +3,7 @@ package org.harvey.vie.theory.lexical.regex.node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 /**
  * TODO

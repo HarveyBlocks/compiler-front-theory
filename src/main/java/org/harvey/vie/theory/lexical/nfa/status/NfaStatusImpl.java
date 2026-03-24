@@ -2,10 +2,9 @@ package org.harvey.vie.theory.lexical.nfa.status;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 

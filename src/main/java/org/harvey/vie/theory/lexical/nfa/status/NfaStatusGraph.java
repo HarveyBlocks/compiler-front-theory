@@ -1,5 +1,9 @@
 package org.harvey.vie.theory.lexical.nfa.status;
 
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+
+import java.util.Set;
+
 /**
  * TODO
  *
@@ -7,10 +11,10 @@ package org.harvey.vie.theory.lexical.nfa.status;
  * @version 1.0
  * @date 2026-03-23 17:42
  */
-public interface NfaStatusTable {
+public interface NfaStatusGraph {
 
     NfaStatus getStart();
 
-    NfaStatus getEnd();
 
+    TokenType matchAccept(NfaStatus status);
 }

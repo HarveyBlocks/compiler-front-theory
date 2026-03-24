@@ -1,10 +1,9 @@
 package org.harvey.vie.theory.lexical.nfa.status;
 
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**

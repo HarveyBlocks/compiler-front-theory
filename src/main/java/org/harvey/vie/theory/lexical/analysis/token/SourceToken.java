@@ -10,6 +10,5 @@ package org.harvey.vie.theory.lexical.analysis.token;
 public interface SourceToken {
     String hintString();
 
-    int getColumn();
-    int getLine();
+    int getOffset();
 }

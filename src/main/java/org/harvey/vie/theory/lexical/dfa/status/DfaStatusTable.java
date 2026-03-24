@@ -1,10 +1,10 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
 import lombok.Getter;
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.Arrays;
-import java.util.BitSet;
 
 /**
  * TODO
@@ -28,13 +28,13 @@ public class DfaStatusTable {
     /**
      * true for accept
      */
-    private final BitSet acceptSet;
+    private final TokenType[] accepts;
 
-    public DfaStatusTable(int[][] table, SourceCharacter[] alphabet, int start, BitSet acceptSet) {
+    public DfaStatusTable(int[][] table, SourceCharacter[] alphabet, int start, TokenType[] accepts) {
         this.table = table;
         this.alphabet = alphabet;
         this.start = start;
-        this.acceptSet = acceptSet;
+        this.accepts = accepts;
     }
 
     /**
@@ -49,8 +49,8 @@ public class DfaStatusTable {
         return table[statusNow][chIndex];
     }
 
-    public boolean isAccept(int i) {
-        return acceptSet.get(i);
+    public TokenType accept(int i) {
+        return accepts[i];
     }
 
     @Override
@@ -68,7 +68,7 @@ public class DfaStatusTable {
 
     private volatile String s;
 
-    public String buildString() {
+    private String buildString() {
         if (table == null || alphabet == null) {
             return "null";
         }
@@ -85,10 +85,10 @@ public class DfaStatusTable {
         for (int i = 0; i < nStates; i++) {
             String stateNum = String.format(zeroPad, i);
             String stateStr;
-            if (acceptSet.get(i)) {
-                stateStr = String.format("((%s))", stateNum);
+            if (accepts[i]!=null) {
+                stateStr = String.format("%s %s", stateNum, accepts[i].hint());
             } else {
-                stateStr = String.format("  %s  ", stateNum);  // 左右各两个空格，保证长度与接受状态一致
+                stateStr = String.format("%s    ", stateNum);  // 左右各两个空格，保证长度与接受状态一致
             }
             stateStrings[i] = stateStr;
             maxStateColWidth = Math.max(maxStateColWidth, stateStr.length());

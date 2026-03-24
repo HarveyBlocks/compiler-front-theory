@@ -1,5 +1,6 @@
-package org.harvey.vie.theory.source;
+package org.harvey.vie.theory.source.character;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,17 +11,18 @@ import lombok.Getter;
  * @date 2026-03-24 10:37
  */
 @Getter
+@AllArgsConstructor
 public class OtherCharacter implements SourceCharacter {
     private final char ch;
-    public OtherCharacter(char ch) {
-        this.ch = ch;
-    }
 
     @Override
     public int hashCode() {
         return ch;
     }
-
+    @Override
+    public char toCharacter() {
+        return ch;
+    }
     @Override
     public String toString() {
         return ch + "";

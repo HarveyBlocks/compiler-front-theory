@@ -1,5 +1,6 @@
-package org.harvey.vie.theory.source;
+package org.harvey.vie.theory.source.character;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
@@ -10,15 +11,17 @@ import lombok.Getter;
  * @date 2026-03-24 10:37
  */
 @Getter
+@AllArgsConstructor
 public class AsciiCharacter implements SourceCharacter {
     private final char ascii;
 
-    public AsciiCharacter(char ch) {
-        this.ascii = ch;
+    @Override
+    public int hashCode() {
+        return ascii;
     }
 
     @Override
-    public int hashCode() {
+    public char toCharacter() {
         return ascii;
     }
 

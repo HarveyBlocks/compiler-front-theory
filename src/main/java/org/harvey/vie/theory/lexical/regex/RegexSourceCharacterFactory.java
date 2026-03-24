@@ -1,10 +1,10 @@
 package org.harvey.vie.theory.lexical.regex;
 
 import lombok.extern.slf4j.Slf4j;
-import org.harvey.vie.theory.source.AsciiCharacter;
-import org.harvey.vie.theory.source.OtherCharacter;
-import org.harvey.vie.theory.source.SourceCharacter;
-import org.harvey.vie.theory.source.SourceCharacterFactory;
+import org.harvey.vie.theory.source.character.AsciiCharacter;
+import org.harvey.vie.theory.source.character.OtherCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacterFactory;
 
 /**
  * TODO

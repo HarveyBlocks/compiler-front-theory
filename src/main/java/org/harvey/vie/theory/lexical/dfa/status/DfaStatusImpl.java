@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
-import org.harvey.vie.theory.source.SourceCharacter;
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -14,10 +15,10 @@ import java.util.Set;
  * @date 2026-03-23 15:28
  */
 public class DfaStatusImpl implements DfaStatus {
-    private final boolean accept;
+    private final TokenType accept;
     private final Map<SourceCharacter, DfaStatus> next;
 
-    public DfaStatusImpl(boolean accept) {
+    public DfaStatusImpl(TokenType accept) {
         this.accept = accept;
         this.next = new HashMap<>();
     }
@@ -48,7 +49,7 @@ public class DfaStatusImpl implements DfaStatus {
     }
 
     @Override
-    public boolean isAccept() {
+    public TokenType accept() {
         return accept;
     }
 

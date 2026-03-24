@@ -2,8 +2,8 @@ package org.harvey.vie.theory.lexical.regex;
 
 import org.harvey.vie.theory.lexical.regex.node.EpsilonRegexNode;
 import org.harvey.vie.theory.lexical.regex.node.RegexNode;
-import org.harvey.vie.theory.source.SourceCharacter;
-import org.harvey.vie.theory.source.SourceCharacterFactory;
+import org.harvey.vie.theory.source.character.SourceCharacter;
+import org.harvey.vie.theory.source.character.SourceCharacterFactory;
 
 import java.text.CharacterIterator;
 import java.text.ParseException;

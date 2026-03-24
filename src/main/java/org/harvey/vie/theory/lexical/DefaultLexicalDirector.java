@@ -1,16 +1,22 @@
 package org.harvey.vie.theory.lexical;
 
-import org.harvey.vie.theory.lexical.dfa.*;
+import org.harvey.vie.theory.lexical.analysis.DefaultLexicalAnalyzer;
+import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
+import org.harvey.vie.theory.lexical.dfa.DefaultDfaMinimizer;
+import org.harvey.vie.theory.lexical.dfa.DefaultNfaDfaAdaptor;
+import org.harvey.vie.theory.lexical.dfa.DfaMinimizer;
+import org.harvey.vie.theory.lexical.dfa.NfaDfaAdaptor;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
 import org.harvey.vie.theory.lexical.nfa.DefaultRegexNfaAdaptor;
 import org.harvey.vie.theory.lexical.nfa.RegexNfaAdaptor;
-import org.harvey.vie.theory.lexical.nfa.status.NfaStatusTable;
+import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
 import org.harvey.vie.theory.lexical.regex.DefaultRegexParser;
 import org.harvey.vie.theory.lexical.regex.RegexParser;
-import org.harvey.vie.theory.lexical.regex.node.RegexNode;
 
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * TODO
@@ -34,14 +40,24 @@ public class DefaultLexicalDirector implements LexicalDirector {
     }
 
     @Override
-    public DfaStatusTable direct(String regex) throws ParseException {
-        // 正则解析成树
-        RegexNode regexNode = regexParser.parse(regex);
-        // 正则->nfa
-        NfaStatusTable nfaStatusTable = regexNfaAdaptor.adapt(regexNode);
-        // nfa->dfa
-        DfaStatusGraph dfaStatusGraph = nfaDfaAdaptor.adapt(nfaStatusTable);
-        // 最小化
-        return dfaMinimizer.minimize(dfaStatusGraph);
+    public LexicalAnalyzer direct(LexicalPattern pattern) throws ParseException {
+        return direct(List.of(pattern));
     }
+
+    @Override
+    public LexicalAnalyzer direct(List<LexicalPattern> patterns) throws ParseException {
+        List<RegexTypePair> pairs = new ArrayList<>();
+        for (LexicalPattern pattern : patterns) {
+            // 正则解析成树
+            pairs.add(new RegexTypePair(regexParser.parse(pattern.getRegex()), pattern.getType()));
+        }
+        // 正则->nfa
+        NfaStatusGraph nfaStatusGraph = regexNfaAdaptor.adapt(pairs);
+        // nfa->dfa
+        DfaStatusGraph dfaStatusGraph = nfaDfaAdaptor.adapt(nfaStatusGraph);
+        // 最小化
+        DfaStatusTable dfaStatusTable = dfaMinimizer.minimize(dfaStatusGraph);
+        return new DefaultLexicalAnalyzer(dfaStatusTable);
+    }
+
 }
