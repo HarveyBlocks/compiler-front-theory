@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * TODO
+ * A {@link RegexNode} representing the concatenation of two regular expression
+ * patterns. It requires both patterns to match sequentially.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

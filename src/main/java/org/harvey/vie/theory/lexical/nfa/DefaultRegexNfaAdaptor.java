@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * TODO
+ * Default implementation of the {@link RegexNfaAdaptor} interface.
+ * It uses Thompson's construction algorithm to systematically transform a
+ * regular expression parse tree into a Non-deterministic Finite Automaton (NFA).
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

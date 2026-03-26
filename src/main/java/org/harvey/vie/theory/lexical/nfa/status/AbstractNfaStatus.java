@@ -1,9 +1,8 @@
 package org.harvey.vie.theory.lexical.nfa.status;
 
-import java.util.function.Function;
-
 /**
- * TODO
+ * Abstract base class for {@link NfaStatus} implementations.
+ * Provides basic identity logic using the state's unique ID.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

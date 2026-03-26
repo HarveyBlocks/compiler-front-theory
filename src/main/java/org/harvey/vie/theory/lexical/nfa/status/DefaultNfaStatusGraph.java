@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * TODO
+ * Default implementation of the {@link NfaStatusGraph} interface.
+ * It encapsulates the structure of an NFA, including its entry point (start state)
+ * and the exit points (accepting states) mapped to their token types.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

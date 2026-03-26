@@ -2,14 +2,16 @@ package org.harvey.vie.theory.lexical.nfa.status;
 
 import lombok.Getter;
 import lombok.Setter;
-import org.harvey.vie.theory.source.character.SourceCharacter;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 
 import java.util.*;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
- * TODO
+ * Concrete implementation of {@link NfaStatus}.
+ * It manages transitions to other NFA states via input characters and
+ * epsilon transitions, maintaining a unique state identifier.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -19,7 +21,7 @@ import java.util.stream.Collectors;
 @Setter
 public class NfaStatusImpl extends AbstractNfaStatus {
     private final int id;
-    private final Map<SourceCharacter, NfaStatus> nextSteps;
+    private final Map<AlphabetCharacter, NfaStatus> nextSteps;
     private final List<NfaStatus> epsilonNextSteps;
 
     public NfaStatusImpl(int id) {
@@ -30,7 +32,7 @@ public class NfaStatusImpl extends AbstractNfaStatus {
 
     // res 转 nfa, 以构建合适
     @Override
-    public NfaStatus move(SourceCharacter c) {
+    public NfaStatus move(AlphabetCharacter c) {
         return this.nextSteps.get(c);
     }
 
@@ -40,7 +42,7 @@ public class NfaStatusImpl extends AbstractNfaStatus {
     }
 
     @Override
-    public Set<SourceCharacter> motions() {
+    public Set<AlphabetCharacter> motions() {
         return nextSteps.keySet();
     }
 
@@ -50,7 +52,7 @@ public class NfaStatusImpl extends AbstractNfaStatus {
     }
 
     @Override
-    public NfaStatus computeNextIfAbsent(SourceCharacter c, Supplier<NfaStatus> supplier) {
+    public NfaStatus computeNextIfAbsent(AlphabetCharacter c, Supplier<NfaStatus> supplier) {
         return this.nextSteps.computeIfAbsent(c, (k) -> supplier.get());
     }
 

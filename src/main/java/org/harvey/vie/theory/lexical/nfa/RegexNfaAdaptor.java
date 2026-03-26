@@ -7,7 +7,8 @@ import org.harvey.vie.theory.lexical.regex.node.RegexNode;
 import java.util.List;
 
 /**
- * TODO
+ * Interface for components that adapt regular expression structures into
+ * Non-deterministic Finite Automata (NFA).
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * TODO
+ * A {@link RegexNode} representing the Kleene closure of a regular expression
+ * pattern. It matches the sub-pattern zero or more times.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

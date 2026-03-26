@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.lexical;
 
-import org.harvey.vie.theory.lexical.analysis.DefaultLexicalAnalyzer;
-import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacterFactory;
 import org.harvey.vie.theory.lexical.dfa.DefaultDfaMinimizer;
 import org.harvey.vie.theory.lexical.dfa.DefaultNfaDfaAdaptor;
 import org.harvey.vie.theory.lexical.dfa.DfaMinimizer;
@@ -19,7 +18,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO
+ * Default implementation of the {@link LexicalDirector} interface.
+ * This class coordinates the process of parsing regular expressions, converting
+ * them to an NFA, transforming the NFA to a DFA, and finally minimizing the DFA
+ * to produce an optimized state transition table.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -32,20 +34,20 @@ public class DefaultLexicalDirector implements LexicalDirector {
     private final NfaDfaAdaptor nfaDfaAdaptor;
     private final DfaMinimizer dfaMinimizer;
 
-    public DefaultLexicalDirector() {
-        this.regexParser = new DefaultRegexParser();
+    public DefaultLexicalDirector(AlphabetCharacterFactory factory) {
+        this.regexParser = new DefaultRegexParser(factory);
         this.regexNfaAdaptor = new DefaultRegexNfaAdaptor();
         this.nfaDfaAdaptor = new DefaultNfaDfaAdaptor();
         this.dfaMinimizer = new DefaultDfaMinimizer();
     }
 
     @Override
-    public LexicalAnalyzer direct(LexicalPattern pattern) throws ParseException {
+    public DfaStatusTable direct(LexicalPattern pattern) throws ParseException {
         return direct(List.of(pattern));
     }
 
     @Override
-    public LexicalAnalyzer direct(List<LexicalPattern> patterns) throws ParseException {
+    public DfaStatusTable direct(List<LexicalPattern> patterns) throws ParseException {
         List<RegexTypePair> pairs = new ArrayList<>();
         for (LexicalPattern pattern : patterns) {
             // 正则解析成树
@@ -56,8 +58,7 @@ public class DefaultLexicalDirector implements LexicalDirector {
         // nfa->dfa
         DfaStatusGraph dfaStatusGraph = nfaDfaAdaptor.adapt(nfaStatusGraph);
         // 最小化
-        DfaStatusTable dfaStatusTable = dfaMinimizer.minimize(dfaStatusGraph);
-        return new DefaultLexicalAnalyzer(dfaStatusTable);
+        return dfaMinimizer.minimize(dfaStatusGraph);
     }
 
 }

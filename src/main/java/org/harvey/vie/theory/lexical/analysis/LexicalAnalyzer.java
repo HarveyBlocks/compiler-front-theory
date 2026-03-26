@@ -2,10 +2,12 @@ package org.harvey.vie.theory.lexical.analysis;
 
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.resource.Resource;
+import org.harvey.vie.theory.io.resource.Resource;
 
 /**
- * TODO Analyzer. 一个状态机对应一个LexicalAnalyzer
+ * Interface for a lexical analyzer (scanner). A lexical analyzer is responsible
+ * for breaking down the input source into a stream of tokens. Each analyzer
+ * instance is typically associated with a specific state machine configuration.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

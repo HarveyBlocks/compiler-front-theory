@@ -3,10 +3,11 @@ package org.harvey.vie.theory.lexical.regex.node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
-import org.harvey.vie.theory.source.character.SourceCharacter;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 
 /**
- * TODO
+ * A {@link RegexNode} representing a single literal character in a regular expression.
+ * This node serves as a leaf in the regex parse tree.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -17,7 +18,7 @@ import org.harvey.vie.theory.source.character.SourceCharacter;
 @Setter
 @AllArgsConstructor
 public class CharRegexNode implements RegexNode {
-    private final SourceCharacter character;
+    private final AlphabetCharacter character;
 
     @Override
     public String toString() {

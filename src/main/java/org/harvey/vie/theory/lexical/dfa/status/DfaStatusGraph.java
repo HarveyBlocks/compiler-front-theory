@@ -6,7 +6,8 @@ import lombok.Getter;
 import java.util.Collection;
 
 /**
- * TODO
+ * Represents the complete graph of a Deterministic Finite Automaton (DFA),
+ * containing the start state and the entire pool of states.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

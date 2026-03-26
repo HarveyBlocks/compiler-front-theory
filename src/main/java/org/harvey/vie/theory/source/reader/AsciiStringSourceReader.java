@@ -1,20 +1,19 @@
 package org.harvey.vie.theory.source.reader;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.error.IoErrorMessage;
 import org.harvey.vie.theory.exception.CompileException;
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.source.character.AsciiCharacter;
-import org.harvey.vie.theory.source.character.OtherCharacter;
 import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * TODO
+ * A implementation of {@link SourceReader} that reads characters from a string.
+ * This reader is restricted to ASCII characters and will report an error if
+ * a non-ASCII character is encountered in the source.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -39,11 +38,12 @@ public class AsciiStringSourceReader implements SourceReader {
         if (ch==-1){
             return SourceCharacter.EOF;
         }
+        // 仅支持 ascii
         if ((ch & 0xff_ff_ff_00) > 0) {
             errorContext.addError(new IoErrorMessage(offset,"ascii only"));
             throw new CompileException();
         }
-        return new AsciiCharacter((char) ch);
+        return new AsciiCharacter((byte) ch);
     }
 
     @Override

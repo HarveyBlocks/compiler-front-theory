@@ -1,7 +1,8 @@
 package org.harvey.vie.theory.lexical.regex.node;
 
 /**
- * TODO
+ * A {@link RegexNode} representing an empty string (epsilon). It matches
+ * without consuming any input.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * TODO
+ * Interface defining the context for managing compilation errors.
+ * It provides methods for adding error messages, retrieving all collected errors,
+ * and checking if any errors have been encountered.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -13,4 +15,6 @@ import java.util.Collections;
 public interface ErrorContext {
     void addError(CompileErrorMessage message);
     Collection<? extends CompileErrorMessage> getErrors();
+
+    boolean isEmpty();
 }

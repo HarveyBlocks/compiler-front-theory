@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * TODO
+ * Implementation of {@link SourceCharacter} that encapsulates a single ASCII character.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -13,30 +13,15 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class AsciiCharacter implements SourceCharacter {
-    private final char ascii;
+    private final byte ascii;
 
     @Override
-    public int hashCode() {
-        return ascii;
-    }
-
-    @Override
-    public char toCharacter() {
-        return ascii;
+    public byte[] toCharacter() {
+        return new byte[]{ascii};
     }
 
     @Override
     public String toString() {
-        return ascii + "";
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj || (obj instanceof AsciiCharacter) && ((AsciiCharacter) obj).ascii == ascii;
-    }
-
-    @Override
-    public int compareTo(SourceCharacter o) {
-        return hashCode() - o.hashCode();
+        return Character.toString(ascii);
     }
 }

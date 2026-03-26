@@ -1,26 +1,37 @@
 package org.harvey.vie.theory.lexical.regex;
 
+import lombok.Getter;
+
 import java.util.Arrays;
 
 /**
- * TODO 可以使用转义
+ * Enumeration of special characters (operators) used in regular expression syntax.
+ * These operators define the structure and behavior of regex patterns, such
+ * as grouping, repetition, and alternation.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-03-24 10:58
  */
+@Getter
 public enum RegexOperator {
-    PARENTHESES_PRE('('),
-    PARENTHESES_POST(')'),
-    CLOSURE('*'),
-    OR('|'), ;
+    PARENTHESES_PRE((byte) '('),
+    PARENTHESES_POST((byte) ')'),
+    CLOSURE((byte) '*'),
+    OR((byte) '|'),
+    ;
 
-    private final char c;
+    private final byte c;
 
-    RegexOperator(char c) {
+    RegexOperator(byte c) {
         this.c = c;
     }
-    public static boolean isRegexOperator(char c){
-        return Arrays.stream(RegexOperator.values()).anyMatch(op -> c == op.c);
+
+    public static RegexOperator regexOperator(byte c) {
+        return Arrays.stream(RegexOperator.values()).filter(op -> c == op.c).findFirst().orElse(null);
+    }
+
+    public static boolean isRegexOperator(byte c) {
+        return regexOperator(c) != null;
     }
 }

@@ -1,14 +1,16 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-import org.harvey.vie.theory.source.character.SourceCharacter;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * TODO
+ * Concrete implementation of {@link DfaStatus}.
+ * This class uses a map to manage deterministic transitions to next states
+ * and stores the token type it accepts, if any.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -16,7 +18,7 @@ import java.util.Set;
  */
 public class DfaStatusImpl implements DfaStatus {
     private final TokenType accept;
-    private final Map<SourceCharacter, DfaStatus> next;
+    private final Map<AlphabetCharacter, DfaStatus> next;
 
     public DfaStatusImpl(TokenType accept) {
         this.accept = accept;
@@ -25,17 +27,17 @@ public class DfaStatusImpl implements DfaStatus {
 
 
     @Override
-    public DfaStatus move(SourceCharacter motion) {
+    public DfaStatus move(AlphabetCharacter motion) {
         return next.get(motion);
     }
 
     @Override
-    public Set<SourceCharacter> motions() {
+    public Set<AlphabetCharacter> motions() {
         return next.keySet();
     }
 
     @Override
-    public boolean setNext(SourceCharacter motion, DfaStatus next) {
+    public boolean setNext(AlphabetCharacter motion, DfaStatus next) {
         DfaStatus status = this.next.get(motion);
         if (status == null) {
             this.next.put(motion, next);
@@ -55,7 +57,6 @@ public class DfaStatusImpl implements DfaStatus {
 
     @Override
     public String toString() {
-        // TODO to be fixed after debug
-        return hashCode() % 1000 + "";
+        return "DfaStatus[" + (accept != null ? accept.hint() : "non-accepting") + ", transitions=" + next.size() + "]";
     }
 }

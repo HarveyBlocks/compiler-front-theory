@@ -2,19 +2,22 @@ package org.harvey.vie.theory.lexical.dfa;
 
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatus;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusImpl;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatus;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
-import org.harvey.vie.theory.source.character.SourceCharacter;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * TODO
+ * Default implementation of the {@link NfaDfaAdaptor} interface.
+ * This class is responsible for converting a Non-deterministic Finite Automaton (NFA)
+ * into a Deterministic Finite Automaton (DFA) using the subset construction algorithm,
+ * also known as the epsilon-closure algorithm.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -38,7 +41,7 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
 
     @NonNull
     private static StatusCombination epsilonClosure(NfaDfaContext ctx, Set<NfaStatus> statusSet) {
-        Set<SourceCharacter> motions = new HashSet<>();
+        Set<AlphabetCharacter> motions = new HashSet<>();
         Set<NfaStatus> visited = new HashSet<>();
         TokenType accept = null;
         Stack<NfaStatus> stack = new Stack<>();
@@ -56,11 +59,8 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
                 if (accept == null) {
                     accept = tryAccept;
                 } else if (tryAccept != accept) {
-                    throw new IllegalStateException(
-                            "It is not possible to confirm the type of token by the automaton, for ambiguity: " +
-                            accept.hint() +
-                            " and " +
-                            accept.hint());
+                    accept = TokenType.morePriority(accept,tryAccept);
+                    // errorOnAmbiguity(accept, tryAccept);
                 }
             }
             motions.addAll(top.motions());
@@ -74,15 +74,24 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
         return new StatusCombination(visited, motions, dfaStatus);
     }
 
+    @Deprecated
+    private static void errorOnAmbiguity(TokenType accept, TokenType tryAccept) {
+        throw new IllegalStateException(
+                "It is not possible to confirm the type of token by the automaton, for ambiguity: " +
+                accept.hint() +
+                " and " +
+                tryAccept.hint());
+    }
+
 
     @AllArgsConstructor
     private static class StatusCombination {
         private final Set<NfaStatus> nfaStatuses;
-        private final Set<SourceCharacter> motions;
+        private final Set<AlphabetCharacter> motions;
         private final DfaStatus status;
 
         private void closureMove(NfaDfaContext ctx, Stack<StatusCombination> stack) {
-            for (SourceCharacter motion : motions) {
+            for (AlphabetCharacter motion : motions) {
                 Set<NfaStatus> nfaStatuseSet = nfaStatuses.stream()
                         .map(s -> s.move(motion))
                         .filter(Objects::nonNull)

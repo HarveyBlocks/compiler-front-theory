@@ -1,20 +1,24 @@
 package org.harvey.vie.theory.lexical.analysis.token;
 
-import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.error.LexicalErrorMessage;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.exception.UncompletedOperationException;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
+import org.harvey.vie.theory.lexical.alphabet.SourceAlphabetCharacterAdaptor;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
 import org.harvey.vie.theory.source.character.SourceCharacter;
 import org.harvey.vie.theory.source.reader.SourceReader;
+import org.harvey.vie.theory.util.ArrayBuilder;
 
 import java.io.IOException;
 
 /**
- * TODO
- * 当遇到无法构成任何合法 token 的字符时：通常只跳过当前这一个非法字符，然后从下一个字符开始继续尝试识别 token。
+ * An iterator that performs lexical analysis using a DFA transition table.
+ * It reads characters from a {@link SourceReader}, traverses the DFA states,
+ * and identifies the longest possible token match. If an invalid character
+ * sequence is encountered, it handles the error and attempts to continue
+ * from the next character.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -23,16 +27,18 @@ import java.io.IOException;
 public class StatusTableTokenIterator implements SourceTokenIterator {
     private final ErrorContext errorContext;
     private final SourceReader reader;
+    private final SourceAlphabetCharacterAdaptor saca;
     private final DfaStatusTable table;
-    private final StringBuilder lexeme;
+    private final ArrayBuilder<byte[]> lexeme;
     private int status;
-    private SourceToken temp = null;
 
-    public StatusTableTokenIterator(ErrorContext errorContext, SourceReader reader, DfaStatusTable table) {
+    public StatusTableTokenIterator(
+            ErrorContext errorContext, SourceReader reader, SourceAlphabetCharacterAdaptor saca, DfaStatusTable table) {
         this.errorContext = errorContext;
         this.reader = reader;
+        this.saca = saca;
         this.table = table;
-        this.lexeme = new StringBuilder();
+        this.lexeme = new ArrayBuilder<>();
         this.status = table.getStart();
     }
 
@@ -51,18 +57,18 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
 
     @Override
     public SourceToken next() throws CompileException {
-        if (temp != null) {
-            SourceToken next = temp;
-            temp = null;
-            return next;
-        }
         // if\space 从if的状态到 \space之后, 就是NaN了, 而 if 能构成词元, 就取 if 词元
         while (true) {
             SourceCharacter read = read();
             if (read == null || read == SourceCharacter.EOF) {
                 return trySplitToken();// 尝试
             }
-            int next = table.move(status, read);
+            AlphabetCharacter ac = saca.adapt(read);
+            if (ac == AlphabetCharacter.UNSUPPORTED) {
+                errorContext.addError(new LexicalErrorMessage(reader.getOffset(), "Unsupported character in source"));
+                return trySplitToken();// 尝试
+            }
+            int next = table.move(status, ac);
             if (next == DfaStatusTable.UNKNOWN_CHAR_STATUS) {
                 // 不存在了才进行尝试分解token, 说明是最长匹配
                 try {
@@ -70,7 +76,7 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
                 } finally {
                     lexeme.append(read.toCharacter());
                     // 此时status已经归start
-                    status = table.move(status, read);
+                    status = table.move(status, ac);
                 }
             } else {
                 lexeme.append(read.toCharacter());
@@ -99,11 +105,16 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
                 errorContext.addError(new LexicalErrorMessage(offset, "Unfinished tokens"));
                 throw new CompileException("Unfinished tokens");
             }
-            return new SourceTokenImpl(accept, this.lexeme.toString(), offset);
+            return SourceTokenImpl.create(accept, this.lexeme.toArray(byte[][]::new), offset);
         } finally {
             // 恢复
             status = table.getStart();
-            lexeme.setLength(0); // 没有性能最优, 但是代码简单
+            lexeme.reset(); // 没有性能最优, 但是代码简单
         }
+    }
+
+    @Override
+    public void close() {
+        reader.close();
     }
 }

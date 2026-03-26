@@ -3,7 +3,7 @@ package org.harvey.vie.theory.util;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * TODO
+ * A utility class for generating unique integer identifiers in a thread-safe manner.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

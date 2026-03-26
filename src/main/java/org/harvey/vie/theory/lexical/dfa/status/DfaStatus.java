@@ -1,12 +1,14 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-import org.harvey.vie.theory.source.character.SourceCharacter;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 
 import java.util.Set;
 
 /**
- * TODO
+ * Interface representing a state in a Deterministic Finite Automaton (DFA).
+ * Each state can have transitions to other states based on input characters
+ * and may be an accepting state for a specific {@link TokenType}.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -16,15 +18,15 @@ public interface DfaStatus {
     /**
      * @return null if no motion in this status' follow-up
      */
-    DfaStatus move(SourceCharacter motion);
+    DfaStatus move(AlphabetCharacter motion);
 
-    Set<SourceCharacter> motions();
+    Set<AlphabetCharacter> motions();
 
     /**
      * @return true if new motion
      * @throws IllegalStateException throw if motion is exist and value is different
      */
-    boolean setNext(SourceCharacter motion, DfaStatus next);
+    boolean setNext(AlphabetCharacter motion, DfaStatus next);
 
     /**
      * @return null for not accept

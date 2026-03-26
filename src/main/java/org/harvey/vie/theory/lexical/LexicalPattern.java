@@ -5,7 +5,8 @@ import lombok.Getter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
 /**
- * TODO
+ * Represents a pattern for lexical analysis, consisting of a regular expression
+ * and the type of token it represents when matched.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

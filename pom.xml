@@ -36,25 +36,5 @@
             <artifactId>logback-core</artifactId>
             <version>1.5.20</version>
         </dependency>
-
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.1</version>
-                <configuration>
-                    <additionalOptions>
-                        <additionalOption>--allow-script-in-comments</additionalOption>
-                    </additionalOptions>
-                    <header>
-                        <![CDATA[
-            <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
-            ]]>
-                    </header>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

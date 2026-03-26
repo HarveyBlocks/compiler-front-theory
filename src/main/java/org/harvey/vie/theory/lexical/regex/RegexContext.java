@@ -2,12 +2,11 @@ package org.harvey.vie.theory.lexical.regex;
 
 import org.harvey.vie.theory.lexical.regex.node.EpsilonRegexNode;
 import org.harvey.vie.theory.lexical.regex.node.RegexNode;
-import org.harvey.vie.theory.source.character.SourceCharacter;
-import org.harvey.vie.theory.source.character.SourceCharacterFactory;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacterFactory;
+import org.harvey.vie.theory.lexical.alphabet.RegexAlphabetCharacterFactory;
 
-import java.text.CharacterIterator;
 import java.text.ParseException;
-import java.text.StringCharacterIterator;
 import java.util.Objects;
 
 /**
@@ -19,47 +18,62 @@ import java.util.Objects;
  */
 public class RegexContext {
     public static final RegexNode OCCUPANCY = new EpsilonRegexNode();
-    private final CharacterIterator it;
-    private final SourceCharacterFactory sourceCharacterFactory;
+    public static final int DONE = -1;
+    private final String text;
+    private final AlphabetCharacterFactory alphabetFactory;
+    private int pos;
+    private final int end;
 
-    public RegexContext(String text) {
+    public RegexContext(AlphabetCharacterFactory factory, String text) {
         Objects.requireNonNull(text);
-        this.it = new StringCharacterIterator(text);
-        this.sourceCharacterFactory = new RegexSourceCharacterFactory();
+        this.text = text;
+        this.pos = 0;
+        this.end = text.codePointCount(0, text.length());
+        this.alphabetFactory = factory;
     }
 
-    public boolean skipIf(char c) {
-        if (it.current() == c) {
-            it.next();
+    public boolean skipIf(int c) {
+        if (current() == c) {
+            next();
             return true;
         }
         return false;
     }
 
     public int getIndex() {
-        return it.getIndex();
+        return pos;
     }
 
-    public char current() {
-        return it.current();
+    public int current() {
+        if (pos >= 0 && pos < end) {
+            return text.codePointAt(pos);
+        } else {
+            return DONE;
+        }
     }
 
-    public char next() {
-        return it.next();
+    public int next() {
+        if (pos < end - 1) {
+            pos++;
+            return text.codePointAt(pos);
+        } else {
+            pos = end;
+            return DONE;
+        }
     }
 
     public void currentNotDone() throws ParseException {
-        if (current() == CharacterIterator.DONE) {
-            throw new ParseException("Unexpected end of input", it.getIndex());
+        if (current() == DONE) {
+            throw new ParseException("Unexpected end of input", pos);
         }
     }
 
 
-    public SourceCharacter createEscape(char ch) {
-        return sourceCharacterFactory.createRaw(ch);
+    public AlphabetCharacter createEscape(int ch) {
+        return alphabetFactory.createEscape(ch);
     }
 
-    public SourceCharacter createRaw(char ch) {
-        return sourceCharacterFactory.createRaw(ch);
+    public AlphabetCharacter createRaw(int ch) {
+        return alphabetFactory.createRaw(ch);
     }
 }

@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * TODO Or
+ * A {@link RegexNode} representing the union (alternation) of two regular
+ * expression patterns. It matches if either of the sub-patterns matches.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

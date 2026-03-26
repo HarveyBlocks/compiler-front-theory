@@ -12,7 +12,9 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 /**
- * TODO
+ * Context class used during the subset construction process (NFA to DFA conversion).
+ * it maintains the mapping between sets of NFA states and their corresponding
+ * individual DFA states to ensure each unique set is only processed once.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

@@ -1,19 +1,31 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
 import lombok.Getter;
+import org.harvey.vie.theory.io.*;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacterFactory;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-import org.harvey.vie.theory.source.character.SourceCharacter;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Arrays;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
+
+import static org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter.UNSUPPORTED;
 
 /**
- * TODO
+ * Represents a state transition table for a Deterministic Finite Automaton (DFA).
+ * This class encapsulates the transition logic, mapping a current state and an
+ * input character to a subsequent state. It also maintains information about
+ * start states and acceptance types for each state.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-03-24 11:31
  */
-public class DfaStatusTable {
+public class DfaStatusTable implements Storage {
     public static final int UNKNOWN_CHAR_STATUS = -1;
     /**
      * status table
@@ -22,7 +34,7 @@ public class DfaStatusTable {
     /**
      * sorted
      */
-    private final SourceCharacter[] alphabet;
+    private final AlphabetCharacter[] alphabet;
     @Getter
     private final int start;
     /**
@@ -30,7 +42,7 @@ public class DfaStatusTable {
      */
     private final TokenType[] accepts;
 
-    public DfaStatusTable(int[][] table, SourceCharacter[] alphabet, int start, TokenType[] accepts) {
+    public DfaStatusTable(int[][] table, AlphabetCharacter[] alphabet, int start, TokenType[] accepts) {
         this.table = table;
         this.alphabet = alphabet;
         this.start = start;
@@ -40,7 +52,10 @@ public class DfaStatusTable {
     /**
      * @return status next. {@link #UNKNOWN_CHAR_STATUS} for unknown char status
      */
-    public int move(int statusNow, SourceCharacter ch) {
+    public int move(int statusNow, AlphabetCharacter ch) {
+        if (ch == UNSUPPORTED) {
+            throw new UnsupportedOperationException("Unsupported character");
+        }
         // 调用Comparable
         int chIndex = Arrays.binarySearch(alphabet, ch);
         if (chIndex < 0) {
@@ -85,7 +100,7 @@ public class DfaStatusTable {
         for (int i = 0; i < nStates; i++) {
             String stateNum = String.format(zeroPad, i);
             String stateStr;
-            if (accepts[i]!=null) {
+            if (accepts[i] != null) {
                 stateStr = String.format("%s %s", stateNum, accepts[i].hint());
             } else {
                 stateStr = String.format("%s    ", stateNum);  // 左右各两个空格，保证长度与接受状态一致
@@ -137,5 +152,89 @@ public class DfaStatusTable {
         }
 
         return sb.toString();
+    }
+
+    @Override
+    public int store(OutputStream os) throws IOException {
+        byte[] alphabetData = alphabetToBytes();
+        byte[] tableData = tableToBytes();
+
+        int len = 0;
+        len += Storages.storeInteger(os, start); // start
+        len += Storages.storeInteger(os, table.length); // row
+        len += Storages.storeInteger(os, table.length == 0 ? 0 : table[0].length); // col
+        len += Storages.store(os, alphabetData); // alphabet
+        // token types
+        for (TokenType accept : accepts) {
+            len += accept == null ? Storages.storeInteger(os, -1) : accept.store(os);
+        }
+        len += Storages.store(os, tableData);//table
+        return len;
+    }
+
+    private byte[] alphabetToBytes() {
+        ByteOutStream alphabetBos = new ByteOutStream();
+        Arrays.stream(alphabet)
+                .map(AlphabetCharacter::uniqueCode)
+                .map(ToBytes::fromInt)
+                .forEach(row -> alphabetBos.write(row, 0, row.length));
+        return alphabetBos.toByteArray();
+    }
+
+    private byte[] tableToBytes() {
+        ByteOutStream tableBos = new ByteOutStream();
+        Arrays.stream(table)
+                .flatMapToInt(Arrays::stream)
+                .mapToObj(ToBytes::fromInt)
+                .forEach(n -> tableBos.write(n, 0, n.length));
+        return tableBos.toByteArray();
+    }
+
+    public static class Loader implements ILoader<DfaStatusTable> {
+        private final TokenType.Loader<?> acceptLoader;
+        private final AlphabetCharacterFactory alphabetFactory;
+
+        public Loader(TokenType.Loader<? extends TokenType> acceptLoader, AlphabetCharacterFactory alphabetFactory) {
+            this.acceptLoader = acceptLoader;
+            this.alphabetFactory = alphabetFactory;
+        }
+
+        @Override
+        public DfaStatusTable load(InputStream is) throws IOException {
+            int start = Loaders.loadInteger(is);
+            int row = Loaders.loadInteger(is);
+            int col = Loaders.loadInteger(is);
+            AlphabetCharacter[] alphabet = loadAlphabet(is, col);
+            TokenType[] accepts = loadAccepts(is, row);
+            int[][] table = loadTable(is, row, col);
+            return new DfaStatusTable(table, alphabet, start, accepts);
+        }
+
+        private AlphabetCharacter[] loadAlphabet(InputStream is, int len) throws IOException {
+            return FromBytes.toIntArray(Loaders.loadBytes(is, len << 2))
+                    .mapToObj(alphabetFactory::byUniqueCode)
+                    .toArray(AlphabetCharacter[]::new);
+        }
+
+
+        private TokenType[] loadAccepts(InputStream is, int row) throws IOException {
+            TokenType[] accepts = new TokenType[row];
+            for (int i = 0; i < row; i++) {
+                accepts[i] = acceptLoader.load(is);
+            }
+            return accepts;
+        }
+
+        private static int[][] loadTable(InputStream is, int row, int col) throws IOException {
+            IntStream stream = FromBytes.toIntArray(Loaders.loadBytes(is, row * col * 4));
+            int[][] result = new int[row][col];
+            PrimitiveIterator.OfInt it = stream.iterator();
+            for (int i = 0; i < row; i++) {
+                for (int j = 0; j < col; j++) {
+                    result[i][j] = it.nextInt();
+                }
+            }
+            return result;
+        }
     }
 }

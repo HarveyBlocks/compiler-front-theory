@@ -3,7 +3,9 @@ package org.harvey.vie.theory.util;
 import java.util.Arrays;
 
 /**
- * TODO
+ * A wrapper for an integer array that provides stable {@link #hashCode()}
+ * and {@link #equals(Object)} implementations. This is particularly useful
+ * when using integer arrays as keys in a hash-based collection.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

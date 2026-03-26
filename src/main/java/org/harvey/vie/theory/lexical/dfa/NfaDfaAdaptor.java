@@ -8,7 +8,8 @@ import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
 import java.util.Map;
 
 /**
- * TODO
+ * Interface for components that convert a Non-deterministic Finite Automaton (NFA)
+ * into a Deterministic Finite Automaton (DFA).
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

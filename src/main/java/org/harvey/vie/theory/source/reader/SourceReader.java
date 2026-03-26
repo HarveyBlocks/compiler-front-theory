@@ -7,7 +7,9 @@ import java.io.Closeable;
 import java.io.IOException;
 
 /**
- * TODO
+ * Interface for reading characters from a source input stream.
+ * It extends {@link Closeable} and provides methods to read characters
+ * sequentially or peek at the next character without advancing the pointer.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

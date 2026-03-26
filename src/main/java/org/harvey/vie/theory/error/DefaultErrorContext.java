@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * TODO JVM 内存级别的 ErrorContext
+ * A standard implementation of the {@link ErrorContext} interface that stores
+ * compilation error messages in JVM memory. This class is suitable for general
+ * error tracking during the compilation process.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -24,6 +26,11 @@ public class DefaultErrorContext implements ErrorContext {
     @Override
     public void addError(CompileErrorMessage message) {
         errors.add(message);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return errors.isEmpty();
     }
 
     @Override

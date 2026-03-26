@@ -1,15 +1,33 @@
 package org.harvey.vie.theory.lexical.analysis.token;
 
 import lombok.NonNull;
+import org.harvey.vie.theory.io.ILoader;
+import org.harvey.vie.theory.io.Storage;
 
 /**
- * TODO
+ * Represents the type of a lexical token.
+ * This interface defines the contract for token types, including methods to retrieve
+ * the priority of the token type (used for resolving ambiguities during lexical analysis)
+ * and a human-readable hint or name for the type.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-03-24 15:30
  */
-public interface TokenType {
+public interface TokenType extends Storage {
+    static TokenType morePriority(TokenType accept, TokenType tryAccept) {
+        return accept.getPriority() < tryAccept.getPriority() ? accept : tryAccept;
+    }
+
+    /**
+     * value smaller, priority higher
+     */
+    int getPriority();
+
     @NonNull
     String hint();
+
+    interface Loader<T extends TokenType> extends ILoader<T> {
+    }
+
 }

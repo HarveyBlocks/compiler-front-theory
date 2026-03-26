@@ -4,7 +4,8 @@ import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
 
 /**
- * TODO
+ * Interface for components that minimize the number of states in a
+ * Deterministic Finite Automaton (DFA) while preserving its recognized language.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

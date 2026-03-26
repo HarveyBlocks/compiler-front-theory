@@ -1,7 +1,8 @@
 package org.harvey.vie.theory.error;
 
 /**
- * TODO
+ * Interface for messages describing errors detected during compilation.
+ * Each message includes the offset where the error occurred and a descriptive string.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

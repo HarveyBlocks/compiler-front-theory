@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO 当一个文件内出现了错误, 错误会放入FileErrorContext
+ * An implementation of {@link ErrorContext} specifically designed to handle
+ * and store errors associated with a specific source file. This allows for
+ * localized error reporting and management.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -26,6 +28,11 @@ public class FileErrorContext implements ErrorContext {
     @Override
     public void addError(CompileErrorMessage message) {
         errors.add(message);
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return errors.isEmpty();
     }
 
 }
