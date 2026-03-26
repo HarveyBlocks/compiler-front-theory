@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * Interface for directing the compilation of lexical patterns into an
- * executable DFA transition table. It abstracts the multi-step process
+ * executable DFA transition table. It abstracts the multistep process
  * of regex-to-DFA conversion.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>

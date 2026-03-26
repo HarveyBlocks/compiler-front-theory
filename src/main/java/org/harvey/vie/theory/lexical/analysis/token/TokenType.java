@@ -5,7 +5,7 @@ import org.harvey.vie.theory.io.ILoader;
 import org.harvey.vie.theory.io.Storage;
 
 /**
- * Represents the type of a lexical token.
+ * Represents the type of lexical token.
  * This interface defines the contract for token types, including methods to retrieve
  * the priority of the token type (used for resolving ambiguities during lexical analysis)
  * and a human-readable hint or name for the type.

@@ -5,8 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.io.ByteOutStream;
 
-import java.util.Arrays;
-
 /**
  * Implementation of {@link SourceToken} representing a recognized token in the
  * source code. It stores the token's type, the exact character sequence (lexeme),

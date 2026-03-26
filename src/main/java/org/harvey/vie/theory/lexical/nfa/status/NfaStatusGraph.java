@@ -2,8 +2,6 @@ package org.harvey.vie.theory.lexical.nfa.status;
 
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
-import java.util.Set;
-
 /**
  * Interface representing the complete graph structure of a Non-deterministic
  * Finite Automaton (NFA).

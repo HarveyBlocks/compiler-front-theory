@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.error;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**

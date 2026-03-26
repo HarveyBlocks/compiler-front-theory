@@ -8,7 +8,7 @@ import org.harvey.vie.theory.source.reader.SourceReader;
 import java.io.StringReader;
 
 /**
- * A implementation of {@link Resource} that uses an ASCII string as its source.
+ * AN implementation of {@link Resource} that uses an ASCII string as its source.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

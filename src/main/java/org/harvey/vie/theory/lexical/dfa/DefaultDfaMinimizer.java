@@ -146,15 +146,6 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
 
         private Block(TokenType accept) {this.accept = accept;}
 
-        @Override
-        public int hashCode() {
-            return super.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return super.equals(o);
-        }
     }
 
     private static class Partition extends ArrayList<Block> implements List<Block> {

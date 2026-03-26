@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.StringReader;
 
 /**
- * A implementation of {@link SourceReader} that reads characters from a string.
+ * AN implementation of {@link SourceReader} that reads characters from a string.
  * This reader is restricted to ASCII characters and will report an error if
  * a non-ASCII character is encountered in the source.
  *

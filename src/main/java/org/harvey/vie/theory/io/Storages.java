@@ -2,7 +2,6 @@ package org.harvey.vie.theory.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.nio.ByteBuffer;
 
 /**
  * Utility class for persisting data structures to an {@link OutputStream}.

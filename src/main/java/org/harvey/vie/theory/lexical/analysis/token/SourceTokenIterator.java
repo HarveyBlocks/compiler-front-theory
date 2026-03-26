@@ -2,9 +2,6 @@ package org.harvey.vie.theory.lexical.analysis.token;
 
 import org.harvey.vie.theory.exception.CompileException;
 
-import java.io.Closeable;
-import java.util.Iterator;
-
 /**
  * Interface for an iterator that produces {@link SourceToken} instances
  * from a segment of source text.

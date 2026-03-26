@@ -1,11 +1,7 @@
 package org.harvey.vie.theory.lexical.dfa;
 
-import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
-import org.harvey.vie.theory.lexical.nfa.status.NfaStatus;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
-
-import java.util.Map;
 
 /**
  * Interface for components that convert a Non-deterministic Finite Automaton (NFA)

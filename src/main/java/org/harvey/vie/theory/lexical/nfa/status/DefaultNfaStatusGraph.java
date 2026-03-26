@@ -5,7 +5,6 @@ import lombok.Getter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Default implementation of the {@link NfaStatusGraph} interface.

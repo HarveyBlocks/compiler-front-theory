@@ -2,7 +2,6 @@ package org.harvey.vie.theory.lexical.nfa;
 
 import org.harvey.vie.theory.lexical.RegexTypePair;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
-import org.harvey.vie.theory.lexical.regex.node.RegexNode;
 
 import java.util.List;
 

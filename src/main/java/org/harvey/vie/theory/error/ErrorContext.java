@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.error;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * Interface defining the context for managing compilation errors.
