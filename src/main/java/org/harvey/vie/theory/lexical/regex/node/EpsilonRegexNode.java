@@ -11,6 +11,6 @@ package org.harvey.vie.theory.lexical.regex.node;
 public class EpsilonRegexNode implements RegexNode {
     @Override
     public String toString() {
-        return "";
+        return "ε";
     }
 }
