@@ -23,7 +23,7 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         for (int i = 0; i < context.length(); i++) {
             GrammarDefineProduction production = context.get(i);
             // 间接左递归变成直接左递归
-            GrammarAlternation directiveBody = toDirective(contextBuilder, context, production, i);
+            GrammarAlternation directiveBody = toDirective(context, production, i);
             // 消除直接左递归
             eliminateDirectRecursion(contextBuilder, production, directiveBody);
         }
@@ -32,10 +32,7 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
 
 
     private static GrammarAlternation toDirective(
-            ProductionSetContextBuilder contextBuilder,
-            ProductionSetContext context,
-            GrammarDefineProduction production,
-            int i) {
+            ProductionSetContext context, GrammarDefineProduction production, int i) {
         GrammarAlternation productionBody = production.getBody();
         GrammarAlternation directAlternation = new GrammarAlternationImpl();
         for (int j = 0; j < i; j++) {
@@ -104,12 +101,12 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
     }
 
     private static GrammarConcatenation concatenation(GrammarSymbol symbol) {
-        if (symbol == GrammarSymbol.EPSILON) {
+        if (symbol.isEpsilon()) {
             return null;
-        } else if (!(symbol instanceof GrammarConcatenation)) {
+        } else if (!symbol.isConcatenation()) {
             throw new IllegalStateException("Unexpected type: " + symbol.getClass());
         }
-        return (GrammarConcatenation) symbol;
+        return symbol.toConcatenation();
     }
 
     private static void concatenationNoRecursion(
@@ -135,15 +132,18 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
 
     private static void concatenateLast(GrammarProductionBuilder builder, ConcatenableSymbol symbol) {
         Objects.requireNonNull(symbol);
-        if (symbol instanceof HeadDefineSymbol) {
-            builder.concatenateDefinitionLast(((HeadDefineSymbol) symbol).getName());
-        } else if (symbol == ConcatenableSymbol.EPSILON) {
+        if (symbol.isEpsilon()) {
             builder.alternateEpsilon();
-        } else if (symbol instanceof TerminalSymbol) {
-            builder.concatenateTerminalLast(((TerminalSymbol) symbol).getValue());
+        } else if (symbol.isTerminal()) {
+            builder.concatenateTerminalLast(symbol.toTerminal().getValue());
         } else {
-            throw new IllegalStateException("It is not allowed that concatenating with this type: " +
-                                            symbol.getClass());
+            HeadSymbol head = symbol.toHead();
+            if (head.isDefine()) {
+                builder.concatenateDefinitionLast(head.toDefine().getName());
+            } else {
+                throw new IllegalStateException("It is not allowed that concatenating with this type: " +
+                                                symbol.getClass());
+            }
         }
     }
 }

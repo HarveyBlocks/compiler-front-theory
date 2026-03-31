@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.lexical.analysis;
 
 import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.io.resource.Resource;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 
 /**
  * Interface for a lexical analyzer (scanner). A lexical analyzer is responsible

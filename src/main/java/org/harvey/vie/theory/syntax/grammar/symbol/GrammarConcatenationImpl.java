@@ -25,12 +25,14 @@ public class GrammarConcatenationImpl implements GrammarConcatenation {
     }
 
     private void concatenate0(ConcatenableSymbol concatenable) {
-        if (concatenable instanceof GrammarConcatenation) {
-            for (ConcatenableSymbol symbol : ((GrammarConcatenation) concatenable)) {
-                concatenate0(symbol);
+        if (concatenable.isConcatenable()) {
+            if (concatenable.isConcatenation()) {
+                for (ConcatenableSymbol symbol : concatenable.toConcatenation()) {
+                    concatenate0(symbol);
+                }
+            } else {
+                list.add(concatenable);
             }
-        } else if (concatenable instanceof TerminalSymbol || concatenable instanceof HeadSymbol) {
-            list.add(concatenable);
         } else {
             throw new IllegalStateException(
                     "Unknown type of ConcatenableSymbol concatenateTerminal into the GrammarConcatenation: " +

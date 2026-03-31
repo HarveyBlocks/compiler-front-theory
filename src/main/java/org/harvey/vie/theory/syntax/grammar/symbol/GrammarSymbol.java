@@ -9,8 +9,52 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  */
 public interface GrammarSymbol {
     GrammarSymbol EPSILON = new EpsilonSymbol();
-    boolean isTerminal();
+
+    default boolean isEpsilon() {
+        throw unsupportedTest();
+    }
+
+    default boolean isConcatenable() {
+        throw unsupportedTest();
+    }
+
+    default boolean isConcatenation() {
+        throw unsupportedTest();
+    }
+
+    default boolean isTerminal() {
+        throw unsupportedTest();
+    }
+
+    default ConcatenableSymbol toConcatenable() {
+        throw unsupportedCast();
+    }
+
+    default GrammarConcatenation toConcatenation() {
+        throw unsupportedCast();
+    }
+
+    default TerminalSymbol toTerminal() {
+        throw unsupportedCast();
+    }
+
+    default HeadSymbol toHead() {
+        throw unsupportedCast();
+    }
+
+
+    static UnsupportedOperationException unsupportedTest() {
+        return new UnsupportedOperationException(
+                "It is not allowed that invoke the test method form this symbol. Since this symbol is neither of them");
+    }
+
+
+    static UnsupportedOperationException unsupportedCast() {
+        return new UnsupportedOperationException(
+                "It is not allowed that invoke the method form this symbol. Since this symbol can not cast to the target");
+    }
 }
+
 class EpsilonSymbol implements GrammarSymbol {
     EpsilonSymbol() {}
 
@@ -21,9 +65,9 @@ class EpsilonSymbol implements GrammarSymbol {
     }
 
     @Override
-    public boolean isTerminal() {
-        throw new UnsupportedOperationException(
-                "It is not allowed that invoke is terminal form epsilon symbol. Epsilon is neither of them");
+    public boolean isEpsilon() {
+        return true;
     }
+
 }
 

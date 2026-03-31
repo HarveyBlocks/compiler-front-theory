@@ -9,6 +9,12 @@ import org.harvey.vie.theory.syntax.td.LeftFactoringEliminator;
 import org.harvey.vie.theory.syntax.td.LeftFactoringEliminatorImpl;
 import org.harvey.vie.theory.syntax.td.LeftRecursionEliminator;
 import org.harvey.vie.theory.syntax.td.LeftRecursionEliminatorImpl;
+import org.harvey.vie.theory.syntax.td.first.FirstMap;
+import org.harvey.vie.theory.syntax.td.first.FirstMapFactory;
+import org.harvey.vie.theory.syntax.td.first.FirstMapFactoryImpl;
+import org.harvey.vie.theory.syntax.td.follow.FollowMap;
+import org.harvey.vie.theory.syntax.td.follow.FollowSetFactory;
+import org.harvey.vie.theory.syntax.td.follow.FollowSetFactoryImpl;
 
 /**
  * 词法分析器Demo
@@ -22,12 +28,24 @@ public class SyntaxDemo {
 
 
     public static void main(String[] args) {
-        ProductionSetContext context = build2();
+        ProductionSetContext context = build4();
         System.out.println(context);
         System.out.println("-----------------------");
-        LeftRecursionEliminator eliminator = new LeftRecursionEliminatorImpl((s) -> s + '\'');
-        System.out.println(eliminator.eliminate(context));
+        LeftRecursionEliminator leftRecursionEliminator = new LeftRecursionEliminatorImpl(s -> s + '\'');
+        LeftFactoringEliminator leftFactoringEliminator = new LeftFactoringEliminatorImpl((s, i) -> s + i);
+        ProductionSetContext eliminated = leftFactoringEliminator.eliminate(leftRecursionEliminator.eliminate(context));
+        System.out.println(eliminated);
+        System.out.println("-----------------------");
+        FirstMapFactory firstMapFactory = new FirstMapFactoryImpl();
+        FirstMap firstMap = firstMapFactory.first(eliminated);
+        firstMap.forEach(System.out::println);
+        System.out.println("-----------------------");
+        FollowSetFactory followSetFactory = new FollowSetFactoryImpl();
+        FollowMap followMap = followSetFactory.follow("expression", eliminated, firstMap);
+        followMap.entrySet().forEach(System.out::println);
+        System.out.println("-----------------------");
     }
+
 
     private static ProductionSetContext build1() {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl();
@@ -106,6 +124,27 @@ public class SyntaxDemo {
                 .concatenateTerminalLast("A")
                 .concatenateTerminalLast("C")
                 .alternateEpsilon();
+        return contextBuilder.build();
+    }
+
+    private static ProductionSetContext build4() {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl();
+        contextBuilder.define("expression")
+                .alternateDefinition("expression")
+                .concatenateTerminalLast("+")
+                .concatenateDefinitionLast("term")
+                .alternateDefinition("term");
+        contextBuilder.define("term")
+                .alternateDefinition("term")
+                .concatenateTerminalLast("*")
+                .concatenateDefinitionLast("factor")
+                .alternateDefinition("factor");
+
+        contextBuilder.define("factor")
+                .alternateTerminal("(")
+                .concatenateDefinitionLast("expression")
+                .concatenateTerminalLast(")")
+                .alternateTerminal("id");
         return contextBuilder.build();
     }
 }

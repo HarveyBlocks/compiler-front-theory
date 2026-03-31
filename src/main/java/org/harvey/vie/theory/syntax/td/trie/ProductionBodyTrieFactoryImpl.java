@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.syntax.td.trie;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarConcatenation;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 
 /**
@@ -16,8 +15,11 @@ public class ProductionBodyTrieFactoryImpl implements ProductionBodyTrieFactory 
     public ProductionBodyTrie create(GrammarAlternation body) {
         ProductionBodyTrieImpl trie = new ProductionBodyTrieImpl();
         for (GrammarSymbol symbol : body) {
-            if (symbol instanceof GrammarConcatenation) {
-                trie.add((GrammarConcatenation) symbol);
+            if (symbol.isEpsilon() || !symbol.isConcatenable()) {
+                continue;
+            }
+            if (symbol.isConcatenation()) {
+                trie.add(symbol.toConcatenation());
             }
         }
         return trie;

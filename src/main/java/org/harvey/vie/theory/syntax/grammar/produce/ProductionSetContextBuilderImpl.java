@@ -1,6 +1,9 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
-import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbolImpl;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbolImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -46,11 +49,6 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
                 .map(GrammarProductionBuilder::build)
                 .toArray(GrammarDefineProduction[]::new);
         return new ProductionSetContextImpl(definitionIdxMap, productions);
-    }
-
-    @Override
-    public GrammarSymbol epsilon() {
-        return GrammarSymbol.EPSILON;
     }
 
 

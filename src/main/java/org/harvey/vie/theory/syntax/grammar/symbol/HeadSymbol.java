@@ -9,7 +9,24 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  */
 public interface HeadSymbol extends ConcatenableSymbol {
     @Override
+    default boolean isConcatenation() {
+        return false;
+    }
+    @Override
     default boolean isTerminal() {
         return false;
+    }
+
+    @Override
+    default HeadSymbol toHead() {
+        return this;
+    }
+
+    default boolean isDefine(){
+        throw GrammarSymbol.unsupportedTest();
+    }
+
+    default HeadDefineSymbol toDefine(){
+        throw GrammarSymbol.unsupportedCast();
     }
 }

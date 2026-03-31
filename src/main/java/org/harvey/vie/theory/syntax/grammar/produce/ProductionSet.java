@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.ReferredHeadSymbol;
 
 /**

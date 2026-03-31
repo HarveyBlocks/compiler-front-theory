@@ -57,7 +57,7 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
 
     @Override
     public GrammarProductionBuilder alternateEpsilon() {
-        return alternate(contextBuilder.epsilon());
+        return alternate(GrammarSymbol.EPSILON);
     }
 
     @Override
@@ -139,12 +139,12 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
 
     private void concatenate0(int i, GrammarSymbol concatenable) {
         GrammarSymbol symbol = body.get(i);
-        if (!(concatenable instanceof ConcatenableSymbol)) {
+        if (!concatenable.isConcatenable()) {
             throw new IllegalStateException(
                     "Non-ConcatenableSymbols are not allowed to be concatenated to concatenation");
         }
-        if (symbol instanceof GrammarConcatenation) {
-            ((GrammarConcatenation) symbol).concatenate((ConcatenableSymbol) concatenable);
+        if (symbol.isConcatenation()) {
+            symbol.toConcatenation().concatenate((ConcatenableSymbol) concatenable);
         } else {
             throw new IllegalStateException("Symbols are not allowed to be concatenated to non-GrammarConcatenation");
         }

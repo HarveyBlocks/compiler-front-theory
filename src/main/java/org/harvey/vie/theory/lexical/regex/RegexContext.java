@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.lexical.regex;
 
-import org.harvey.vie.theory.lexical.regex.node.EpsilonRegexNode;
-import org.harvey.vie.theory.lexical.regex.node.RegexNode;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacterFactory;
+import org.harvey.vie.theory.lexical.regex.node.EpsilonRegexNode;
+import org.harvey.vie.theory.lexical.regex.node.RegexNode;
 
 import java.text.ParseException;
 import java.util.Objects;

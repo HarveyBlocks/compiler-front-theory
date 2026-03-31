@@ -3,7 +3,10 @@ package org.harvey.vie.theory.syntax.td.trie;
 import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.ConcatenableSymbol;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 /**
  * TODO

@@ -20,4 +20,15 @@ public interface GrammarAlternation extends GrammarSymbol, Iterable<GrammarSymbo
     void alternateEpsilon();
 
     boolean alternatedEpsilon();
+
+    @Override
+    default boolean isEpsilon() {
+        return false;
+    }
+
+    @Override
+    default boolean isConcatenable() {
+        return false;
+    }
+
 }

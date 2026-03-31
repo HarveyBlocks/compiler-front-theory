@@ -3,7 +3,7 @@ package org.harvey.vie.theory.syntax.td;
 import org.harvey.vie.theory.syntax.grammar.produce.*;
 import org.harvey.vie.theory.syntax.grammar.symbol.ConcatenableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.td.trie.ProductionBodyTrie;
 import org.harvey.vie.theory.syntax.td.trie.ProductionBodyTrieFactory;
 import org.harvey.vie.theory.syntax.td.trie.ProductionBodyTrieFactoryImpl;
@@ -35,8 +35,7 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
             String originName = ((HeadDefineSymbol) production.getHead()).getName();
             ProductionBodyTrie productionTrie = trieFactory.create(production.getBody());
             GrammarProductionBuilder defineBuilder = contextBuilder.define(originName);
-            TrieContext trieContext = new TrieContext(
-                    originName,
+            TrieContext trieContext = new TrieContext(originName,
                     contextBuilder,
                     new IdGenerator(),
                     productionTrie.getRoot(),
@@ -95,13 +94,16 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
             }
             if (value == ConcatenableSymbol.EPSILON) {
                 throw new IllegalStateException("Production body trie do not deal epsilon.");
-            } else if (value instanceof TerminalSymbol) {
-                defineBuilder.concatenateTerminalLast(((TerminalSymbol) value).getValue());
-            } else if (value instanceof HeadDefineSymbol) {
-                defineBuilder.concatenateDefinitionLast(((HeadDefineSymbol) value).getName());
+            } else if (value.isTerminal()) {
+                defineBuilder.concatenateTerminalLast(value.toTerminal().getValue());
             } else {
-                // 未预料到的类型构成了Trie
-                throw new IllegalStateException("Unexpected types make up Trie");
+                HeadSymbol head = value.toHead();
+                if (head.isDefine()) {
+                    defineBuilder.concatenateDefinitionLast(head.toDefine().getName());
+                } else {
+                    // 未预料到的类型构成了Trie
+                    throw new IllegalStateException("Unexpected types make up Trie");
+                }
             }
         }
 

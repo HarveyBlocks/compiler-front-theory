@@ -21,7 +21,7 @@ import java.util.List;
  * Default implementation of the {@link LexicalDirector} interface.
  * This class coordinates the process of parsing regular expressions, converting
  * them to an NFA, transforming the NFA to a DFA, and finally minimizing the DFA
- * to produce an optimized state transition table.
+ * to produce an optimized state transition first.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

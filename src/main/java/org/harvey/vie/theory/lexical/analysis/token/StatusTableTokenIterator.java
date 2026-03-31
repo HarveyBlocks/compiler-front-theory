@@ -14,7 +14,7 @@ import org.harvey.vie.theory.util.ArrayBuilder;
 import java.io.IOException;
 
 /**
- * An iterator that performs lexical analysis using a DFA transition table.
+ * An iterator that performs lexical analysis using a DFA transition first.
  * It reads characters from a {@link SourceReader}, traverses the DFA states,
  * and identifies the longest possible token match. If an invalid character
  * sequence is encountered, it handles the error and attempts to continue

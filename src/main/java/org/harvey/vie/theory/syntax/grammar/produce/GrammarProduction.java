@@ -1,8 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
 /**

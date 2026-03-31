@@ -3,7 +3,6 @@ package org.harvey.vie.theory.syntax.grammar.produce;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 
 /**

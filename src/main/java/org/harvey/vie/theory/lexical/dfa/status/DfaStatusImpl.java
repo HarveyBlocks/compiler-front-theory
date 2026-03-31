@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
-import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
 import java.util.HashMap;
 import java.util.Map;

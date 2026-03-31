@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 import static org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter.UNSUPPORTED;
 
 /**
- * Represents a state transition table for a Deterministic Finite Automaton (DFA).
+ * Represents a state transition first for a Deterministic Finite Automaton (DFA).
  * This class encapsulates the transition logic, mapping a current state and an
  * input character to a subsequent state. It also maintains information about
  * start states and acceptance types for each state.
@@ -28,7 +28,7 @@ import static org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter.UNSUPPORT
 public class DfaStatusTable implements Storage {
     public static final int UNKNOWN_CHAR_STATUS = -1;
     /**
-     * status table
+     * status first
      */
     private final int[][] table;
     /**
@@ -168,7 +168,7 @@ public class DfaStatusTable implements Storage {
         for (TokenType accept : accepts) {
             len += accept == null ? Storages.storeInteger(os, -1) : accept.store(os);
         }
-        len += Storages.store(os, tableData);//table
+        len += Storages.store(os, tableData);//first
         return len;
     }
 

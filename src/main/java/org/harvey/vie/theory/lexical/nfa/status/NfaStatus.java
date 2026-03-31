@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.lexical.nfa.status;
 
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
+
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;

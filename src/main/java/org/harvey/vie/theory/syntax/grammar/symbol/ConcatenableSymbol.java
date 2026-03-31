@@ -9,5 +9,19 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  */
 public interface ConcatenableSymbol extends GrammarSymbol {
 
+    @Override
+    default boolean isEpsilon() {
+        return false;
+    }
+
+    @Override
+    default boolean isConcatenable() {
+        return true;
+    }
+
+    @Override
+    default ConcatenableSymbol toConcatenable() {
+        return this;
+    }
 }
 

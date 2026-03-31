@@ -9,4 +9,14 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  */
 public interface HeadDefineSymbol extends HeadSymbol {
     String getName();
+
+    @Override
+    default boolean isDefine() {
+        return true;
+    }
+
+    @Override
+    default HeadDefineSymbol toDefine() {
+        return this;
+    }
 }

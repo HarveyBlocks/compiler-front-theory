@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * TODO 产生式中的连接
@@ -19,5 +19,23 @@ public interface GrammarConcatenation extends ConcatenableSymbol, Iterable<Conca
     int size();
 
     boolean isEmpty();
+
+    @Override
+    default boolean isTerminal() {
+        return false;
+    }
+
+    @Override
+    default boolean isConcatenation() {
+        return true;
+    }
+
+    @Override
+    default GrammarConcatenation toConcatenation() {
+        return this;
+    }
+    default Stream<ConcatenableSymbol> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
 }
 

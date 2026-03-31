@@ -1,6 +1,9 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+
+import java.util.Iterator;
 
 /**
  * TODO 上下文, 便于数据重复利用, 例如对于同一个head name definition, 产生同一个对象
@@ -26,4 +29,6 @@ public interface ProductionSetContext extends Iterable<GrammarDefineProduction> 
     int length();
 
     boolean isEmpty();
+
+    Iterable<HeadSymbol> headIterable();
 }

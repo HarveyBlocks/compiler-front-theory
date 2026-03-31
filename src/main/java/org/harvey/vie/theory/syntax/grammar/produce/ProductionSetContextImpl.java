@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -54,6 +55,11 @@ public class ProductionSetContextImpl implements ProductionSetContext {
     }
 
     @Override
+    public Iterable<HeadSymbol> headIterable() {
+        return HeadIterator::new;
+    }
+
+    @Override
     public Iterator<GrammarDefineProduction> iterator() {
         return Arrays.stream(productions).iterator();
     }
@@ -61,5 +67,19 @@ public class ProductionSetContextImpl implements ProductionSetContext {
     @Override
     public String toString() {
         return Arrays.stream(productions).map(Object::toString).collect(Collectors.joining("\n"));
+    }
+
+    private class HeadIterator implements Iterator<HeadSymbol> {
+        private final Iterator<Map.Entry<String, Integer>> it = definitionIdxMap.entrySet().iterator();
+
+        @Override
+        public boolean hasNext() {
+            return it.hasNext();
+        }
+
+        @Override
+        public HeadSymbol next() {
+            return productions[it.next().getValue()].getHead();
+        }
     }
 }

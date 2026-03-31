@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
-import org.harvey.vie.theory.syntax.grammar.symbol.ConcatenableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
@@ -17,7 +16,4 @@ public interface ProductionSetContextBuilder {
     TerminalSymbol createTerminal(String value);
 
     ProductionSetContext build();
-
-    GrammarSymbol epsilon();
-
 }

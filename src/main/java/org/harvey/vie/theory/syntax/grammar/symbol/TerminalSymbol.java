@@ -9,12 +9,19 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  */
 public interface TerminalSymbol extends ConcatenableSymbol {
 
-
     String getValue();
-
+    @Override
+    default boolean isConcatenation() {
+        return false;
+    }
     @Override
     default boolean isTerminal() {
         return true;
+    }
+
+    @Override
+    default TerminalSymbol toTerminal() {
+        return this;
     }
 }
 

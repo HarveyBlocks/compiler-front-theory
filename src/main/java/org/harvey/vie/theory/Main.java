@@ -1,10 +1,5 @@
 package org.harvey.vie.theory;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
-import java.util.StringJoiner;
-
 /**
  * 启动类
  *
