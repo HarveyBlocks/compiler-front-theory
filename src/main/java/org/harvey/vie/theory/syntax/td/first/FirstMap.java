@@ -3,9 +3,11 @@ package org.harvey.vie.theory.syntax.td.first;
 import org.harvey.vie.theory.syntax.grammar.symbol.ConcatenableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.td.follow.FollowSetFactoryImpl;
 
-import java.util.Iterator;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * TODO
@@ -18,4 +20,8 @@ public interface FirstMap extends Iterable<Map.Entry<ConcatenableSymbol, FirstSe
     FirstSet get(HeadSymbol head);
 
     FirstSet get(TerminalSymbol terminal);
+
+    Set<TerminalSymbol> terminalSet();
+
+    FirstSet first(Iterable<ConcatenableSymbol> iterable);
 }

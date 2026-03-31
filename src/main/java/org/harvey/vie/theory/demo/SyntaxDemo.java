@@ -15,6 +15,9 @@ import org.harvey.vie.theory.syntax.td.first.FirstMapFactoryImpl;
 import org.harvey.vie.theory.syntax.td.follow.FollowMap;
 import org.harvey.vie.theory.syntax.td.follow.FollowSetFactory;
 import org.harvey.vie.theory.syntax.td.follow.FollowSetFactoryImpl;
+import org.harvey.vie.theory.syntax.td.table.AnalysisTable;
+import org.harvey.vie.theory.syntax.td.table.AnalysisTableFactory;
+import org.harvey.vie.theory.syntax.td.table.DeterministicAnalysisTableFactory;
 
 /**
  * 词法分析器Demo
@@ -43,6 +46,10 @@ public class SyntaxDemo {
         FollowSetFactory followSetFactory = new FollowSetFactoryImpl();
         FollowMap followMap = followSetFactory.follow("expression", eliminated, firstMap);
         followMap.entrySet().forEach(System.out::println);
+        System.out.println("-----------------------");
+        AnalysisTableFactory tableFactory = new DeterministicAnalysisTableFactory();
+        AnalysisTable analysisTable = tableFactory.produce(eliminated, firstMap, followMap);
+        System.out.println(analysisTable);
         System.out.println("-----------------------");
     }
 

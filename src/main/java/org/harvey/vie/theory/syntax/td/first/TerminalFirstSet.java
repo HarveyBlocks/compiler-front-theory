@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.syntax.td.first;
 
 import lombok.AllArgsConstructor;
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
 import java.util.Set;
@@ -19,6 +20,11 @@ public class TerminalFirstSet implements FirstSet {
     @Override
     public Set<TerminalSymbol> firstExceptEpsilon() {
         return Set.of(symbol);
+    }
+
+    @Override
+    public boolean contains(GrammarSymbol symbol) {
+        return this.symbol.equals(symbol);
     }
 
     @Override

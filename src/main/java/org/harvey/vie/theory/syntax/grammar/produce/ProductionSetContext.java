@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
@@ -31,4 +32,5 @@ public interface ProductionSetContext extends Iterable<GrammarDefineProduction> 
     boolean isEmpty();
 
     Iterable<HeadSymbol> headIterable();
+    GrammarAlternation getAlternation(HeadSymbol head);
 }

@@ -36,4 +36,9 @@ public class FollowMapImpl implements FollowMap {
     public Set<Map.Entry<HeadSymbol, FollowSet>> entrySet() {
         return map.entrySet();
     }
+
+    @Override
+    public int size() {
+        return map.size();
+    }
 }

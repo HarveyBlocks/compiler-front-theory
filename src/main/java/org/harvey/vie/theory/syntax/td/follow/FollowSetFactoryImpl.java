@@ -20,8 +20,8 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
     public FollowMap follow(
             String startHead, ProductionSetContext context, FirstMap firstMap) {
         FollowMapBuilder mapBuilder = new FollowMapBuilder(context);
-        // 规则一, 标注开始
         HeadDefineSymbol start = mapBuilder.getDefinition(startHead);
+        // 规则一, 标注开始
         follow1(start, mapBuilder);
         // 规则二
         follow2(start, firstMap, mapBuilder);
@@ -72,7 +72,7 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         return changed;
     }
 
-    private Boolean forEachProduction(
+    private boolean forEachProduction(
             HeadSymbol head, FollowMapBuilder mapBuilder, HeadQueue queue, Func function) {
         GrammarAlternation alternation = mapBuilder.getAlternation(head);
         FollowSetBuilder headBuilder = mapBuilder.getBuilder(head);
@@ -104,28 +104,17 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
             }
             HeadSymbol headSymbol = symbol.toHead();
             queue.addLast(headSymbol);
-            changed = function.invoke(headBuilder, headSymbol, new AfterIterator(i, concatenation));
+            changed = function.invoke(headBuilder, headSymbol, new AfterIterable(i, concatenation));
         }
         return changed;
     }
 
-    private void cupAssignFirstAfter(FollowSetBuilder builder, FirstMap firstMap, AfterIterator afterIterator) {
-        HashSet<TerminalSymbol> firstAfter = new HashSet<>();
-        while (afterIterator.hasNext()) {
-            ConcatenableSymbol symbol = afterIterator.next();
-            requireNotConcatenation(symbol);
-            FirstSet firstSet = symbol.isTerminal() ? firstMap.get(symbol.toTerminal()) : firstMap.get(symbol.toHead());
-            firstAfter.addAll(firstSet.firstExceptEpsilon());
-            if (!firstSet.containsEpsilon()) {
-                break;
-            }  // 可空则继续
-        }
-        builder.set.addAll(firstAfter);
+    private void cupAssignFirstAfter(FollowSetBuilder builder, FirstMap firstMap, AfterIterable afterIterable) {
+        builder.set.addAll(firstMap.first(afterIterable).firstExceptEpsilon());
     }
 
-    private boolean afterFirstContainsEpsilon(FirstMap firstMap, AfterIterator afterIterator) {
-        while (afterIterator.hasNext()) {
-            ConcatenableSymbol symbol = afterIterator.next();
+    private boolean afterFirstContainsEpsilon(FirstMap firstMap, AfterIterable afterIterable) {
+        for (ConcatenableSymbol symbol : afterIterable) {
             requireNotConcatenation(symbol);
             if (symbol.isTerminal()) {
                 return false;
@@ -158,28 +147,38 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
 
     @FunctionalInterface
     private interface Func {
-        boolean invoke(FollowSetBuilder headBuilder, HeadSymbol headSymbol, AfterIterator afterIterator);
+        boolean invoke(FollowSetBuilder headBuilder, HeadSymbol headSymbol, AfterIterable afterIterable);
     }
 
-    private static class AfterIterator implements Iterator<ConcatenableSymbol> {
-        private int pos;
+    private static class AfterIterable implements Iterable<ConcatenableSymbol> {
+        private final int offset;
         private final GrammarConcatenation concatenation;
 
-        public AfterIterator(int offset, GrammarConcatenation concatenation) {
-            this.pos = offset + 1;
+        public AfterIterable(int offset, GrammarConcatenation concatenation) {
+            this.offset = offset;
             this.concatenation = concatenation;
         }
 
         @Override
-        public boolean hasNext() {
-            return pos < concatenation.size();
+        public java.util.Iterator<ConcatenableSymbol> iterator() {
+            return new Iterator();
         }
 
-        @Override
-        public ConcatenableSymbol next() {
-            return concatenation.get(pos++);
+        private class Iterator implements java.util.Iterator<ConcatenableSymbol> {
+            private int pos = offset + 1;
+
+            @Override
+            public boolean hasNext() {
+                return pos < concatenation.size();
+            }
+
+            @Override
+            public ConcatenableSymbol next() {
+                return concatenation.get(pos++);
+            }
         }
     }
+
 
     private static class HeadQueue {
         private final LinkedList<HeadSymbol> queue = new LinkedList<>();
@@ -221,15 +220,7 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         }
 
         public GrammarAlternation getAlternation(HeadSymbol head) {
-            if (!head.isDefine()) {
-                throw new IllegalStateException("The head of production is not define head symbol!");
-            }
-            HeadDefineSymbol define = head.toDefine();
-            Integer index = context.indexOf(define);
-            if (index == null) {
-                throw new IllegalStateException("Can not found define from context!");
-            }
-            return context.get(index).getBody();
+            return context.getAlternation(head);
         }
 
         public FollowSetBuilder getBuilder(HeadSymbol head) {

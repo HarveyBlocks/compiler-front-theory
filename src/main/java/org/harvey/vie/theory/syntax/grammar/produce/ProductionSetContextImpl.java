@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
@@ -57,6 +58,19 @@ public class ProductionSetContextImpl implements ProductionSetContext {
     @Override
     public Iterable<HeadSymbol> headIterable() {
         return HeadIterator::new;
+    }
+
+    @Override
+    public GrammarAlternation getAlternation(HeadSymbol head) {
+        if (!head.isDefine()) {
+            throw new IllegalStateException("The head of production is not define head symbol!");
+        }
+        HeadDefineSymbol define = head.toDefine();
+        Integer index = indexOf(define);
+        if (index == null) {
+            throw new IllegalStateException("Can not found define from context!");
+        }
+        return get(index).getBody();
     }
 
     @Override

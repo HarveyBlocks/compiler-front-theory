@@ -5,6 +5,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.ConcatenableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -32,6 +33,29 @@ public class FirstMapImpl implements FirstMap {
     }
 
     @Override
+    public Set<TerminalSymbol> terminalSet() {
+        return terminalSet;
+    }
+
+    @Override
+    public FirstSet first(Iterable<ConcatenableSymbol> iterable) {
+        Set<TerminalSymbol> allFirstSet = new HashSet<>();
+        boolean containsEpsilon = true;
+        for (ConcatenableSymbol symbol : iterable) {
+            if (symbol.isConcatenation()) {
+                throw new IllegalStateException("require non-concatenation grammar symbol here.");
+            }
+            FirstSet firstSet = symbol.isTerminal() ? get(symbol.toTerminal()) : get(symbol.toHead());
+            allFirstSet.addAll(firstSet.firstExceptEpsilon());
+            if (!firstSet.containsEpsilon()) {
+                containsEpsilon = false;
+                break;
+            }  // 可空则继续
+        }
+        return new FirstSetImpl(allFirstSet, containsEpsilon);
+    }
+
+    @Override
     public Iterator<Map.Entry<ConcatenableSymbol, FirstSet>> iterator() {
         return new EntryIterator();
     }
@@ -52,7 +76,7 @@ public class FirstMapImpl implements FirstMap {
                 return Map.entry(next.getKey(), next.getValue());
             }
             TerminalSymbol next = terminalIter.next();
-            return Map.entry(next,get(next));
+            return Map.entry(next, get(next));
         }
     }
 }

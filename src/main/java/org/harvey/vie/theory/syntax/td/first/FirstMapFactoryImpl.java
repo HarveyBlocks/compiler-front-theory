@@ -27,12 +27,8 @@ public class FirstMapFactoryImpl implements FirstMapFactory {
     }
 
     private FirstSetBuilder first(HeadSymbol head, FirstMapBuilder mapBuilder) {
-        if (!head.isDefine()) {
-            throw new IllegalStateException("The head of production is not define head symbol!");
-        }
-        HeadDefineSymbol define = head.toDefine();
         FirstSetBuilder builder = mapBuilder.getBuilder(head);
-        for (GrammarSymbol symbol : mapBuilder.getAlternation(define)) {
+        for (GrammarSymbol symbol : mapBuilder.getAlternation(head)) {
             if (symbol.isEpsilon()) {
                 builder.containsEpsilon = true;
             } else if (symbol.isConcatenation()) {
@@ -103,6 +99,9 @@ public class FirstMapFactoryImpl implements FirstMapFactory {
             return firstMap.computeIfAbsent(head, k -> new FirstSetBuilder());
         }
 
+        public GrammarAlternation getAlternation(HeadSymbol head) {
+            return context.getAlternation(head);
+        }
         public FirstMap build() {
             Map<HeadSymbol, FirstSet> built = firstMap.entrySet()
                     .stream()
@@ -117,12 +116,5 @@ public class FirstMapFactoryImpl implements FirstMapFactory {
                     .forEach(terminalSet::add);
         }
 
-        public GrammarAlternation getAlternation(HeadDefineSymbol define) {
-            Integer index = context.indexOf(define);
-            if (index == null) {
-                throw new IllegalStateException("Can not found define from context!");
-            }
-            return context.get(index).getBody();
-        }
     }
 }

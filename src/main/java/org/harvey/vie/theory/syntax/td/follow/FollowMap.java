@@ -21,4 +21,6 @@ public interface FollowMap {
     Collection<FollowSet> values();
 
     Set<Map.Entry<HeadSymbol, FollowSet>> entrySet();
+
+    int size();
 }

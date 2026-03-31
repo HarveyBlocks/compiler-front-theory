@@ -29,6 +29,20 @@ public class FirstSetImpl implements FirstSet {
     }
 
     @Override
+    public boolean contains(GrammarSymbol symbol) {
+        if (symbol == null) {
+            return false;
+        }
+        if (symbol.isEpsilon()) {
+            return containsEpsilon;
+        }
+        if (!symbol.isConcatenable() || !symbol.isTerminal()) {
+            return false;
+        }
+        return set.contains(symbol.toTerminal());
+    }
+
+    @Override
     public boolean containsEpsilon() {
         return containsEpsilon;
     }
