@@ -19,14 +19,14 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
     @Override
     public FollowMap follow(
             String startHead, ProductionSetContext context, FirstMap firstMap) {
-        FollowMapBuilder mapBuilder = new FollowMapBuilder(context, firstMap);
+        FollowMapBuilder mapBuilder = new FollowMapBuilder(context);
         // 规则一, 标注开始
         HeadDefineSymbol start = mapBuilder.getDefinition(startHead);
         follow1(start, mapBuilder);
         // 规则二
-        follow2(start, mapBuilder);
+        follow2(start, firstMap, mapBuilder);
         // 规则三
-        follow3(start, mapBuilder);
+        follow3(start, firstMap, mapBuilder);
         return mapBuilder.buildMap();
     }
 
@@ -34,27 +34,54 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         mapBuilder.getBuilder(start).containsEndMarker = true;
     }
 
-    private void follow2(HeadSymbol start, FollowMapBuilder mapBuilder) {
+    private void follow2(HeadDefineSymbol start, FirstMap firstMap, FollowMapBuilder mapBuilder) {
+        forEach(start, mapBuilder, (headBuilder, headSymbol, afterIterator) -> {
+            FollowSetBuilder headFollowSetBuilder = mapBuilder.getBuilder(headSymbol);
+            cupAssignFirstAfter(headFollowSetBuilder, firstMap, afterIterator);
+            return true;
+        });
+    }
+
+    private void follow3(HeadDefineSymbol start, FirstMap firstMap, FollowMapBuilder mapBuilder) {
+        boolean changed;
+        do {
+            changed = forEach(start, mapBuilder, (headBuilder, headSymbol, afterIterator) -> {
+                FollowSetBuilder headFollowSetBuilder = mapBuilder.getBuilder(headSymbol);
+                if (afterFirstContainsEpsilon(firstMap, afterIterator)) {
+                    return cupAssignHeadFollow(headFollowSetBuilder, headBuilder);
+                }
+                return false;
+            });
+        } while (changed);
+    }
+
+    private boolean forEach(
+            HeadSymbol start, FollowMapBuilder mapBuilder, Func function) {
         Set<HeadSymbol> visited = new HashSet<>();
-        mapBuilder.addQueueLast(start);
-        while (mapBuilder.queueHasElement()) {
-            HeadSymbol headSymbol = mapBuilder.removeQueueFirst();
+        HeadQueue queue = new HeadQueue();
+        queue.addLast(start);
+        boolean changed = false;
+        while (queue.hasElement()) {
+            HeadSymbol headSymbol = queue.removeFirst();
             if (visited.contains(headSymbol)) {
                 continue;
             }
-            follow2Head(headSymbol, mapBuilder);
+            changed = forEachProduction(headSymbol, mapBuilder, queue, function);
             visited.add(headSymbol);
         }
+        return changed;
     }
 
-
-    private void follow2Head(HeadSymbol head, FollowMapBuilder mapBuilder) {
+    private Boolean forEachProduction(
+            HeadSymbol head, FollowMapBuilder mapBuilder, HeadQueue queue, Func function) {
         GrammarAlternation alternation = mapBuilder.getAlternation(head);
+        FollowSetBuilder headBuilder = mapBuilder.getBuilder(head);
+        boolean changed = false;
         for (GrammarSymbol symbol : alternation) {
             if (!symbol.isEpsilon()) {
                 if (symbol.isConcatenation()) {
                     GrammarConcatenation concatenation = symbol.toConcatenation();
-                    follow2(concatenation, mapBuilder);
+                    changed = forEachProduction(headBuilder, concatenation, queue, function);
                 } else {
                     throw new IllegalStateException("Unknown type of: " + symbol.getClass());
                 }
@@ -62,9 +89,12 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
             // epsilon
             // 不处理
         }
+        return changed;
     }
 
-    private void follow2(GrammarConcatenation concatenation, FollowMapBuilder mapBuilder) {
+    private boolean forEachProduction(
+            FollowSetBuilder headBuilder, GrammarConcatenation concatenation, HeadQueue queue, Func function) {
+        boolean changed = false;
         for (int i = 0; i < concatenation.size(); i++) {
             ConcatenableSymbol symbol = concatenation.get(i);
             requireNotConcatenation(symbol);
@@ -73,17 +103,16 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
                 continue;
             }
             HeadSymbol headSymbol = symbol.toHead();
-            mapBuilder.addQueueLast(headSymbol);
-            FollowSetBuilder headFollowSetBuilder = mapBuilder.getBuilder(headSymbol);
-            cupAssignFirstAfter(headFollowSetBuilder, mapBuilder.firstMap, concatenation, i);
+            queue.addLast(headSymbol);
+            changed = function.invoke(headBuilder, headSymbol, new AfterIterator(i, concatenation));
         }
+        return changed;
     }
 
-    private void cupAssignFirstAfter(
-            FollowSetBuilder builder, FirstMap firstMap, GrammarConcatenation concatenation, int i) {
+    private void cupAssignFirstAfter(FollowSetBuilder builder, FirstMap firstMap, AfterIterator afterIterator) {
         HashSet<TerminalSymbol> firstAfter = new HashSet<>();
-        for (int j = i + 1; j < concatenation.size(); j++) {
-            ConcatenableSymbol symbol = concatenation.get(j);
+        while (afterIterator.hasNext()) {
+            ConcatenableSymbol symbol = afterIterator.next();
             requireNotConcatenation(symbol);
             FirstSet firstSet = symbol.isTerminal() ? firstMap.get(symbol.toTerminal()) : firstMap.get(symbol.toHead());
             firstAfter.addAll(firstSet.firstExceptEpsilon());
@@ -94,67 +123,9 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         builder.set.addAll(firstAfter);
     }
 
-    private void follow3(HeadDefineSymbol start, FollowMapBuilder mapBuilder) {
-        boolean changed;
-        do {
-            changed = false;
-            Set<HeadSymbol> visited = new HashSet<>();
-            mapBuilder.addQueueLast(start);
-            while (mapBuilder.queueHasElement()) {
-                HeadSymbol headSymbol = mapBuilder.removeQueueFirst();
-                if (visited.contains(headSymbol)) {
-                    continue;
-                }
-                changed = follow3(headSymbol, mapBuilder);
-                visited.add(headSymbol);
-            }
-        } while (changed);
-    }
-
-    private boolean follow3(HeadSymbol head, FollowMapBuilder mapBuilder) {
-        GrammarAlternation alternation = mapBuilder.getAlternation(head);
-        FollowSetBuilder headBuilder = mapBuilder.getBuilder(head);
-        boolean changed = false;
-        for (GrammarSymbol symbol : alternation) {
-            if (!symbol.isEpsilon()) {
-                if (symbol.isConcatenation()) {
-                    GrammarConcatenation concatenation = symbol.toConcatenation();
-                    changed = follow3(headBuilder, concatenation, mapBuilder);
-                } else {
-                    throw new IllegalStateException("Unknown type of: " + symbol.getClass());
-                }
-            }
-            // epsilon
-            // 不处理
-        }
-        return changed;
-    }
-
-    private boolean follow3(
-            FollowSetBuilder headBuilder, GrammarConcatenation concatenation, FollowMapBuilder mapBuilder) {
-        boolean changed = false;
-        for (int i = 0; i < concatenation.size(); i++) {
-            ConcatenableSymbol symbol = concatenation.get(i);
-            requireNotConcatenation(symbol);
-            if (symbol.isTerminal()) {
-                // 终结符? 不关心
-                continue;
-            }
-            HeadSymbol headSymbol = symbol.toHead();
-            mapBuilder.addQueueLast(headSymbol);
-            FollowSetBuilder headFollowSetBuilder = mapBuilder.getBuilder(headSymbol);
-            if (afterFirstContainsEpsilon(concatenation, mapBuilder.firstMap, i)) {
-                changed = cupAssignHeadFollow(headFollowSetBuilder, headBuilder);
-            }
-        }
-        return changed;
-    }
-
-
-    private boolean afterFirstContainsEpsilon(
-            GrammarConcatenation concatenation, FirstMap firstMap, int i) {
-        for (int j = i + 1; j < concatenation.size(); j++) {
-            ConcatenableSymbol symbol = concatenation.get(j);
+    private boolean afterFirstContainsEpsilon(FirstMap firstMap, AfterIterator afterIterator) {
+        while (afterIterator.hasNext()) {
+            ConcatenableSymbol symbol = afterIterator.next();
             requireNotConcatenation(symbol);
             if (symbol.isTerminal()) {
                 return false;
@@ -185,33 +156,71 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         }
     }
 
-    static class FollowSetBuilder {
+    @FunctionalInterface
+    private interface Func {
+        boolean invoke(FollowSetBuilder headBuilder, HeadSymbol headSymbol, AfterIterator afterIterator);
+    }
+
+    private static class AfterIterator implements Iterator<ConcatenableSymbol> {
+        private int pos;
+        private final GrammarConcatenation concatenation;
+
+        public AfterIterator(int offset, GrammarConcatenation concatenation) {
+            this.pos = offset + 1;
+            this.concatenation = concatenation;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return pos < concatenation.size();
+        }
+
+        @Override
+        public ConcatenableSymbol next() {
+            return concatenation.get(pos++);
+        }
+    }
+
+    private static class HeadQueue {
+        private final LinkedList<HeadSymbol> queue = new LinkedList<>();
+
+        public HeadSymbol removeFirst() {
+            return queue.removeFirst();
+        }
+
+        public void addLast(HeadSymbol headSymbol) {
+            queue.addLast(headSymbol);
+        }
+
+        public boolean hasElement() {
+            return !queue.isEmpty();
+        }
+    }
+
+    private static class FollowSetBuilder {
         private boolean containsEndMarker = false;
         private final Set<TerminalSymbol> set = new HashSet<>();
 
-        private FollowSet build() {
+        public FollowSet build() {
             return new FollowSetImpl(set, containsEndMarker);
         }
     }
 
-    static class FollowMapBuilder {
+    private static class FollowMapBuilder {
         private final ProductionSetContext context;
-        private final FirstMap firstMap;
         private final Map<HeadSymbol, FollowSetBuilder> followMap;
-        private final LinkedList<HeadSymbol> queue;
 
-        FollowMapBuilder(ProductionSetContext context, FirstMap firstMap) {
+
+        public FollowMapBuilder(ProductionSetContext context) {
             this.context = context;
-            this.firstMap = firstMap;
             followMap = new HashMap<>();
-            queue = new LinkedList<>();
         }
 
         public HeadDefineSymbol getDefinition(String startHead) {
             return context.getDefinition(startHead);
         }
 
-        private GrammarAlternation getAlternation(HeadSymbol head) {
+        public GrammarAlternation getAlternation(HeadSymbol head) {
             if (!head.isDefine()) {
                 throw new IllegalStateException("The head of production is not define head symbol!");
             }
@@ -223,28 +232,16 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
             return context.get(index).getBody();
         }
 
-        private FollowSetBuilder getBuilder(HeadSymbol head) {
+        public FollowSetBuilder getBuilder(HeadSymbol head) {
             return followMap.computeIfAbsent(head, k -> new FollowSetBuilder());
         }
 
-        private FollowMap buildMap() {
+        public FollowMap buildMap() {
             Map<HeadSymbol, FollowSet> collect = followMap.entrySet()
                     .stream()
                     .collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().build()));
             return new FollowMapImpl(collect);
         }
 
-
-        HeadSymbol removeQueueFirst() {
-            return queue.removeFirst();
-        }
-
-        void addQueueLast(HeadSymbol symbol) {
-            queue.addLast(symbol);
-        }
-
-        boolean queueHasElement() {
-            return !queue.isEmpty();
-        }
     }
 }

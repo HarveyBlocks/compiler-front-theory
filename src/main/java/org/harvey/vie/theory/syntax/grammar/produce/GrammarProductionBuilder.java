@@ -20,6 +20,7 @@ public interface GrammarProductionBuilder {
     GrammarProductionBuilder alternateEpsilon();
 
     GrammarProductionBuilder alternateSelf();
+
     GrammarProductionBuilder alternatePlaceholder();
 
     GrammarProductionBuilder concatenateTerminalLast(String terminal);
