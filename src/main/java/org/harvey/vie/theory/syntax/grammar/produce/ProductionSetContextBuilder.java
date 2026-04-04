@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
 /**
@@ -13,7 +13,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 public interface ProductionSetContextBuilder {
     GrammarProductionBuilder define(String name);
 
-    TerminalSymbol createTerminal(String value);
+    TerminalSymbol createTerminal(TerminalFactor factor);
 
     ProductionSetContext build();
 }

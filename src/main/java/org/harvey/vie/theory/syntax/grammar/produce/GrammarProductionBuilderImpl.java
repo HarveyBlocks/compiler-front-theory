@@ -28,8 +28,8 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
 
 
     @Override
-    public GrammarProductionBuilder alternateTerminal(String terminal) {
-        return alternate(contextBuilder.createTerminal(terminal));
+    public GrammarProductionBuilder alternateTerminal(TerminalFactor factor) {
+        return alternate(contextBuilder.createTerminal(factor));
     }
 
     @Override
@@ -75,8 +75,8 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
     }
 
     @Override
-    public GrammarProductionBuilder concatenateTerminalLast(String terminal) {
-        return concatenateLast(contextBuilder.createTerminal(terminal));
+    public GrammarProductionBuilder concatenateTerminalLast(TerminalFactor factor) {
+        return concatenateLast(contextBuilder.createTerminal(factor));
     }
 
     @Override
@@ -103,8 +103,8 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
     }
 
     @Override
-    public GrammarProductionBuilder concatenateTerminal(int i, String terminal) {
-        return concatenate(i, contextBuilder.createTerminal(terminal));
+    public GrammarProductionBuilder concatenateTerminal(int i, TerminalFactor factor) {
+        return concatenate(i, contextBuilder.createTerminal(factor));
     }
 
     @Override
@@ -138,16 +138,15 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
     }
 
     private void concatenate0(int i, GrammarSymbol concatenable) {
-        GrammarSymbol symbol = body.get(i);
+        AlterableSymbol symbol = body.get(i);
         if (!concatenable.isConcatenable()) {
             throw new IllegalStateException(
                     "Non-ConcatenableSymbols are not allowed to be concatenated to concatenation");
         }
-        if (symbol.isConcatenation()) {
-            symbol.toConcatenation().concatenate((ConcatenableSymbol) concatenable);
-        } else {
+        if (!symbol.isConcatenation()) {
             throw new IllegalStateException("Symbols are not allowed to be concatenated to non-GrammarConcatenation");
         }
+        symbol.toConcatenation().concatenate(concatenable.toConcatenable());
     }
 
     @Override

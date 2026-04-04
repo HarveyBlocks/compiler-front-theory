@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @date 2026-03-28 02:02
  */
 public class GrammarAlternationImpl implements GrammarAlternation {
-    private final List<GrammarSymbol> list;
+    private final List<AlterableSymbol> list;
     private boolean alternatedEpsilon;
 
     public GrammarAlternationImpl() {
@@ -22,7 +22,7 @@ public class GrammarAlternationImpl implements GrammarAlternation {
     }
 
     @Override
-    public void alternate(GrammarSymbol symbol) {
+    public void alternate(AlterableSymbol symbol) {
         Objects.requireNonNull(symbol);
         if (symbol == GrammarSymbol.EPSILON) {
             if (alternatedEpsilon) {
@@ -43,7 +43,7 @@ public class GrammarAlternationImpl implements GrammarAlternation {
     }
 
     @Override
-    public GrammarSymbol get(int i) {
+    public AlterableSymbol get(int i) {
         return list.get(i);
     }
 
@@ -68,15 +68,9 @@ public class GrammarAlternationImpl implements GrammarAlternation {
         return alternatedEpsilon;
     }
 
-
     @Override
-    public Iterator<GrammarSymbol> iterator() {
+    public Iterator<AlterableSymbol> iterator() {
         return list.iterator();
-    }
-
-    @Override
-    public boolean isTerminal() {
-        return false;
     }
 
     @Override

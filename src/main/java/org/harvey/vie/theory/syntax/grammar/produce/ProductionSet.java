@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
+import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.ReferredHeadSymbol;
 
@@ -13,7 +14,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.ReferredHeadSymbol;
 public interface ProductionSet extends Iterable<GrammarProduction> {
     ReferredHeadSymbol getHead(int i);
 
-    GrammarSymbol getBody(int i);
+    AlterableSymbol getBody(int i);
 
     GrammarProduction get(int i);
 

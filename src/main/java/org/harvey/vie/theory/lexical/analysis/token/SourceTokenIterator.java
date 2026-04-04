@@ -11,7 +11,17 @@ import org.harvey.vie.theory.exception.CompileException;
  * @date 2026-03-24 15:14
  */
 public interface SourceTokenIterator extends AutoCloseable {
+    SourceToken NO_MORE_TOKEN = null;
+
     boolean hasNext();
+
+    /**
+     *
+     * @throws CompileException unfinished token
+     */
     SourceToken next() throws CompileException;
 
+    int getOffset();
+
+    SourceToken current() throws CompileException;
 }

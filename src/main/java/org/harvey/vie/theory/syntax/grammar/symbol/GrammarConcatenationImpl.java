@@ -1,9 +1,6 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -14,7 +11,7 @@ import java.util.stream.Collectors;
  * @date 2026-03-28 02:07
  */
 public class GrammarConcatenationImpl implements GrammarConcatenation {
-    private final List<ConcatenableSymbol> list;
+    private final List<GrammarUnitSymbol> list;
 
     public GrammarConcatenationImpl() {list = new ArrayList<>();}
 
@@ -27,21 +24,22 @@ public class GrammarConcatenationImpl implements GrammarConcatenation {
     private void concatenate0(ConcatenableSymbol concatenable) {
         if (concatenable.isConcatenable()) {
             if (concatenable.isConcatenation()) {
-                for (ConcatenableSymbol symbol : concatenable.toConcatenation()) {
+                for (GrammarUnitSymbol symbol : concatenable.toConcatenation()) {
                     concatenate0(symbol);
                 }
+                return;
             } else {
-                list.add(concatenable);
+                list.add(concatenable.toUnit());
+                return;
             }
-        } else {
-            throw new IllegalStateException(
-                    "Unknown type of ConcatenableSymbol concatenateTerminal into the GrammarConcatenation: " +
-                    concatenable.getClass());
         }
+        throw new IllegalStateException(
+                "Unknown type of ConcatenableSymbol concatenateTerminal into the GrammarConcatenation: " +
+                concatenable.getClass());
     }
 
     @Override
-    public ConcatenableSymbol get(int i) {
+    public GrammarUnitSymbol get(int i) {
         return list.get(i);
     }
 
@@ -56,17 +54,37 @@ public class GrammarConcatenationImpl implements GrammarConcatenation {
     }
 
     @Override
-    public Iterator<ConcatenableSymbol> iterator() {
+    public Iterator<GrammarUnitSymbol> iterator() {
         return list.iterator();
     }
 
+
+
     @Override
-    public boolean isTerminal() {
-        return false;
+    public Iterator<GrammarUnitSymbol> reverseIterator() {
+        return new ReverseIterator();
     }
 
     @Override
     public String toString() {
         return list.stream().map(Object::toString).collect(Collectors.joining(" "));
+    }
+
+    private class ReverseIterator implements Iterator<GrammarUnitSymbol> {
+        private final ListIterator<GrammarUnitSymbol> iter;
+
+        public ReverseIterator() {
+            iter = list.listIterator(list.size());
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iter.hasPrevious();
+        }
+
+        @Override
+        public GrammarUnitSymbol next() {
+            return iter.previous();
+        }
     }
 }

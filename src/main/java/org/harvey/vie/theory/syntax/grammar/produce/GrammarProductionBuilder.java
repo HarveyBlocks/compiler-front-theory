@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
 
 /**
  * TODO
@@ -11,7 +12,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
  */
 public interface GrammarProductionBuilder {
 
-    GrammarProductionBuilder alternateTerminal(String terminal);
+    GrammarProductionBuilder alternateTerminal(TerminalFactor factor);
 
 
     GrammarProductionBuilder alternateDefinition(String definition);
@@ -23,14 +24,14 @@ public interface GrammarProductionBuilder {
 
     GrammarProductionBuilder alternatePlaceholder();
 
-    GrammarProductionBuilder concatenateTerminalLast(String terminal);
+    GrammarProductionBuilder concatenateTerminalLast(TerminalFactor factor);
 
     GrammarProductionBuilder concatenateDefinitionLast(String definition);
 
     GrammarProductionBuilder concatenateSelfLast();
 
 
-    GrammarProductionBuilder concatenateTerminal(int i, String terminal);
+    GrammarProductionBuilder concatenateTerminal(int i, TerminalFactor factor);
 
 
     GrammarProductionBuilder concatenateDefinition(int i, String definition);

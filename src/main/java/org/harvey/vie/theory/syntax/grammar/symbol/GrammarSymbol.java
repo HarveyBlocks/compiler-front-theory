@@ -8,13 +8,17 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @date 2026-03-28 00:39
  */
 public interface GrammarSymbol {
-    GrammarSymbol EPSILON = new EpsilonSymbol();
+    AlterableSymbol EPSILON = new EpsilonSymbol();
 
     default boolean isEpsilon() {
         throw unsupportedTest();
     }
 
     default boolean isConcatenable() {
+        throw unsupportedTest();
+    }
+
+    default boolean isAlterable() {
         throw unsupportedTest();
     }
 
@@ -30,7 +34,15 @@ public interface GrammarSymbol {
         throw unsupportedCast();
     }
 
+    default AlterableSymbol toAlterable() {
+        throw unsupportedCast();
+    }
+
     default GrammarConcatenation toConcatenation() {
+        throw unsupportedCast();
+    }
+
+    default GrammarUnitSymbol toUnit() {
         throw unsupportedCast();
     }
 
@@ -55,7 +67,7 @@ public interface GrammarSymbol {
     }
 }
 
-class EpsilonSymbol implements GrammarSymbol {
+class EpsilonSymbol implements GrammarSymbol, AlterableSymbol {
     EpsilonSymbol() {}
 
 

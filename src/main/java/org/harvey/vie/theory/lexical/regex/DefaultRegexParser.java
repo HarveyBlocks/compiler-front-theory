@@ -79,8 +79,9 @@ public class DefaultRegexParser implements RegexParser {
         int ch = ctx.current();
         RegexNode node;
         if (ctx.skipIf('\\')) {
-            ch = ctx.next();
             ctx.currentNotDone();
+            ch = ctx.current();
+            ctx.next(); // 消费字符
             node = new CharRegexNode(ctx.createEscape(ch)); // 后一个无论如何都是转义字符
         } else if (ctx.skipIf('(')) {
             // 检查空括号 "()"

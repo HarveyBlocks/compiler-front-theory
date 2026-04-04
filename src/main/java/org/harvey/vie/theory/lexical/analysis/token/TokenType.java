@@ -3,6 +3,7 @@ package org.harvey.vie.theory.lexical.analysis.token;
 import lombok.NonNull;
 import org.harvey.vie.theory.io.ILoader;
 import org.harvey.vie.theory.io.Storage;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
 
 /**
  * Represents the type of lexical token.
@@ -14,7 +15,7 @@ import org.harvey.vie.theory.io.Storage;
  * @version 1.0
  * @date 2026-03-24 15:30
  */
-public interface TokenType extends Storage {
+public interface TokenType extends Storage, TerminalFactor {
     static TokenType morePriority(TokenType accept, TokenType tryAccept) {
         return accept.getPriority() < tryAccept.getPriority() ? accept : tryAccept;
     }

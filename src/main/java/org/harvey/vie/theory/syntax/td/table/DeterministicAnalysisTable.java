@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.syntax.td.table;
 
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarConcatenation;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
+import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
 
 import java.util.Objects;
 
@@ -22,16 +22,67 @@ public class DeterministicAnalysisTable implements AnalysisTable {
     private final TerminalSymbol[] terminals;
     private final GrammarConcatenation[] concatenations;
     private final AnalysisTableElement[][] table;
+    private final FirstMap firstMap;
+    private final FollowMap followMap;
+    private final TerminalMatcher terminalMatcher;
 
     public DeterministicAnalysisTable(
             HeadSymbol[] heads,
             TerminalSymbol[] terminals,
             GrammarConcatenation[] concatenations,
-            AnalysisTableElement[][] table) {
+            AnalysisTableElement[][] table,
+            FirstMap firstMap,
+            FollowMap followMap,
+            TerminalMatcher terminalMatcher) {
         this.heads = heads;
         this.terminals = terminals;
         this.concatenations = concatenations;
         this.table = table;
+        this.firstMap = firstMap;
+        this.followMap = followMap;
+        this.terminalMatcher = terminalMatcher;
+    }
+
+    @Override
+    public AlterableSymbol get(HeadSymbol head, SourceToken token) {
+        return toConcatenation(table[headIndexOf(head)][token == null ? END_MARK_REFERENCE :
+                terminalMatcher.indexOf(token)]);
+    }
+
+    @Override
+    public GrammarUnitSymbol terminalStart(TerminalFactor factor) {
+        for (TerminalSymbol terminal : terminals) {
+            if (terminal.getFactor().equals(factor)) {
+                return terminal;
+            }
+        }
+        throw new IllegalArgumentException("Not find terminal which factor is:" + factor);
+    }
+
+    @Override
+    public GrammarUnitSymbol headStart(String definition) {
+        for (HeadSymbol headSymbol : heads) {
+            if (headSymbol.isDefine() && headSymbol.toDefine().getName().equals(definition)) {
+                return headSymbol;
+            }
+        }
+        throw new IllegalArgumentException("Not find head definition which definition is:" + definition);
+    }
+
+    private int headIndexOf(HeadSymbol head) {
+        for (int i = 0; i < heads.length; i++) {
+            if (heads[i] == head) {
+                return i;
+            }
+        }
+        throw new IllegalStateException("Unknown head symbol");
+    }
+
+    private AlterableSymbol toConcatenation(AnalysisTableElement element) {
+        if (element.rightId() == null) {
+            return null;
+        }
+        return element.rightId() == EPSILON_REFERENCE ? GrammarSymbol.EPSILON : concatenations[element.rightId()];
     }
 
     @Override
@@ -51,14 +102,15 @@ public class DeterministicAnalysisTable implements AnalysisTable {
         // 缓存列头（terminals[0] 为 null 时显示 "$"）
         String[] colHeaders = new String[cols];
         for (int j = 0; j < cols; j++) {
-            colHeaders[j] = (j == 0 && terminals[0] == null) ? "$" : terminals[j].toString();
+            colHeaders[j] = terminals[j].toString();
         }
 
         // 缓存所有单元格字符串
         String[][] cells = new String[rows][cols];
+
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                cells[i][j] = Objects.toString( concatenationStream(table[i][j]));
+                cells[i][j] = Objects.toString(toConcatenation(table[i][j]));
             }
         }
 
@@ -94,8 +146,5 @@ public class DeterministicAnalysisTable implements AnalysisTable {
         return sb.toString();
     }
 
-    private GrammarSymbol concatenationStream(AnalysisTableElement element) {
-        return element.rightId() == null ? null :
-                (element.rightId() == EPSILON_REFERENCE ? GrammarSymbol.EPSILON : concatenations[element.rightId()]);
-    }
+
 }

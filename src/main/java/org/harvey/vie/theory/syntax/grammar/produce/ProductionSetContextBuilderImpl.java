@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbolImpl;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbolImpl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,12 +20,14 @@ import java.util.Map;
 public class ProductionSetContextBuilderImpl implements ProductionSetContextBuilder {
     private final Map<String, Integer> definitionIdxMap;
     private final List<GrammarProductionBuilder> list;
-    private final Map<String, TerminalSymbol> terminalMap;
+    private final Map<TerminalFactor, TerminalSymbol> terminalMap;
+    private final TerminalFactory terminalFactory;
 
-    public ProductionSetContextBuilderImpl() {
+    public ProductionSetContextBuilderImpl(TerminalFactory terminalFactory) {
         this.list = new ArrayList<>();
         this.definitionIdxMap = new HashMap<>();
         this.terminalMap = new HashMap<>();
+        this.terminalFactory = terminalFactory;
     }
 
     @Override
@@ -39,8 +41,8 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
     }
 
     @Override
-    public TerminalSymbol createTerminal(String value) {
-        return terminalMap.computeIfAbsent(value, TerminalSymbolImpl::new);
+    public TerminalSymbol createTerminal(TerminalFactor factor) {
+        return terminalMap.computeIfAbsent(factor, terminalFactory::create);
     }
 
     @Override
@@ -48,7 +50,7 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
         GrammarDefineProduction[] productions = list.stream()
                 .map(GrammarProductionBuilder::build)
                 .toArray(GrammarDefineProduction[]::new);
-        return new ProductionSetContextImpl(definitionIdxMap, productions);
+        return new ProductionSetContextImpl(terminalFactory,definitionIdxMap, productions);
     }
 
 

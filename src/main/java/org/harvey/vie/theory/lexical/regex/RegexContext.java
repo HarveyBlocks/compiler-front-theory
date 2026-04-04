@@ -33,7 +33,7 @@ public class RegexContext {
 
     public boolean skipIf(int c) {
         if (current() == c) {
-            next();
+            next(); // 消费字符
             return true;
         }
         return false;
@@ -51,13 +51,11 @@ public class RegexContext {
         }
     }
 
-    public int next() {
+    public void next() {
         if (pos < end - 1) {
             pos++;
-            return text.codePointAt(pos);
         } else {
             pos = end;
-            return DONE;
         }
     }
 

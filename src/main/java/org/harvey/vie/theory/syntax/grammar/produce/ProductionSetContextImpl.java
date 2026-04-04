@@ -1,8 +1,10 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
+import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -19,8 +21,14 @@ import java.util.stream.Collectors;
 public class ProductionSetContextImpl implements ProductionSetContext {
     private final Map<String, Integer> definitionIdxMap;
     private final GrammarDefineProduction[] productions;
+    @Getter
+    private final TerminalFactory terminalFactory;
 
-    public ProductionSetContextImpl(Map<String, Integer> definitionIdxMap, GrammarDefineProduction[] productions) {
+    public ProductionSetContextImpl(
+            TerminalFactory terminalFactory,
+            Map<String, Integer> definitionIdxMap,
+            GrammarDefineProduction[] productions) {
+        this.terminalFactory = terminalFactory;
         this.definitionIdxMap = definitionIdxMap;
         this.productions = productions;
     }

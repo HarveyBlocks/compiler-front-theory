@@ -3,8 +3,10 @@ package org.harvey.vie.theory.syntax.grammar.produce;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 
-import java.util.Iterator;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * TODO 上下文, 便于数据重复利用, 例如对于同一个head name definition, 产生同一个对象
@@ -33,4 +35,10 @@ public interface ProductionSetContext extends Iterable<GrammarDefineProduction> 
 
     Iterable<HeadSymbol> headIterable();
     GrammarAlternation getAlternation(HeadSymbol head);
+
+    TerminalFactory getTerminalFactory();
+
+    default Stream<GrammarDefineProduction> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
 }

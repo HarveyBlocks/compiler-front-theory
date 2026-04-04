@@ -1,5 +1,8 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
 /**
  * TODO 产生式中的选择
  *
@@ -7,11 +10,12 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @version 1.0
  * @date 2026-03-28 00:49
  */
-public interface GrammarAlternation extends GrammarSymbol, Iterable<GrammarSymbol> {
-    void alternate(GrammarSymbol symbol);
+public interface GrammarAlternation extends GrammarSymbol, Iterable<AlterableSymbol> {
+    void alternate(AlterableSymbol symbol);
 
-    void set(int i,  GrammarConcatenation concatenation);
-    GrammarSymbol get(int i);
+    void set(int i, GrammarConcatenation concatenation);
+
+    AlterableSymbol get(int i);
 
     int size();
 
@@ -31,4 +35,7 @@ public interface GrammarAlternation extends GrammarSymbol, Iterable<GrammarSymbo
         return false;
     }
 
+    default Stream<AlterableSymbol> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
 }

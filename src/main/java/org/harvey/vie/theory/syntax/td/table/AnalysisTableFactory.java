@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.syntax.td.table;
 
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
-import org.harvey.vie.theory.syntax.td.first.FirstMap;
-import org.harvey.vie.theory.syntax.td.follow.FollowMap;
+import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
+import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
 
 /**
  * TODO

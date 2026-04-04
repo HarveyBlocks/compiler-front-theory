@@ -1,5 +1,7 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+
 /**
  * TODO
  *
@@ -7,13 +9,10 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @version 1.0
  * @date 2026-03-28 00:45
  */
-public interface TerminalSymbol extends ConcatenableSymbol {
+public interface TerminalSymbol extends GrammarUnitSymbol {
 
-    String getValue();
-    @Override
-    default boolean isConcatenation() {
-        return false;
-    }
+    TerminalFactor getFactor();
+
     @Override
     default boolean isTerminal() {
         return true;
@@ -23,6 +22,10 @@ public interface TerminalSymbol extends ConcatenableSymbol {
     default TerminalSymbol toTerminal() {
         return this;
     }
+
+    boolean match(SourceToken token);
+
+    String hint();
 }
 
 

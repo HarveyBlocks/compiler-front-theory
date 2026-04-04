@@ -2,10 +2,10 @@ package org.harvey.vie.theory.syntax.td.table;
 
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
-import org.harvey.vie.theory.syntax.td.first.FirstMap;
-import org.harvey.vie.theory.syntax.td.first.FirstSet;
-import org.harvey.vie.theory.syntax.td.follow.FollowMap;
-import org.harvey.vie.theory.syntax.td.follow.FollowSet;
+import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
+import org.harvey.vie.theory.syntax.grammar.first.FirstSet;
+import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
+import org.harvey.vie.theory.syntax.grammar.follow.FollowSet;
 
 import java.util.*;
 
@@ -17,18 +17,22 @@ import java.util.*;
  * @date 2026-03-31 19:58
  */
 public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
+    private final TerminalMatcherFactory matcherFactory;
+
+    public DeterministicAnalysisTableFactory(TerminalMatcherFactory matcherFactory) {this.matcherFactory = matcherFactory;}
+
     @Override
     public AnalysisTable produce(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
         AnalysisTableBuilder builder = new AnalysisTableBuilder(context, firstMap, followMap);
         for (int i = 0; i < builder.headLength(); i++) {
-            for (GrammarSymbol symbol : builder.getAlternation(i)) {
+            for (AlterableSymbol symbol : builder.getAlternation(i)) {
                 produceEach(symbol, builder, i);
             }
         }
-        return builder.build();
+        return builder.build(matcherFactory);
     }
 
-    private static void produceEach(GrammarSymbol symbol, AnalysisTableBuilder builder, int headIndex) {
+    private static void produceEach(AlterableSymbol symbol, AnalysisTableBuilder builder, int headIndex) {
         int rightId;
         FirstSet firstSet;
         FollowSet followSet = builder.follow(headIndex);
@@ -91,6 +95,7 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
             this.terminalSymbolArray = new TerminalSymbol[terminalLen];
             Iterator<TerminalSymbol> terminalIterator = terminalSet.iterator();
             terminalIndexMap = new HashMap<>();
+            terminalSymbolArray[0] = AnalysisTable.END_MARK_SYMBOL;
             for (int i = 1; i < terminalLen; i++) {
                 terminalSymbolArray[i] = terminalIterator.next();
                 terminalIndexMap.put(terminalSymbolArray[i], i);
@@ -118,7 +123,7 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
         public int terminalId(TerminalSymbol terminalSymbol) {
             Integer index = terminalIndexMap.get(terminalSymbol);
             if (index == null) {
-                throw new IllegalStateException("Can not find terminal: " + terminalSymbol);
+                throw new IllegalStateException("Can not find terminal: " + terminalSymbol.hint());
             }
             return index;
         }
@@ -144,7 +149,7 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
         }
 
 
-        public AnalysisTable build() {
+        public AnalysisTable build(TerminalMatcherFactory matcherFactory) {
             return new DeterministicAnalysisTable(
                     headSymbolArray,
                     terminalSymbolArray,
@@ -153,7 +158,10 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
                             .map(a -> Arrays.stream(a)
                                     .map(DeterministicAnalysisTableElementBuilder::build)
                                     .toArray(AnalysisTableElement[]::new))
-                            .toArray(AnalysisTableElement[][]::new)
+                            .toArray(AnalysisTableElement[][]::new),
+                    firstMap,
+                    followMap,
+                    matcherFactory.produce(terminalSymbolArray)
             );
         }
     }

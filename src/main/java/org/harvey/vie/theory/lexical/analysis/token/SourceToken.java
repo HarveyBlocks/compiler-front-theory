@@ -10,6 +10,9 @@ package org.harvey.vie.theory.lexical.analysis.token;
  */
 public interface SourceToken {
     String hintString();
+    byte[] getLexeme();
 
     int getOffset();
+
+    TokenType getType();
 }

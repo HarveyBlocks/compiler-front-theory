@@ -41,20 +41,40 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class LexicalDemo {
+    public static DfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
 
+        LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
+        DfaStatusTable table;
+        TempType[] types = new TempType[]{
+                new TempType(0, 1, "space"),
+                new TempType(1, 1, "id"),
+                new TempType(2, 1, "+"),
+                new TempType(3, 1, "*"),
+                new TempType(4, 1, "("),
+                new TempType(5, 1, ")")};
+        try {
+            table = director.direct(List.of(
+                    // 1个或多个空格,
+                    new LexicalPattern("id", types[1]),
+                    new LexicalPattern("+", types[2]),
+                    new LexicalPattern("\\*", types[3]),
+                    new LexicalPattern("\\(", types[4]),
+                    new LexicalPattern("\\)", types[5])
+            ));
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
+        log.info("{}", table);
+        return table;
+    }
 
     public static void main(String[] args) {
         // region 1. DfaStatusTable
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
         DfaStatusTable table;
-        TempType[] types = new TempType[]{
-                new TempType(0, 1, "A"),
-                new TempType(1, 2, "B"),
-                new TempType(2, 1, "C"),
-                new TempType(3, 1, "D"),
-                new TempType(4, 1, "E")
-        };
+        TempType[] types = new TempType[]{new TempType(0, 1, "A"), new TempType(1, 2, "B"), new TempType(2, 1, "C"),
+                new TempType(3, 1, "D"), new TempType(4, 1, "E")};
         try {
             table = director.direct(List.of(
                     new LexicalPattern(" ", types[0]),

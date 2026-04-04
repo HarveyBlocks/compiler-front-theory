@@ -1,5 +1,8 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
+import org.harvey.vie.theory.util.IRandomAccess;
+
+import java.util.Iterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -10,20 +13,32 @@ import java.util.stream.StreamSupport;
  * @version 1.0
  * @date 2026-03-28 00:49
  */
-public interface GrammarConcatenation extends ConcatenableSymbol, Iterable<ConcatenableSymbol> {
+public interface GrammarConcatenation extends ConcatenableSymbol, AlterableSymbol, Iterable<GrammarUnitSymbol>,
+        IRandomAccess<GrammarUnitSymbol> {
 
     void concatenate(ConcatenableSymbol concatenable);
 
-    ConcatenableSymbol get(int i);
+    GrammarUnitSymbol get(int i);
 
     int size();
 
     boolean isEmpty();
 
     @Override
+    default boolean isEpsilon() {
+        return false;
+    }
+
+    @Override
     default boolean isTerminal() {
         return false;
     }
+
+    default Stream<GrammarUnitSymbol> stream() {
+        return StreamSupport.stream(spliterator(), false);
+    }
+
+    Iterator<GrammarUnitSymbol> reverseIterator();
 
     @Override
     default boolean isConcatenation() {
@@ -34,8 +49,6 @@ public interface GrammarConcatenation extends ConcatenableSymbol, Iterable<Conca
     default GrammarConcatenation toConcatenation() {
         return this;
     }
-    default Stream<ConcatenableSymbol> stream() {
-        return StreamSupport.stream(spliterator(), false);
-    }
+
 }
 
