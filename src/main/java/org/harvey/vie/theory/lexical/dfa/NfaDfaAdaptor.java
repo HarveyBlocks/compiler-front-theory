@@ -2,6 +2,7 @@ package org.harvey.vie.theory.lexical.dfa;
 
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
+import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
 
 /**
  * Interface for components that convert a Non-deterministic Finite Automaton (NFA)
@@ -12,5 +13,5 @@ import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
  * @date 2026-03-23 15:24
  */
 public interface NfaDfaAdaptor {
-    DfaStatusGraph adapt(NfaStatusGraph nfaGraph);
+    <M, V extends StatusVertex> DfaStatusGraph<M, V> adapt(NfaStatusGraph<M, V> nfaGraph);
 }

@@ -8,7 +8,7 @@ package org.harvey.vie.theory.lexical.nfa.status;
  * @version 1.0
  * @date 2026-03-23 20:15
  */
-public abstract class AbstractNfaStatus implements NfaStatus {
+public abstract class AbstractNfaStatus<M> implements NfaStatus<M> {
     @Override
     public int hashCode() {
         return getId();
@@ -16,7 +16,7 @@ public abstract class AbstractNfaStatus implements NfaStatus {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof NfaStatus && ((NfaStatus) obj).getId() == getId();
+        return this == obj || obj instanceof NfaStatus && ((NfaStatus<?>) obj).getId() == getId();
     }
 
 }

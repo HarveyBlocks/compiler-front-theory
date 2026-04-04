@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.lexical.dfa.status;
 
-import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
 
 import java.util.Set;
 
@@ -14,22 +14,22 @@ import java.util.Set;
  * @version 1.0
  * @date 2026-03-23 15:21
  */
-public interface DfaStatus {
+public interface DfaStatus<M, V extends StatusVertex> {
     /**
      * @return null if no motion in this status' follow-up
      */
-    DfaStatus move(AlphabetCharacter motion);
+    DfaStatus<M, V> move(M motion);
 
-    Set<AlphabetCharacter> motions();
+    Set<M> motions();
 
     /**
      * @return true if new motion
      * @throws IllegalStateException throw if motion is exist and value is different
      */
-    boolean setNext(AlphabetCharacter motion, DfaStatus next);
+    boolean setNext(M motion, DfaStatus<M, V> next);
 
     /**
      * @return null for not accept
      */
-    TokenType accept();
+    V accept();
 }

@@ -1,7 +1,5 @@
 package org.harvey.vie.theory.lexical.nfa.status;
 
-import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
-
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -15,17 +13,17 @@ import java.util.function.Supplier;
  * @version 1.0
  * @date 2026-03-23 13:47
  */
-public interface NfaStatus {
+public interface NfaStatus<M> {
 
-    NfaStatus move(AlphabetCharacter c);
+    NfaStatus<M> move(M c);
 
-    List<NfaStatus> moveEpsilon();
+    List<NfaStatus<M>> moveEpsilon();
 
-    Set<AlphabetCharacter> motions();
+    Set<M> motions();
 
-    void addEpsilonNext(NfaStatus next);
+    void addEpsilonNext(NfaStatus<M> next);
 
-    NfaStatus computeNextIfAbsent(AlphabetCharacter c, Supplier<NfaStatus> supplier);
+    NfaStatus<M> computeNextIfAbsent(M c, Supplier<NfaStatus<M>> supplier);
 
     int getId();
 

@@ -1,12 +1,15 @@
 package org.harvey.vie.theory.lexical;
 
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacterFactory;
+import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.DefaultDfaMinimizer;
 import org.harvey.vie.theory.lexical.dfa.DefaultNfaDfaAdaptor;
 import org.harvey.vie.theory.lexical.dfa.DfaMinimizer;
 import org.harvey.vie.theory.lexical.dfa.NfaDfaAdaptor;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTableFactory;
 import org.harvey.vie.theory.lexical.nfa.DefaultRegexNfaAdaptor;
 import org.harvey.vie.theory.lexical.nfa.RegexNfaAdaptor;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
@@ -33,32 +36,34 @@ public class DefaultLexicalDirector implements LexicalDirector {
     private final RegexNfaAdaptor regexNfaAdaptor;
     private final NfaDfaAdaptor nfaDfaAdaptor;
     private final DfaMinimizer dfaMinimizer;
+    private final RegexDfaStatusTableFactory regexDfaStatusTableFactory;
 
     public DefaultLexicalDirector(AlphabetCharacterFactory factory) {
         this.regexParser = new DefaultRegexParser(factory);
         this.regexNfaAdaptor = new DefaultRegexNfaAdaptor();
         this.nfaDfaAdaptor = new DefaultNfaDfaAdaptor();
         this.dfaMinimizer = new DefaultDfaMinimizer();
+        this.regexDfaStatusTableFactory = new RegexDfaStatusTableFactory();
     }
 
     @Override
-    public DfaStatusTable direct(LexicalPattern pattern) throws ParseException {
+    public RegexDfaStatusTable direct(LexicalPattern pattern) throws ParseException {
         return direct(List.of(pattern));
     }
 
     @Override
-    public DfaStatusTable direct(List<LexicalPattern> patterns) throws ParseException {
+    public RegexDfaStatusTable direct(List<LexicalPattern> patterns) throws ParseException {
         List<RegexTypePair> pairs = new ArrayList<>();
         for (LexicalPattern pattern : patterns) {
             // 正则解析成树
             pairs.add(new RegexTypePair(regexParser.parse(pattern.getRegex()), pattern.getType()));
         }
         // 正则->nfa
-        NfaStatusGraph nfaStatusGraph = regexNfaAdaptor.adapt(pairs);
+        NfaStatusGraph<AlphabetCharacter, TokenType> nfaStatusGraph = regexNfaAdaptor.adapt(pairs);
         // nfa->dfa
-        DfaStatusGraph dfaStatusGraph = nfaDfaAdaptor.adapt(nfaStatusGraph);
+        DfaStatusGraph<AlphabetCharacter, TokenType> dfaStatusGraph = nfaDfaAdaptor.adapt(nfaStatusGraph);
         // 最小化
-        return dfaMinimizer.minimize(dfaStatusGraph);
+        return dfaMinimizer.minimize(regexDfaStatusTableFactory, dfaStatusGraph);
     }
 
 }

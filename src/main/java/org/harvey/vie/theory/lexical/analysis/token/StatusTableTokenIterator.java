@@ -7,7 +7,7 @@ import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.alphabet.SourceAlphabetCharacterAdaptor;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
 import org.harvey.vie.theory.source.character.SourceCharacter;
 import org.harvey.vie.theory.source.reader.SourceReader;
 import org.harvey.vie.theory.util.ArrayBuilder;
@@ -29,7 +29,7 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
     private final ErrorContext errorContext;
     private final SourceReader reader;
     private final SourceAlphabetCharacterAdaptor saca;
-    private final DfaStatusTable table;
+    private final RegexDfaStatusTable table;
     private final ArrayBuilder<byte[]> lexeme;
     private int status;
     @Getter
@@ -37,7 +37,7 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
     private SourceToken current;
 
     public StatusTableTokenIterator(
-            ErrorContext errorContext, SourceReader reader, SourceAlphabetCharacterAdaptor saca, DfaStatusTable table) {
+            ErrorContext errorContext, SourceReader reader, SourceAlphabetCharacterAdaptor saca, RegexDfaStatusTable table) {
         this.errorContext = errorContext;
         this.reader = reader;
         this.saca = saca;
@@ -88,7 +88,7 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
                 return trySplitToken();
             }
             int next = table.move(status, ac);
-            if (next == DfaStatusTable.UNKNOWN_CHAR_STATUS) {
+            if (next == RegexDfaStatusTable.UNKNOWN_CHAR_STATUS) {
                 // 不存在了才进行尝试分解token, 说明是最长匹配
                 try {
                     return trySplitToken();

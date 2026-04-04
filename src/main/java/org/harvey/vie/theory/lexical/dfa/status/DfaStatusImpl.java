@@ -2,6 +2,7 @@ package org.harvey.vie.theory.lexical.dfa.status;
 
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,29 +17,29 @@ import java.util.Set;
  * @version 1.0
  * @date 2026-03-23 15:28
  */
-public class DfaStatusImpl implements DfaStatus {
-    private final TokenType accept;
-    private final Map<AlphabetCharacter, DfaStatus> next;
+public class DfaStatusImpl<M,V extends StatusVertex> implements DfaStatus<M,V> {
+    private final V accept;
+    private final Map<M, DfaStatus<M,V>> next;
 
-    public DfaStatusImpl(TokenType accept) {
+    public DfaStatusImpl(V accept) {
         this.accept = accept;
         this.next = new HashMap<>();
     }
 
 
     @Override
-    public DfaStatus move(AlphabetCharacter motion) {
+    public DfaStatus<M,V> move(M motion) {
         return next.get(motion);
     }
 
     @Override
-    public Set<AlphabetCharacter> motions() {
+    public Set<M> motions() {
         return next.keySet();
     }
 
     @Override
-    public boolean setNext(AlphabetCharacter motion, DfaStatus next) {
-        DfaStatus status = this.next.get(motion);
+    public boolean setNext(M motion, DfaStatus<M,V> next) {
+        DfaStatus<M,V> status = this.next.get(motion);
         if (status == null) {
             this.next.put(motion, next);
             return true;
@@ -51,7 +52,7 @@ public class DfaStatusImpl implements DfaStatus {
     }
 
     @Override
-    public TokenType accept() {
+    public V accept() {
         return accept;
     }
 

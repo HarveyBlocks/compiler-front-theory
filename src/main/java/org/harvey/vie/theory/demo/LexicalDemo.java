@@ -23,7 +23,7 @@ import org.harvey.vie.theory.lexical.analysis.token.AbstractTokenType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
 
 import java.io.*;
 import java.text.ParseException;
@@ -41,10 +41,10 @@ import java.util.stream.Collectors;
  */
 @Slf4j
 public class LexicalDemo {
-    public static DfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
+    public static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
 
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
-        DfaStatusTable table;
+        RegexDfaStatusTable table;
         TempType[] types = new TempType[]{
                 new TempType(0, 1, "space"),
                 new TempType(1, 1, "id"),
@@ -69,10 +69,10 @@ public class LexicalDemo {
     }
 
     public static void main(String[] args) {
-        // region 1. DfaStatusTable
+        // region 1. RegexDfaStatusTable
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
-        DfaStatusTable table;
+        RegexDfaStatusTable table;
         TempType[] types = new TempType[]{new TempType(0, 1, "A"), new TempType(1, 2, "B"), new TempType(2, 1, "C"),
                 new TempType(3, 1, "D"), new TempType(4, 1, "E")};
         try {
@@ -93,11 +93,11 @@ public class LexicalDemo {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             int store = table.store(os);
             log.info("store = {}", store);
-            DfaStatusTable.Loader loader = new DfaStatusTable.Loader(
+            RegexDfaStatusTable.Loader loader = new RegexDfaStatusTable.Loader(
                     new TempType.Loader(types),
                     alphabetCharacterFactory
             );
-            DfaStatusTable loaded = loader.load(new ByteArrayInputStream(os.toByteArray()));
+            RegexDfaStatusTable loaded = loader.load(new ByteArrayInputStream(os.toByteArray()));
             log.info("loaded = {}", loaded);
         } catch (IOException e) {
             throw new RuntimeException(e);

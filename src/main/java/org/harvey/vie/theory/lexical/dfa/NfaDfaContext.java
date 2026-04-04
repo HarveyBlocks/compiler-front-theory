@@ -4,6 +4,7 @@ import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.DfaStatus;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatus;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatusGraph;
+import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,28 +21,28 @@ import java.util.function.Supplier;
  * @version 1.0
  * @date 2026-03-23 22:01
  */
-public class NfaDfaContext {
-    private final NfaStatusGraph nfaGraph;
-    private final Map<Set<NfaStatus>, DfaStatus> visitedClosure;
+public class NfaDfaContext<M,V extends StatusVertex> {
+    private final NfaStatusGraph<M,V> nfaGraph;
+    private final Map<Set<NfaStatus<M>>, DfaStatus<M,V>> visitedClosure;
 
-    public NfaDfaContext(NfaStatusGraph nfaGraph) {
+    public NfaDfaContext(NfaStatusGraph<M,V> nfaGraph) {
         this.nfaGraph = nfaGraph;
         visitedClosure = new HashMap<>();
     }
 
-    public TokenType matchAccept(NfaStatus status) {
+    public V matchAccept(NfaStatus<M> status) {
         return nfaGraph.matchAccept(status);
     }
 
-    public Set<NfaStatus> startSet() {
+    public Set<NfaStatus<M>> startSet() {
         return Set.of(nfaGraph.getStart());
     }
 
-    public Collection<DfaStatus> statusList() {
+    public Collection<DfaStatus<M,V>> statusList() {
         return visitedClosure.values();
     }
 
-    public DfaStatus computeVisitedClosureIfAbsent(Set<NfaStatus> visited, Supplier<DfaStatus> supplier) {
+    public DfaStatus<M,V> computeVisitedClosureIfAbsent(Set<NfaStatus<M>> visited, Supplier<DfaStatus<M,V>> supplier) {
         return visitedClosure.computeIfAbsent(visited, (k) -> supplier.get());
     }
 }

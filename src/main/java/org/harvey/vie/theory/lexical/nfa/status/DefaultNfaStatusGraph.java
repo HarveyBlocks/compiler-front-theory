@@ -17,12 +17,12 @@ import java.util.Map;
  */
 @Getter
 @AllArgsConstructor
-public class DefaultNfaStatusGraph implements NfaStatusGraph {
-    private final NfaStatus start;
-    private final Map<NfaStatus, TokenType> ends;
+public class DefaultNfaStatusGraph<M,V> implements NfaStatusGraph<M,V> {
+    private final NfaStatus<M> start;
+    private final Map<NfaStatus<M>, V> ends;
 
     @Override
-    public TokenType matchAccept(NfaStatus status) {
+    public V matchAccept(NfaStatus<M> status) {
         return ends.get(status);
     }
 }

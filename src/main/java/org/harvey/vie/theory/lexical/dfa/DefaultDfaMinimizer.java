@@ -1,10 +1,7 @@
 package org.harvey.vie.theory.lexical.dfa;
 
-import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
-import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatus;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusGraph;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.*;
+import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
 import org.harvey.vie.theory.util.IntArraySignature;
 
 import java.util.*;
@@ -25,15 +22,16 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
     /**
      * DEAD
      */
-    private static final int UNKNOWN_CHAR_STATUS = DfaStatusTable.UNKNOWN_CHAR_STATUS;
+    private static final int UNKNOWN_CHAR_STATUS = RegexDfaStatusTable.UNKNOWN_CHAR_STATUS;
 
     @Override
-    public DfaStatusTable minimize(DfaStatusGraph dfaStatus) {
-        Collection<DfaStatus> allStates = dfaStatus.getPool();
+    public <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> P minimize(
+            DfaStatusTableFactory<M, V,P> factory, DfaStatusGraph<M, V> dfaStatus) {
+        Collection<DfaStatus<M, V>> allStates = dfaStatus.getPool();
         // 1. 收集字母表, 并排序
-        AlphabetCharacter[] alphabet = collectAlphabet(allStates);
+        M[] alphabet = collectAlphabet(factory, allStates);
         // 2. 初始划分：接受状态和非接受状态。
-        Partition partition = initDepart(allStates);
+        Partition<M, V> partition = initDepart(allStates);
         // 3. 迭代细化分区，直到不再变化。
         for (int preSize = partition.size(); ; preSize = partition.size()) {
             partition = refinePartition(partition, alphabet);
@@ -42,26 +40,27 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
             }
         }
         // 4. 构建最小化后的状态表
-        return buildMinimizedTable(partition, alphabet, dfaStatus.getStart());
+        return buildMinimizedTable(factory, partition, alphabet, dfaStatus.getStart());
     }
 
-    private static AlphabetCharacter[] collectAlphabet(Collection<DfaStatus> allStates) {
+    private static <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> M[] collectAlphabet(
+            DfaStatusTableFactory<M, V, P> factory, Collection<DfaStatus<M, V>> allStates) {
         return allStates.stream()
                 .map(DfaStatus::motions)
                 .flatMap(Collection::stream)
                 .distinct()
                 .sorted()
-                .toArray(AlphabetCharacter[]::new);
+                .toArray(factory::newMotionArray);
     }
 
-    private static Partition initDepart(Collection<DfaStatus> allStates) {
-        Map<TokenType, Integer> typeIndexMap = new HashMap<>();
-        Partition partition = new Partition();
+    private static <M, V extends StatusVertex> Partition<M, V> initDepart(Collection<DfaStatus<M, V>> allStates) {
+        Map<V, Integer> typeIndexMap = new HashMap<>();
+        Partition<M, V> partition = new Partition<>();
         // 1. non accept
-        Block nonAccepting = new Block(null);
+        Block<M, V> nonAccepting = new Block<>(null);
         // 2. some different accept
-        for (DfaStatus s : allStates) {
-            TokenType accept = s.accept();
+        for (DfaStatus<M, V> s : allStates) {
+            V accept = s.accept();
             if (accept == null) {
                 nonAccepting.add(s);
                 continue;
@@ -73,7 +72,7 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
                 continue;
             }
             typeIndexMap.put(accept, partition.size());
-            Block block = new Block(accept);
+            Block<M, V> block = new Block<>(accept);
             block.add(s);
             partition.add(block);
         }
@@ -83,35 +82,36 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
         return partition;
     }
 
-    private static Partition refinePartition(Partition partition, AlphabetCharacter[] alphabet) {
-        Partition newPartition = new Partition();
-        for (Block block : partition) {
+    private static <M, V extends StatusVertex> Partition<M, V> refinePartition(
+            Partition<M, V> partition, M[] alphabet) {
+        Partition<M, V> newPartition = new Partition<>();
+        for (Block<M, V> block : partition) {
             if (block.size() == 1) {
                 newPartition.add(block);
                 continue;
             }
             // 分割
-            Collection<Block> group = groupByMotions(block, alphabet, partition.stateToBlockIdx);
+            Collection<Block<M, V>> group = groupByMotions(block, alphabet, partition.stateToBlockIdx);
             //noinspection UseBulkOperation
             group.forEach(newPartition::add);
         }
         return newPartition;
     }
 
-    private static Collection<Block> groupByMotions(
-            Block block, AlphabetCharacter[] alphabet, Map<DfaStatus, Integer> stateToBlockIdx) {
-        Map<IntArraySignature, Block> groups = new HashMap<>();
-        for (DfaStatus s : block) {
+    private static <M, V extends StatusVertex> Collection<Block<M, V>> groupByMotions(
+            Block<M, V> block, M[] alphabet, Map<DfaStatus<M, V>, Integer> stateToBlockIdx) {
+        Map<IntArraySignature, Block<M, V>> groups = new HashMap<>();
+        for (DfaStatus<M, V> s : block) {
             // 计算状态在字母表上的转移目标块索引的签名。
             // 签名由每个状态对应的目标块索引组合而成。
             IntArraySignature signature = computeSignature(s, alphabet, stateToBlockIdx);
-            groups.computeIfAbsent(signature, k -> new Block(block.accept)).add(s);
+            groups.computeIfAbsent(signature, k -> new Block<>(block.accept)).add(s);
         }
         return groups.values();
     }
 
-    private static IntArraySignature computeSignature(
-            DfaStatus s, AlphabetCharacter[] alphabet, Map<DfaStatus, Integer> stateToBlockIdx) {
+    private static <M, V extends StatusVertex> IntArraySignature computeSignature(
+            DfaStatus<M, V> s, M[] alphabet, Map<DfaStatus<M, V>, Integer> stateToBlockIdx) {
         return new IntArraySignature(Arrays.stream(alphabet)
                 .map(s::move)
                 .mapToInt(target -> target == null ? UNKNOWN_CHAR_STATUS : stateToBlockIdx.get(target))
@@ -121,52 +121,54 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
     /**
      * 根据稳定分区构建最小化后的 DFA 状态表。
      */
-    private static DfaStatusTable buildMinimizedTable(
-            Partition partition, AlphabetCharacter[] alphabet, DfaStatus start) {
+    private static <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> P buildMinimizedTable(
+            DfaStatusTableFactory<M, V, P> factory, Partition<M, V> partition, M[] alphabet, DfaStatus<M, V> start) {
         // 每个块对应一个新状态
         int newStatesLength = partition.size();
         int[][] newStates = new int[newStatesLength][alphabet.length];
-        TokenType[] accepts = new TokenType[newStatesLength];
+        V[] accepts = factory.newVertexArray(newStatesLength);
         for (int i = 0; i < newStatesLength; i++) {
-            Block block = partition.get(i);
+            Block<M, V> block = partition.get(i);
             accepts[i] = block.accept; // null 就是 null
-            DfaStatus representative = block.iterator().next();// 任选一
+            DfaStatus<M, V> representative = block.iterator().next();// 任选一
             for (int j = 0; j < alphabet.length; j++) {
-                DfaStatus target = representative.move(alphabet[j]);
+                DfaStatus<M, V> target = representative.move(alphabet[j]);
                 newStates[i][j] = target == null ? UNKNOWN_CHAR_STATUS : partition.getIndexByStatus(target);
             }
         }
         // 定位新的起始状态
         int newStart = partition.getIndexByStatus(start);
-        return new DfaStatusTable(newStates, alphabet, newStart, accepts);
+        return factory.produce(newStates, alphabet, newStart, accepts);
     }
 
-    private static class Block extends ArrayList<DfaStatus> implements List<DfaStatus> {
-        private final TokenType accept;
+    private static class Block<M, V extends StatusVertex> extends ArrayList<DfaStatus<M, V>> implements
+            List<DfaStatus<M, V>> {
+        private final V accept;
 
-        private Block(TokenType accept) {this.accept = accept;}
+        private Block(V accept) {this.accept = accept;}
 
     }
 
-    private static class Partition extends ArrayList<Block> implements List<Block> {
-        private final Map<DfaStatus, Integer> stateToBlockIdx;
+    private static class Partition<M, V extends StatusVertex> extends ArrayList<Block<M, V>> implements
+            List<Block<M, V>> {
+        private final Map<DfaStatus<M, V>, Integer> stateToBlockIdx;
 
         public Partition() {
             this.stateToBlockIdx = new HashMap<>();
         }
 
-        public Integer getIndexByStatus(DfaStatus target) {
+        public Integer getIndexByStatus(DfaStatus<M, V> target) {
             return stateToBlockIdx.get(target);
         }
 
         @Override
-        public boolean add(Block block) {
+        public boolean add(Block<M, V> block) {
             int nextIndex = size();
             block.forEach(s -> this.putStatusIdx(s, nextIndex));
             return super.add(block);
         }
 
-        public void putStatusIdx(DfaStatus status, int index) {
+        public void putStatusIdx(DfaStatus<M, V> status, int index) {
             stateToBlockIdx.put(status, index);
         }
     }

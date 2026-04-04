@@ -10,10 +10,10 @@ import org.harvey.vie.theory.lexical.analysis.token.TokenType;
  * @version 1.0
  * @date 2026-03-23 17:42
  */
-public interface NfaStatusGraph {
+public interface NfaStatusGraph<M,V> {
 
-    NfaStatus getStart();
+    NfaStatus<M> getStart();
 
 
-    TokenType matchAccept(NfaStatus status);
+    V matchAccept(NfaStatus<M> status);
 }

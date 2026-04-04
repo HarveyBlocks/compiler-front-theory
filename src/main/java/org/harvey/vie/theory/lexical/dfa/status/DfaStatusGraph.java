@@ -2,6 +2,7 @@ package org.harvey.vie.theory.lexical.dfa.status;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
 
 import java.util.Collection;
 
@@ -15,7 +16,7 @@ import java.util.Collection;
  */
 @AllArgsConstructor
 @Getter
-public class DfaStatusGraph {
-    private final DfaStatus start;
-    private final Collection<DfaStatus> pool;
+public class DfaStatusGraph<M, V extends StatusVertex> {
+    private final DfaStatus<M, V> start;
+    private final Collection<DfaStatus<M, V>> pool;
 }

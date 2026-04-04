@@ -2,6 +2,7 @@ package org.harvey.vie.theory.lexical.nfa;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.lexical.RegexTypePair;
+import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.nfa.status.DefaultNfaStatusGraph;
 import org.harvey.vie.theory.lexical.nfa.status.NfaStatus;
@@ -27,29 +28,29 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
 
 
     @Override
-    public NfaStatusGraph adapt(List<RegexTypePair> pairs) {
+    public NfaStatusGraph<AlphabetCharacter, TokenType> adapt(List<RegexTypePair> pairs) {
         IdGenerator idGenerator = new IdGenerator();
-        NfaStatusImpl start = new NfaStatusImpl(idGenerator.next());
-        Map<NfaStatus, TokenType> ends = new HashMap<>();
+        NfaStatusImpl<AlphabetCharacter> start = new NfaStatusImpl<>(idGenerator.next());
+        Map<NfaStatus<AlphabetCharacter>, TokenType> ends = new HashMap<>();
         pairs.stream().map(p -> adapt(p, idGenerator)).forEach(g -> {
             start.addEpsilonNext(g.getStart());
             ends.putAll(g.getEnds());
         });
-        return new DefaultNfaStatusGraph(start, ends);
+        return new DefaultNfaStatusGraph<>(start, ends);
     }
 
     @Override
-    public DefaultNfaStatusGraph adapt(RegexTypePair pair) {
+    public DefaultNfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair) {
         return adapt(pair, new IdGenerator());
     }
 
-    private static DefaultNfaStatusGraph adapt(RegexTypePair pair, IdGenerator idGenerator) {
+    private static DefaultNfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair, IdGenerator idGenerator) {
         NfaStatusPair statusPair = adapt(pair.getNode(), idGenerator);
-        return new DefaultNfaStatusGraph(statusPair.start, Map.of(statusPair.end, pair.getType()));
+        return new DefaultNfaStatusGraph<>(statusPair.start, Map.of(statusPair.end, pair.getType()));
     }
 
-    private static NfaStatus instanceStatus(IdGenerator idGenerator) {
-        return new NfaStatusImpl(idGenerator.next());
+    private static NfaStatus<AlphabetCharacter> instanceStatus(IdGenerator idGenerator) {
+        return new NfaStatusImpl<>(idGenerator.next());
     }
 
     private static NfaStatusPair adapt(RegexNode node, IdGenerator idGenerator) {
@@ -70,15 +71,15 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
 
 
     private static NfaStatusPair adapt(EpsilonRegexNode ignore, IdGenerator idGenerator) {
-        NfaStatus start = instanceStatus(idGenerator);
-        NfaStatus end = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> start = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> end = instanceStatus(idGenerator);
         start.addEpsilonNext(end);
         return new NfaStatusPair(start, end);
     }
 
     private static NfaStatusPair adapt(CharRegexNode node, IdGenerator idGenerator) {
-        NfaStatus start = instanceStatus(idGenerator);
-        NfaStatus end = start.computeNextIfAbsent(node.getCharacter(), () -> instanceStatus(idGenerator));
+        NfaStatus<AlphabetCharacter> start = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> end = start.computeNextIfAbsent(node.getCharacter(), () -> instanceStatus(idGenerator));
         return new NfaStatusPair(start, end);
     }
 
@@ -90,21 +91,21 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
     }
 
     private static NfaStatusPair adapt(CupRegexNode node, IdGenerator idGenerator) {
-        NfaStatus start = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> start = instanceStatus(idGenerator);
         NfaStatusPair left = adapt(node.getLeft(), idGenerator);
         NfaStatusPair right = adapt(node.getRight(), idGenerator);
         start.addEpsilonNext(left.start);
         start.addEpsilonNext(right.start);
-        NfaStatus end = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> end = instanceStatus(idGenerator);
         left.end.addEpsilonNext(end);
         right.end.addEpsilonNext(end);
         return new NfaStatusPair(start, end);
     }
 
     private static NfaStatusPair adapt(ClosureRegexNode node, IdGenerator idGenerator) {
-        NfaStatus start = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> start = instanceStatus(idGenerator);
         NfaStatusPair child = adapt(node.getChild(), idGenerator);
-        NfaStatus end = instanceStatus(idGenerator);
+        NfaStatus<AlphabetCharacter> end = instanceStatus(idGenerator);
         start.addEpsilonNext(child.start);
         start.addEpsilonNext(end);
         child.end.addEpsilonNext(child.start);
@@ -114,8 +115,8 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
 
     @AllArgsConstructor
     private static class NfaStatusPair {
-        private final NfaStatus start;
-        private final NfaStatus end;
+        private final NfaStatus<AlphabetCharacter> start;
+        private final NfaStatus<AlphabetCharacter> end;
     }
 
 

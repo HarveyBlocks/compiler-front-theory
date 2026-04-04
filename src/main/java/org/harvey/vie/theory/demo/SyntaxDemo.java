@@ -16,7 +16,7 @@ import org.harvey.vie.theory.lexical.analysis.DefaultLexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
 import org.harvey.vie.theory.syntax.bu.item.*;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMapFactory;
@@ -45,7 +45,6 @@ import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.StringJoiner;
 
 /**
  * 词法分析器Demo
@@ -94,7 +93,7 @@ public class SyntaxDemo {
     private static void testTopDown() {
         // lexical analyzer
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
-        DfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
+        RegexDfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
         SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
         LexicalAnalyzer analyzer = new DefaultLexicalAnalyzer(table, saca);
 

@@ -6,7 +6,7 @@ import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.alphabet.SourceAlphabetCharacterAdaptor;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.StatusTableTokenIterator;
-import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
+import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
 
 /**
  * Default implementation of the {@link LexicalAnalyzer} interface.
@@ -19,7 +19,7 @@ import org.harvey.vie.theory.lexical.dfa.status.DfaStatusTable;
  */
 @AllArgsConstructor
 public class DefaultLexicalAnalyzer implements LexicalAnalyzer {
-    private final DfaStatusTable table;
+    private final RegexDfaStatusTable table;
     private final SourceAlphabetCharacterAdaptor saca;
 
     @Override
