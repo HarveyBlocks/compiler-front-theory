@@ -9,7 +9,7 @@ import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
  * @version 1.0
  * @date 2026-04-04 19:26
  */
-public interface DfaStatusTableFactory<M, V extends StatusVertex,P extends  DfaStatusTable<M,V>> {
+public interface DfaStatusTableFactory<M, V extends StatusVertex, P extends DfaStatusTable<M, V>> {
 
 
     P produce(int[][] newStates, M[] alphabet, int newStart, V[] accepts);

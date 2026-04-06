@@ -44,13 +44,18 @@ public class GrammarConcatenationImpl implements GrammarConcatenation {
     }
 
     @Override
-    public int size() {
-        return list.size();
+    public ListIterator<GrammarUnitSymbol> listIterator(int index) {
+        return list.listIterator(index);
     }
 
     @Override
-    public boolean isEmpty() {
-        return list.isEmpty();
+    public ListIterator<GrammarUnitSymbol> listIterator() {
+        return list.listIterator();
+    }
+
+    @Override
+    public int size() {
+        return list.size();
     }
 
     @Override
@@ -58,33 +63,25 @@ public class GrammarConcatenationImpl implements GrammarConcatenation {
         return list.iterator();
     }
 
-
-
-    @Override
-    public Iterator<GrammarUnitSymbol> reverseIterator() {
-        return new ReverseIterator();
-    }
-
     @Override
     public String toString() {
         return list.stream().map(Object::toString).collect(Collectors.joining(" "));
     }
 
-    private class ReverseIterator implements Iterator<GrammarUnitSymbol> {
-        private final ListIterator<GrammarUnitSymbol> iter;
-
-        public ReverseIterator() {
-            iter = list.listIterator(list.size());
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
         }
-
-        @Override
-        public boolean hasNext() {
-            return iter.hasPrevious();
+        if (!(o instanceof GrammarConcatenationImpl)) {
+            return false;
         }
+        GrammarConcatenationImpl that = (GrammarConcatenationImpl) o;
+        return Objects.equals(list, that.list);
+    }
 
-        @Override
-        public GrammarUnitSymbol next() {
-            return iter.previous();
-        }
+    @Override
+    public int hashCode() {
+        return Objects.hash(list);
     }
 }

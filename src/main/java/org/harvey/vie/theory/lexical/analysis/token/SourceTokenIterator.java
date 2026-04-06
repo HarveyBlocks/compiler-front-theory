@@ -16,7 +16,6 @@ public interface SourceTokenIterator extends AutoCloseable {
     boolean hasNext();
 
     /**
-     *
      * @throws CompileException unfinished token
      */
     SourceToken next() throws CompileException;

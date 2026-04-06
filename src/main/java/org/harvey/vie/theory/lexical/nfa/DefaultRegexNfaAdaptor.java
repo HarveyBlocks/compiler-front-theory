@@ -27,24 +27,9 @@ import java.util.Map;
 public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
 
 
-    @Override
-    public NfaStatusGraph<AlphabetCharacter, TokenType> adapt(List<RegexTypePair> pairs) {
-        IdGenerator idGenerator = new IdGenerator();
-        NfaStatusImpl<AlphabetCharacter> start = new NfaStatusImpl<>(idGenerator.next());
-        Map<NfaStatus<AlphabetCharacter>, TokenType> ends = new HashMap<>();
-        pairs.stream().map(p -> adapt(p, idGenerator)).forEach(g -> {
-            start.addEpsilonNext(g.getStart());
-            ends.putAll(g.getEnds());
-        });
-        return new DefaultNfaStatusGraph<>(start, ends);
-    }
-
-    @Override
-    public DefaultNfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair) {
-        return adapt(pair, new IdGenerator());
-    }
-
-    private static DefaultNfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair, IdGenerator idGenerator) {
+    private static DefaultNfaStatusGraph<AlphabetCharacter, TokenType> adapt(
+            RegexTypePair pair,
+            IdGenerator idGenerator) {
         NfaStatusPair statusPair = adapt(pair.getNode(), idGenerator);
         return new DefaultNfaStatusGraph<>(statusPair.start, Map.of(statusPair.end, pair.getType()));
     }
@@ -69,7 +54,6 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
         }
     }
 
-
     private static NfaStatusPair adapt(EpsilonRegexNode ignore, IdGenerator idGenerator) {
         NfaStatus<AlphabetCharacter> start = instanceStatus(idGenerator);
         NfaStatus<AlphabetCharacter> end = instanceStatus(idGenerator);
@@ -79,7 +63,10 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
 
     private static NfaStatusPair adapt(CharRegexNode node, IdGenerator idGenerator) {
         NfaStatus<AlphabetCharacter> start = instanceStatus(idGenerator);
-        NfaStatus<AlphabetCharacter> end = start.computeNextIfAbsent(node.getCharacter(), () -> instanceStatus(idGenerator));
+        NfaStatus<AlphabetCharacter> end = start.computeNextIfAbsent(
+                node.getCharacter(),
+                () -> instanceStatus(idGenerator)
+        );
         return new NfaStatusPair(start, end);
     }
 
@@ -111,6 +98,23 @@ public class DefaultRegexNfaAdaptor implements RegexNfaAdaptor {
         child.end.addEpsilonNext(child.start);
         child.end.addEpsilonNext(end);
         return new NfaStatusPair(start, end);
+    }
+
+    @Override
+    public NfaStatusGraph<AlphabetCharacter, TokenType> adapt(List<RegexTypePair> pairs) {
+        IdGenerator idGenerator = new IdGenerator();
+        NfaStatusImpl<AlphabetCharacter> start = new NfaStatusImpl<>(idGenerator.next());
+        Map<NfaStatus<AlphabetCharacter>, TokenType> ends = new HashMap<>();
+        pairs.stream().map(p -> adapt(p, idGenerator)).forEach(g -> {
+            start.addEpsilonNext(g.getStart());
+            ends.putAll(g.getEnds());
+        });
+        return new DefaultNfaStatusGraph<>(start, ends);
+    }
+
+    @Override
+    public DefaultNfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair) {
+        return adapt(pair, new IdGenerator());
     }
 
     @AllArgsConstructor

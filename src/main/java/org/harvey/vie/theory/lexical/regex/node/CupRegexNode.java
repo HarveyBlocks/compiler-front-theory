@@ -20,8 +20,9 @@ import lombok.Setter;
 public class CupRegexNode implements RegexNode {
     private RegexNode left;
     private RegexNode right;
+
     @Override
     public String toString() {
-        return "("+left+")|("+right+")";
+        return "(" + left + ")|(" + right + ")";
     }
 }

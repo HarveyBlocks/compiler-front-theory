@@ -1,15 +1,12 @@
 package org.harvey.vie.theory.syntax.bu.item;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -19,13 +16,14 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @date 2026-04-04 17:32
  */
-@EqualsAndHashCode
 @AllArgsConstructor
 class ItemSetImpl implements ItemSet {
     private final Set<ProductionItem> set;
+    @Getter
     private final Map<TerminalSymbol, Integer> terminalGoto;
+    @Getter
     private final Map<HeadSymbol, Integer> headGoto;
-
+    private final Map<HeadSymbol, Set<TerminalSymbol>> decisionRules;
 
     @Override
     public boolean contains(ProductionItem item) {
@@ -39,8 +37,22 @@ class ItemSetImpl implements ItemSet {
 
     @Override
     public int gotoUnit(GrammarUnitSymbol unit) {
-        return unit.isTerminal() ? terminalGoto.get(unit.toTerminal()) : headGoto.get(unit.toHead());
+        Integer set = unit.isTerminal() ? terminalGoto.get(unit.toTerminal()) : headGoto.get(unit.toHead());
+        return set == null ? NONE : set;
     }
+
+    @Override
+    public Set<TerminalSymbol> decisionRule(HeadSymbol head) {
+        Set<TerminalSymbol> set = decisionRules.get(head);
+        return set == null ? Collections.emptySet() : set;
+    }
+
+
+    @Override
+    public Map<HeadSymbol, Set<TerminalSymbol>> getDecisionRule() {
+        return decisionRules;
+    }
+
 
     @Override
     public Iterator<ProductionItem> iterator() {
@@ -50,5 +62,22 @@ class ItemSetImpl implements ItemSet {
     @Override
     public String toString() {
         return set.stream().map(Objects::toString).map(s -> '`' + s + '`').collect(Collectors.joining(", ", "{", "}"));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ItemSetImpl)) {
+            return false;
+        }
+        ItemSetImpl that = (ItemSetImpl) o;
+        return Objects.equals(set, that.set);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(set);
     }
 }

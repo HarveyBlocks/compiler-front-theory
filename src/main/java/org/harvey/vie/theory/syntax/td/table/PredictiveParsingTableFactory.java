@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.syntax.td.table;
 
-import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
+import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 
 /**
  * TODO
@@ -11,8 +11,8 @@ import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
  * @version 1.0
  * @date 2026-03-31 18:59
  */
-public interface AnalysisTableFactory {
+public interface PredictiveParsingTableFactory {
 
-    AnalysisTable produce(ProductionSetContext context, FirstMap firstMap, FollowMap followMap);
+    PredictiveParsingTable produce(ProductionSetContext context, FirstMap firstMap, FollowMap followMap);
 
 }

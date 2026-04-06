@@ -16,7 +16,7 @@ public abstract class AbstractTokenType implements TokenType {
 
     @Override
     public boolean equals(Object obj) {
-        return this==obj||obj instanceof TokenType && hint().equals(((TokenType) obj).hint());
+        return this == obj || obj instanceof TokenType && hint().equals(((TokenType) obj).hint());
     }
 
     @Override

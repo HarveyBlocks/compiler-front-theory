@@ -5,6 +5,8 @@ import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 
+import java.util.Objects;
+
 /**
  * TODO
  *
@@ -22,4 +24,18 @@ public class GrammarDefineProductionImpl implements GrammarDefineProduction {
     public String toString() {
         return define + " -> " + body;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof GrammarDefineProduction)) {
+            return false;
+        }
+        GrammarDefineProduction that = (GrammarDefineProduction) o;
+        return Objects.equals(getDefine(), that.getDefine()) &&
+               Objects.equals(getBody(), that.getBody());
+    }
+
 }

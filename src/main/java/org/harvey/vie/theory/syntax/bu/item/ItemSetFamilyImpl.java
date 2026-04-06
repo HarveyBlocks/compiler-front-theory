@@ -14,7 +14,10 @@ class ItemSetFamilyImpl implements ItemSetFamily {
     private final ItemSet[] array;
     private final int startIndex;
 
-    public ItemSetFamilyImpl(int startIndex, ItemSet[] array) {this.array = array;this.startIndex = startIndex;}
+    public ItemSetFamilyImpl(int startIndex, ItemSet[] array) {
+        this.array = array;
+        this.startIndex = startIndex;
+    }
 
     @Override
     public ItemSet get(int i) {
@@ -24,6 +27,11 @@ class ItemSetFamilyImpl implements ItemSetFamily {
     @Override
     public int startIndex() {
         return startIndex;
+    }
+
+    @Override
+    public int size() {
+        return array.length;
     }
 
     @Override

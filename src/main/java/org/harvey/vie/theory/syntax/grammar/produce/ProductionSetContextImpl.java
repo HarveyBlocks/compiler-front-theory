@@ -9,6 +9,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -54,13 +55,8 @@ public class ProductionSetContextImpl implements ProductionSetContext {
     }
 
     @Override
-    public int length() {
+    public int size() {
         return productions.length;
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return productions.length == 0;
     }
 
     @Override
@@ -80,6 +76,7 @@ public class ProductionSetContextImpl implements ProductionSetContext {
         }
         return get(index).getBody();
     }
+
 
     @Override
     public Iterator<GrammarDefineProduction> iterator() {

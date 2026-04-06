@@ -35,12 +35,12 @@ public class AsciiStringSourceReader implements SourceReader {
     public SourceCharacter read() throws IOException, CompileException {
         offset++;
         int ch = reader.read();
-        if (ch==-1){
+        if (ch == -1) {
             return SourceCharacter.EOF;
         }
         // 仅支持 ascii
         if ((ch & 0xff_ff_ff_00) > 0) {
-            errorContext.addError(new IoErrorMessage(offset,"ascii only"));
+            errorContext.addError(new IoErrorMessage(offset, "ascii only"));
             throw new CompileException();
         }
         return new AsciiCharacter((byte) ch);

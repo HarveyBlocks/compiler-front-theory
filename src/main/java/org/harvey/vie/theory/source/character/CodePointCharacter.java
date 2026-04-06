@@ -15,6 +15,7 @@ import org.harvey.vie.theory.io.ToBytes;
 @AllArgsConstructor
 public class CodePointCharacter implements SourceCharacter {
     private final int codePoint;
+
     @Override
     public byte[] toCharacter() {
         return ToBytes.fromInt(codePoint);

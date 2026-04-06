@@ -13,6 +13,7 @@ import java.util.Collection;
  */
 public interface ErrorContext {
     void addError(CompileErrorMessage message);
+
     Collection<? extends CompileErrorMessage> getErrors();
 
     boolean isEmpty();

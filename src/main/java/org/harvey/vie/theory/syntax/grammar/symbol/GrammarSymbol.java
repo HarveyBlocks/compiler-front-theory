@@ -10,6 +10,16 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
 public interface GrammarSymbol {
     AlterableSymbol EPSILON = new EpsilonSymbol();
 
+    static UnsupportedOperationException unsupportedTest() {
+        return new UnsupportedOperationException(
+                "It is not allowed that invoke the test method form this symbol. Since this symbol is neither of them");
+    }
+
+    static UnsupportedOperationException unsupportedCast() {
+        return new UnsupportedOperationException(
+                "It is not allowed that invoke the method form this symbol. Since this symbol can not cast to the target");
+    }
+
     default boolean isEpsilon() {
         throw unsupportedTest();
     }
@@ -52,18 +62,6 @@ public interface GrammarSymbol {
 
     default HeadSymbol toHead() {
         throw unsupportedCast();
-    }
-
-
-    static UnsupportedOperationException unsupportedTest() {
-        return new UnsupportedOperationException(
-                "It is not allowed that invoke the test method form this symbol. Since this symbol is neither of them");
-    }
-
-
-    static UnsupportedOperationException unsupportedCast() {
-        return new UnsupportedOperationException(
-                "It is not allowed that invoke the method form this symbol. Since this symbol can not cast to the target");
     }
 }
 

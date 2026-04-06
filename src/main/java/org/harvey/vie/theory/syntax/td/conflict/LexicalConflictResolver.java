@@ -5,7 +5,7 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.syntax.td.GrammarSyntaxTreeNodeBuilder;
-import org.harvey.vie.theory.syntax.td.SyntaxAnalysisContext;
+import org.harvey.vie.theory.syntax.td.SyntaxParsingContext;
 
 /**
  * TODO 由于词法分析采用最长匹配, 因此解决冲突的方法是切割
@@ -37,22 +37,22 @@ public interface LexicalConflictResolver {
     /**
      * 处理分析表里没有产生式的情况
      *
-     * @param token 和 {@link SyntaxAnalysisContext#currentToken()}的结果完全一致
-     * @param nodeBuilder 从 {@link SyntaxAnalysisContext#popBuilder()} 而来, 已经不在栈中
+     * @param token       和 {@link SyntaxParsingContext#currentToken()}的结果完全一致
+     * @param nodeBuilder 从 {@link SyntaxParsingContext#popBuilder()} 而来, 已经不在栈中
      */
     default boolean resolveEmptyProduction(
-            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxAnalysisContext ctx) {
+            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxParsingContext ctx) {
         return false;
     }
 
     /**
      * 处理需要的terminal和token无法匹配的情况
      *
-     * @param token 和 {@link SyntaxAnalysisContext#currentToken()}的结果完全一致
-     * @param nodeBuilder 从 {@link SyntaxAnalysisContext#popBuilder()} 而来, 已经不在栈中
+     * @param token       和 {@link SyntaxParsingContext#currentToken()}的结果完全一致
+     * @param nodeBuilder 从 {@link SyntaxParsingContext#popBuilder()} 而来, 已经不在栈中
      */
     default boolean resolveTerminalConflict(
-            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxAnalysisContext ctx) {
+            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxParsingContext ctx) {
         return false;
     }
 }

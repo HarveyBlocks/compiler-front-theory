@@ -13,6 +13,7 @@ public class IdGenerator {
     private final AtomicInteger generator;
 
     public IdGenerator() {this.generator = new AtomicInteger();}
+
     public IdGenerator(int initialValue) {this.generator = new AtomicInteger(initialValue);}
 
     public int next() {

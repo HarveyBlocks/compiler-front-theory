@@ -15,6 +15,12 @@ import java.util.Arrays;
 public class ByteOutStream {
     private final ByteArrayOutputStream os = new ByteArrayOutputStream();
 
+    public static byte[] flap(byte[][] data) {
+        ByteOutStream os = new ByteOutStream();
+        Arrays.stream(data).forEach(e -> os.write(e, 0, e.length));
+        return os.toByteArray();
+    }
+
     public byte[] toByteArray() {
         return os.toByteArray();
     }
@@ -22,6 +28,7 @@ public class ByteOutStream {
     public void write(byte[] row, int off, int len) {
         os.write(row, off, len);
     }
+
     public void write(byte[] row) throws IOException {
         os.write(row);
     }
@@ -29,10 +36,5 @@ public class ByteOutStream {
     @Override
     public String toString() {
         return os.toString();
-    }
-    public static byte[] flap(byte[][] data){
-        ByteOutStream os = new ByteOutStream();
-        Arrays.stream(data).forEach(e->os.write(e,0,e.length));
-        return os.toByteArray();
     }
 }

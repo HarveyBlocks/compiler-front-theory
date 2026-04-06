@@ -13,6 +13,7 @@ import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
  * @version 1.0
  * @date 2026-03-31 23:16
  */
-public interface PredictiveAnalyzer {
-    SyntaxTreeNode analysis(GrammarUnitSymbol start, SourceTokenIterator iterator, ErrorContext errorContext) throws CompileException;
+public interface PredictivePhaser {
+    SyntaxTreeNode phase(GrammarUnitSymbol start, SourceTokenIterator iterator, ErrorContext errorContext)
+            throws CompileException;
 }

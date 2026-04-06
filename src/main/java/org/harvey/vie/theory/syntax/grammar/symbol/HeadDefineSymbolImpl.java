@@ -21,4 +21,5 @@ public class HeadDefineSymbolImpl implements HeadDefineSymbol {
     public String toString() {
         return name;
     }
+
 }

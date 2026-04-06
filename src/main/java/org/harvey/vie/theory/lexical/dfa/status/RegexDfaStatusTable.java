@@ -25,7 +25,7 @@ import static org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter.UNSUPPORT
  * @version 1.0
  * @date 2026-03-24 11:31
  */
-public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,TokenType>, Storage {
+public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, TokenType>, Storage {
     public static final int UNKNOWN_CHAR_STATUS = -1;
     /**
      * status first
@@ -41,6 +41,7 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,Tok
      * true for accept
      */
     private final TokenType[] accepts;
+    private volatile String s;
 
     public RegexDfaStatusTable(int[][] table, AlphabetCharacter[] alphabet, int start, TokenType[] accepts) {
         this.table = table;
@@ -52,6 +53,7 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,Tok
     /**
      * @return status next. {@link #UNKNOWN_CHAR_STATUS} for unknown char status
      */
+    @Override
     public int move(int statusNow, AlphabetCharacter ch) {
         if (ch == UNSUPPORTED) {
             throw new UnsupportedOperationException("Unsupported character");
@@ -64,6 +66,7 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,Tok
         return table[statusNow][chIndex];
     }
 
+    @Override
     public TokenType accept(int i) {
         return accepts[i];
     }
@@ -80,8 +83,6 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,Tok
         }
         return s;
     }
-
-    private volatile String s;
 
     private String buildString() {
         if (table == null || alphabet == null) {
@@ -199,6 +200,18 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,Tok
             this.alphabetFactory = alphabetFactory;
         }
 
+        private static int[][] loadTable(InputStream is, int row, int col) throws IOException {
+            IntStream stream = FromBytes.toIntArray(Loaders.loadBytes(is, row * col * 4));
+            int[][] result = new int[row][col];
+            PrimitiveIterator.OfInt it = stream.iterator();
+            for (int i = 0; i < row; i++) {
+                for (int j = 0; j < col; j++) {
+                    result[i][j] = it.nextInt();
+                }
+            }
+            return result;
+        }
+
         @Override
         public RegexDfaStatusTable load(InputStream is) throws IOException {
             int start = Loaders.loadInteger(is);
@@ -216,25 +229,12 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter,Tok
                     .toArray(AlphabetCharacter[]::new);
         }
 
-
         private TokenType[] loadAccepts(InputStream is, int row) throws IOException {
             TokenType[] accepts = new TokenType[row];
             for (int i = 0; i < row; i++) {
                 accepts[i] = acceptLoader.load(is);
             }
             return accepts;
-        }
-
-        private static int[][] loadTable(InputStream is, int row, int col) throws IOException {
-            IntStream stream = FromBytes.toIntArray(Loaders.loadBytes(is, row * col * 4));
-            int[][] result = new int[row][col];
-            PrimitiveIterator.OfInt it = stream.iterator();
-            for (int i = 0; i < row; i++) {
-                for (int j = 0; j < col; j++) {
-                    result[i][j] = it.nextInt();
-                }
-            }
-            return result;
         }
     }
 }

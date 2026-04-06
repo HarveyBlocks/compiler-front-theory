@@ -1,7 +1,5 @@
 package org.harvey.vie.theory.util;
 
-import org.harvey.vie.theory.syntax.grammar.follow.FollowSetFactoryImpl;
-
 /**
  * TODO
  *

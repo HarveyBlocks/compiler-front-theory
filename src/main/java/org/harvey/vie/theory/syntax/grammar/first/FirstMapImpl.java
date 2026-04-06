@@ -38,6 +38,11 @@ public class FirstMapImpl implements FirstMap {
     }
 
     @Override
+    public Set<HeadSymbol> headSet() {
+        return headMap.keySet();
+    }
+
+    @Override
     public FirstSet first(Iterable<GrammarUnitSymbol> iterable) {
         Set<TerminalSymbol> allFirstSet = new HashSet<>();
         boolean containsEpsilon = true;
@@ -68,6 +73,11 @@ public class FirstMapImpl implements FirstMap {
     @Override
     public Iterator<Map.Entry<GrammarUnitSymbol, FirstSet>> iterator() {
         return new EntryIterator();
+    }
+
+    @Override
+    public int size() {
+        return headMap.size() + terminalSet.size();
     }
 
     private class EntryIterator implements Iterator<Map.Entry<GrammarUnitSymbol, FirstSet>> {

@@ -12,11 +12,11 @@ public interface AlterableSymbol extends GrammarSymbol {
     default boolean isEpsilon() {
         return false;
     }
+
     @Override
     default boolean isAlterable() {
         return true;
     }
-
 
 
     @Override

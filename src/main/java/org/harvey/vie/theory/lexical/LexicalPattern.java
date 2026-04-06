@@ -5,7 +5,7 @@ import lombok.Getter;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
 /**
- * Represents a pattern for lexical analysis, consisting of a regular expression
+ * Represents a pattern for lexical phase, consisting of a regular expression
  * and the type of token it represents when matched.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>

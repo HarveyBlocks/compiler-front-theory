@@ -17,20 +17,6 @@ import java.util.Objects;
 public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
     private final DefineNameFactory factory;
 
-    @Override
-    public ProductionSetContext eliminate(ProductionSetContext context) {
-        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(context.getTerminalFactory());
-        for (int i = 0; i < context.length(); i++) {
-            GrammarDefineProduction production = context.get(i);
-            // 间接左递归变成直接左递归
-            GrammarAlternation directiveBody = toDirective(context, production, i);
-            // 消除直接左递归
-            eliminateDirectRecursion(contextBuilder, production, directiveBody);
-        }
-        return contextBuilder.build();
-    }
-
-
     private static GrammarAlternation toDirective(
             ProductionSetContext context, GrammarDefineProduction production, int i) {
         GrammarAlternation productionBody = production.getBody();
@@ -77,29 +63,6 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
     }
 
-    private void eliminateDirectRecursion(
-            ProductionSetContextBuilder contextBuilder,
-            GrammarDefineProduction production,
-            GrammarAlternation directiveBody) {
-        HeadDefineSymbol define = production.getDefine();
-        String defineName = define.getName();
-        GrammarProductionBuilder newDefineBuilder = contextBuilder.define(defineName);
-        String intermediaryDefineName = factory.create(defineName);
-        GrammarProductionBuilder intermediaryDefineBuilder = contextBuilder.define(intermediaryDefineName);
-        for (AlterableSymbol symbol : directiveBody) {
-            GrammarConcatenation concatenation = concatenation(symbol);
-            if (concatenation == null) { // epsilon
-                // 直接加末尾
-                newDefineBuilder.alternateDefinition(intermediaryDefineName);
-            } else if (concatenation.get(0) == define) { // 左递归了
-                eliminateDirectRecursion(intermediaryDefineBuilder, concatenation);
-            } else { // 没有左递归
-                concatenationNoRecursion(newDefineBuilder, concatenation, intermediaryDefineName);
-            }
-        }
-        intermediaryDefineBuilder.alternateEpsilon();
-    }
-
     private static GrammarConcatenation concatenation(AlterableSymbol symbol) {
         if (symbol.isEpsilon()) {
             return null;
@@ -120,7 +83,6 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         newDefineBuilder.concatenateDefinitionLast(intermediaryDefineName);
     }
-
 
     private static void eliminateDirectRecursion(
             GrammarProductionBuilder intermediaryDefineBuilder, GrammarConcatenation concatenation) {
@@ -144,5 +106,41 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
                                                 symbol.getClass());
             }
         }
+    }
+
+    @Override
+    public ProductionSetContext eliminate(ProductionSetContext context) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(context.getTerminalFactory());
+        for (int i = 0; i < context.size(); i++) {
+            GrammarDefineProduction production = context.get(i);
+            // 间接左递归变成直接左递归
+            GrammarAlternation directiveBody = toDirective(context, production, i);
+            // 消除直接左递归
+            eliminateDirectRecursion(contextBuilder, production, directiveBody);
+        }
+        return contextBuilder.build();
+    }
+
+    private void eliminateDirectRecursion(
+            ProductionSetContextBuilder contextBuilder,
+            GrammarDefineProduction production,
+            GrammarAlternation directiveBody) {
+        HeadDefineSymbol define = production.getDefine();
+        String defineName = define.getName();
+        GrammarProductionBuilder newDefineBuilder = contextBuilder.define(defineName);
+        String intermediaryDefineName = factory.create(defineName);
+        GrammarProductionBuilder intermediaryDefineBuilder = contextBuilder.define(intermediaryDefineName);
+        for (AlterableSymbol symbol : directiveBody) {
+            GrammarConcatenation concatenation = concatenation(symbol);
+            if (concatenation == null) { // epsilon
+                // 直接加末尾
+                newDefineBuilder.alternateDefinition(intermediaryDefineName);
+            } else if (concatenation.get(0) == define) { // 左递归了
+                eliminateDirectRecursion(intermediaryDefineBuilder, concatenation);
+            } else { // 没有左递归
+                concatenationNoRecursion(newDefineBuilder, concatenation, intermediaryDefineName);
+            }
+        }
+        intermediaryDefineBuilder.alternateEpsilon();
     }
 }

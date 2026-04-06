@@ -24,25 +24,6 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
      */
     private static final int UNKNOWN_CHAR_STATUS = RegexDfaStatusTable.UNKNOWN_CHAR_STATUS;
 
-    @Override
-    public <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> P minimize(
-            DfaStatusTableFactory<M, V,P> factory, DfaStatusGraph<M, V> dfaStatus) {
-        Collection<DfaStatus<M, V>> allStates = dfaStatus.getPool();
-        // 1. 收集字母表, 并排序
-        M[] alphabet = collectAlphabet(factory, allStates);
-        // 2. 初始划分：接受状态和非接受状态。
-        Partition<M, V> partition = initDepart(allStates);
-        // 3. 迭代细化分区，直到不再变化。
-        for (int preSize = partition.size(); ; preSize = partition.size()) {
-            partition = refinePartition(partition, alphabet);
-            if (preSize == partition.size()) {
-                break;
-            }
-        }
-        // 4. 构建最小化后的状态表
-        return buildMinimizedTable(factory, partition, alphabet, dfaStatus.getStart());
-    }
-
     private static <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> M[] collectAlphabet(
             DfaStatusTableFactory<M, V, P> factory, Collection<DfaStatus<M, V>> allStates) {
         return allStates.stream()
@@ -139,6 +120,25 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
         // 定位新的起始状态
         int newStart = partition.getIndexByStatus(start);
         return factory.produce(newStates, alphabet, newStart, accepts);
+    }
+
+    @Override
+    public <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> P minimize(
+            DfaStatusTableFactory<M, V, P> factory, DfaStatusGraph<M, V> dfaStatus) {
+        Collection<DfaStatus<M, V>> allStates = dfaStatus.getPool();
+        // 1. 收集字母表, 并排序
+        M[] alphabet = collectAlphabet(factory, allStates);
+        // 2. 初始划分：接受状态和非接受状态。
+        Partition<M, V> partition = initDepart(allStates);
+        // 3. 迭代细化分区，直到不再变化。
+        for (int preSize = partition.size(); ; preSize = partition.size()) {
+            partition = refinePartition(partition, alphabet);
+            if (preSize == partition.size()) {
+                break;
+            }
+        }
+        // 4. 构建最小化后的状态表
+        return buildMinimizedTable(factory, partition, alphabet, dfaStatus.getStart());
     }
 
     private static class Block<M, V extends StatusVertex> extends ArrayList<DfaStatus<M, V>> implements

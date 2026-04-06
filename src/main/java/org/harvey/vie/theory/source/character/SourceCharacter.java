@@ -10,6 +10,7 @@ package org.harvey.vie.theory.source.character;
  */
 public interface SourceCharacter {
     SourceCharacter EOF = new EofCharacter();
+
     byte[] toCharacter();
 }
 

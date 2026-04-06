@@ -12,5 +12,6 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
  */
 public interface TerminalNode extends GrammarSyntaxTreeNode {
     TerminalSymbol getSymbol();
+
     SourceToken getToken();
 }

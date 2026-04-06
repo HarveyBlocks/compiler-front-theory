@@ -24,23 +24,10 @@ import java.util.stream.Collectors;
  * @date 2026-03-23 15:27
  */
 public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
-    @Override
-    public <M, V extends StatusVertex> DfaStatusGraph<M,V> adapt(NfaStatusGraph<M, V> nfaGraph) {
-        NfaDfaContext<M, V> ctx = new NfaDfaContext<>(nfaGraph);
-        // 1. 对起始做
-        StatusCombination<M,V> startCombination = epsilonClosure(ctx, ctx.startSet());
-        // 2. loop
-        Stack<StatusCombination<M,V>> stack = new Stack<>();
-        stack.push(startCombination);
-        while (!stack.isEmpty()) {
-            StatusCombination<M,V> top = stack.pop();
-            top.closureMove(ctx, stack);
-        }
-        return new DfaStatusGraph<>(startCombination.status, ctx.statusList());
-    }
-
     @NonNull
-    private static <M, V extends StatusVertex> StatusCombination<M, V> epsilonClosure(NfaDfaContext<M, V> ctx, Set<NfaStatus<M>> statusSet) {
+    private static <M, V extends StatusVertex> StatusCombination<M, V> epsilonClosure(
+            NfaDfaContext<M, V> ctx,
+            Set<NfaStatus<M>> statusSet) {
         Set<M> motions = new HashSet<>();
         Set<NfaStatus<M>> visited = new HashSet<>();
         V accept = null;
@@ -70,7 +57,7 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
             }
         }
         V a = accept;
-        DfaStatus<M,V> dfaStatus = ctx.computeVisitedClosureIfAbsent(visited, () -> new DfaStatusImpl<>(a));
+        DfaStatus<M, V> dfaStatus = ctx.computeVisitedClosureIfAbsent(visited, () -> new DfaStatusImpl<>(a));
         return new StatusCombination<>(visited, motions, dfaStatus);
     }
 
@@ -83,6 +70,20 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
                 tryAccept.hint());
     }
 
+    @Override
+    public <M, V extends StatusVertex> DfaStatusGraph<M, V> adapt(NfaStatusGraph<M, V> nfaGraph) {
+        NfaDfaContext<M, V> ctx = new NfaDfaContext<>(nfaGraph);
+        // 1. 对起始做
+        StatusCombination<M, V> startCombination = epsilonClosure(ctx, ctx.startSet());
+        // 2. loop
+        Stack<StatusCombination<M, V>> stack = new Stack<>();
+        stack.push(startCombination);
+        while (!stack.isEmpty()) {
+            StatusCombination<M, V> top = stack.pop();
+            top.closureMove(ctx, stack);
+        }
+        return new DfaStatusGraph<>(startCombination.status, ctx.statusList());
+    }
 
     @AllArgsConstructor
     private static class StatusCombination<M, V extends StatusVertex> {

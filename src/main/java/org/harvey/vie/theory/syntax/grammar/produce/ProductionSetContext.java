@@ -4,9 +4,9 @@ import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
+import org.harvey.vie.theory.util.SimpleCollection;
 
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
+import java.util.Set;
 
 /**
  * TODO 上下文, 便于数据重复利用, 例如对于同一个head name definition, 产生同一个对象
@@ -16,7 +16,7 @@ import java.util.stream.StreamSupport;
  * @version 1.0
  * @date 2026-03-28 02:36
  */
-public interface ProductionSetContext extends Iterable<GrammarDefineProduction> {
+public interface ProductionSetContext extends SimpleCollection<GrammarDefineProduction> {
 
     /**
      * @return null for not exist
@@ -29,16 +29,11 @@ public interface ProductionSetContext extends Iterable<GrammarDefineProduction> 
 
     Integer indexOf(HeadDefineSymbol define);
 
-    int length();
-
-    boolean isEmpty();
 
     Iterable<HeadSymbol> headIterable();
+
     GrammarAlternation getAlternation(HeadSymbol head);
 
     TerminalFactory getTerminalFactory();
 
-    default Stream<GrammarDefineProduction> stream() {
-        return StreamSupport.stream(spliterator(), false);
-    }
 }

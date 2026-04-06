@@ -20,8 +20,8 @@ public class RegexContext {
     public static final int DONE = -1;
     private final String text;
     private final AlphabetCharacterFactory alphabetFactory;
-    private int pos;
     private final int end;
+    private int pos;
 
     public RegexContext(AlphabetCharacterFactory factory, String text) {
         Objects.requireNonNull(text);

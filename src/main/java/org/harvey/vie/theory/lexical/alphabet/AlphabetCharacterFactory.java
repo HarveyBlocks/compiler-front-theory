@@ -13,5 +13,6 @@ public interface AlphabetCharacterFactory {
     AlphabetCharacter createRaw(int ch);
 
     AlphabetCharacter createEscape(int ch);
+
     AlphabetCharacter byUniqueCode(int uniqueCode);
 }

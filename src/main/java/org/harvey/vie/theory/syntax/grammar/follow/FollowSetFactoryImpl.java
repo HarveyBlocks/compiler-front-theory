@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.syntax.grammar.follow;
 
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
+import org.harvey.vie.theory.syntax.grammar.first.FirstSet;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
-import org.harvey.vie.theory.syntax.grammar.first.FirstSet;
 import org.harvey.vie.theory.util.AfterIterable;
 
 import java.util.*;
@@ -17,6 +17,10 @@ import java.util.stream.Collectors;
  * @date 2026-03-31 00:43
  */
 public class FollowSetFactoryImpl implements FollowSetFactory {
+    private static void follow1(HeadSymbol start, FollowMapBuilder mapBuilder) {
+        mapBuilder.getBuilder(start).containsEndMarker = true;
+    }
+
     @Override
     public FollowMap follow(
             String startHead, ProductionSetContext context, FirstMap firstMap) {
@@ -29,10 +33,6 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         // 规则三
         follow3(start, firstMap, mapBuilder);
         return mapBuilder.buildMap();
-    }
-
-    private static void follow1(HeadSymbol start, FollowMapBuilder mapBuilder) {
-        mapBuilder.getBuilder(start).containsEndMarker = true;
     }
 
     private void follow2(HeadDefineSymbol start, FirstMap firstMap, FollowMapBuilder mapBuilder) {
@@ -109,7 +109,10 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         return changed;
     }
 
-    private void cupAssignFirstAfter(FollowSetBuilder builder, FirstMap firstMap, AfterIterable<GrammarUnitSymbol> afterIterable) {
+    private void cupAssignFirstAfter(
+            FollowSetBuilder builder,
+            FirstMap firstMap,
+            AfterIterable<GrammarUnitSymbol> afterIterable) {
         builder.set.addAll(firstMap.first(afterIterable).firstExceptEpsilon());
     }
 
@@ -141,7 +144,10 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
 
     @FunctionalInterface
     private interface Func {
-        boolean invoke(FollowSetBuilder headBuilder, HeadSymbol headSymbol, AfterIterable<GrammarUnitSymbol> afterIterable);
+        boolean invoke(
+                FollowSetBuilder headBuilder,
+                HeadSymbol headSymbol,
+                AfterIterable<GrammarUnitSymbol> afterIterable);
     }
 
 
@@ -162,8 +168,8 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
     }
 
     private static class FollowSetBuilder {
-        private boolean containsEndMarker = false;
         private final Set<TerminalSymbol> set = new HashSet<>();
+        private boolean containsEndMarker = false;
 
         public FollowSet build() {
             return new FollowSetImpl(set, containsEndMarker);

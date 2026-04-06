@@ -17,8 +17,8 @@ import java.util.Map;
  */
 @Getter
 public class ProductionBodyTrieNodeImpl implements ProductionBodyTrieNode {
-    private Map<GrammarUnitSymbol, ProductionBodyTrieNode> children;
     private final GrammarUnitSymbol value;
+    private Map<GrammarUnitSymbol, ProductionBodyTrieNode> children;
     private boolean accept;
 
     public ProductionBodyTrieNodeImpl(GrammarUnitSymbol value) {

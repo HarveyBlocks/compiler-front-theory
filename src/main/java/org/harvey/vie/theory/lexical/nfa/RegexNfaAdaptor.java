@@ -17,5 +17,6 @@ import java.util.List;
  */
 public interface RegexNfaAdaptor {
     NfaStatusGraph<AlphabetCharacter, TokenType> adapt(List<RegexTypePair> pairs);
+
     NfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair);
 }

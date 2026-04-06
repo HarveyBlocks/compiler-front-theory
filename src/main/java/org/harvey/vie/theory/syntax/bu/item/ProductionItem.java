@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.syntax.bu.item;
 
-import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
@@ -19,11 +18,24 @@ public interface ProductionItem {
     int currentDot();
 
     HeadSymbol getHead();
+
     AlterableSymbol getAlterableSymbol();
+
+    boolean productionEquals(ProductionItem o);
 
     boolean hasNextSymbol();
 
+    boolean hasPreviousSymbol();
+
     GrammarUnitSymbol nextSymbol();
 
+    GrammarUnitSymbol previousSymbol();
+
     ProductionItem nextItem();
+
+    Iterable<GrammarUnitSymbol> afterIterable();
+
+    boolean isEpsilon();
+
+
 }

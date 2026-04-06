@@ -17,6 +17,7 @@ public interface FirstSet {
     FirstSet EPSILON = new EpsilonFirstSet();
 
     Set<TerminalSymbol> firstExceptEpsilon();
+
     boolean contains(GrammarSymbol symbol);
 
     boolean containsEpsilon();

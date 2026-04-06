@@ -16,7 +16,8 @@ import java.util.Set;
  */
 @AllArgsConstructor
 public class FollowMapImpl implements FollowMap {
-    private final Map<HeadSymbol,FollowSet> map;
+    private final Map<HeadSymbol, FollowSet> map;
+
     @Override
     public FollowSet get(HeadSymbol head) {
         return map.get(head);

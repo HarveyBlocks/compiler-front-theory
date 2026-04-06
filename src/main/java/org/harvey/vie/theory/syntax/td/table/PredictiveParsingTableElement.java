@@ -9,7 +9,8 @@ import java.util.stream.IntStream;
  * @version 1.0
  * @date 2026-03-31 21:33
  */
-public interface AnalysisTableElement {
+public interface PredictiveParsingTableElement {
     IntStream rightIdStream();
+
     Integer rightId();
 }

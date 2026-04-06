@@ -14,7 +14,7 @@ import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
  * @date 2026-03-23 22:10
  */
 public interface DfaMinimizer {
-    <M, V extends StatusVertex, P extends DfaStatusTable<M,V>> P minimize(
+    <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> P minimize(
             DfaStatusTableFactory<M, V, P> factory,
             DfaStatusGraph<M, V> dfaStatus);
 }

@@ -17,7 +17,8 @@ public abstract class AbstractAlphabetCharacter implements AlphabetCharacter {
 
     @Override
     public boolean equals(Object obj) {
-        return obj == this || obj instanceof AlphabetCharacter && ((AlphabetCharacter) obj).uniqueCode() == uniqueCode();
+        return obj == this ||
+               obj instanceof AlphabetCharacter && ((AlphabetCharacter) obj).uniqueCode() == uniqueCode();
     }
 
     @Override

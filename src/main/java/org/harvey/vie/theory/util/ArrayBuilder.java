@@ -35,13 +35,16 @@ public class ArrayBuilder<T> {
     public void reset() {
         pos = 0;
     }
-    public T[] toArray(IntFunction<T[]> generator){
+
+    public T[] toArray(IntFunction<T[]> generator) {
         return list.subList(0, pos).toArray(generator);
     }
-    public T[] toArray(T[] a){
+
+    public T[] toArray(T[] a) {
         return list.subList(0, pos).toArray(a);
     }
-    public List<T> toList(T[] a){
+
+    public List<T> toList(T[] a) {
         return list.subList(0, pos);
     }
 }

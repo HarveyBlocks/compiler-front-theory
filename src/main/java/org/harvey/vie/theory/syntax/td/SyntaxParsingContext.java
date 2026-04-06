@@ -9,8 +9,8 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
-import org.harvey.vie.theory.syntax.td.table.AnalysisTable;
 
 import java.util.Stack;
 
@@ -22,14 +22,14 @@ import java.util.Stack;
  * @date 2026-04-03 13:13
  */
 @Getter
-public class SyntaxAnalysisContext {
-    public static final TerminalSymbol END_MARK = AnalysisTable.END_MARK_SYMBOL;
+public class SyntaxParsingContext {
+    public static final TerminalSymbol END_MARK = PredictiveParsingTable.END_MARK_SYMBOL;
     private final Stack<GrammarSyntaxTreeNodeBuilder> stack;
     private final SourceTokenIterator iterator;
     private final ErrorContext errorContext;
     private final GrammarSyntaxTreeNodeBuilder root;
 
-    public SyntaxAnalysisContext(GrammarUnitSymbol start, SourceTokenIterator iterator, ErrorContext errorContext) {
+    public SyntaxParsingContext(GrammarUnitSymbol start, SourceTokenIterator iterator, ErrorContext errorContext) {
         this.iterator = iterator;
         this.errorContext = errorContext;
         this.stack = new Stack<>();

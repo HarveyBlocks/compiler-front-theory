@@ -10,4 +10,9 @@ import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
  * @date 2026-04-04 19:26
  */
 public interface DfaStatusTable<M, V extends StatusVertex> {
+    int move(int statusNow, M motion);
+
+    V accept(int i);
+
+    int getStart();
 }

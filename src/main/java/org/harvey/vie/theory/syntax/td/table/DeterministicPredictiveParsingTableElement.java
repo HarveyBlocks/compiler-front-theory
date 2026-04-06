@@ -12,12 +12,12 @@ import java.util.stream.IntStream;
  * @date 2026-03-31 21:33
  */
 @AllArgsConstructor
-public class DeterministicAnalysisTableElement implements AnalysisTableElement {
+public class DeterministicPredictiveParsingTableElement implements PredictiveParsingTableElement {
     private final Integer rightId;
 
     @Override
     public IntStream rightIdStream() {
-        return rightId == null ? IntStream.of() : IntStream.of(new int[]{rightId});
+        return rightId == null ? IntStream.of() : IntStream.of(rightId);
     }
 
     @Override

@@ -1,11 +1,11 @@
 package org.harvey.vie.theory.syntax.td.table;
 
-import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
-import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstSet;
 import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
 import org.harvey.vie.theory.syntax.grammar.follow.FollowSet;
+import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
+import org.harvey.vie.theory.syntax.grammar.symbol.*;
 
 import java.util.*;
 
@@ -16,28 +16,17 @@ import java.util.*;
  * @version 1.0
  * @date 2026-03-31 19:58
  */
-public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
+public class DeterministicPredictiveParsingTableFactory implements PredictiveParsingTableFactory {
     private final TerminalMatcherFactory matcherFactory;
 
-    public DeterministicAnalysisTableFactory(TerminalMatcherFactory matcherFactory) {this.matcherFactory = matcherFactory;}
+    public DeterministicPredictiveParsingTableFactory(TerminalMatcherFactory matcherFactory) {this.matcherFactory = matcherFactory;}
 
-    @Override
-    public AnalysisTable produce(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
-        AnalysisTableBuilder builder = new AnalysisTableBuilder(context, firstMap, followMap);
-        for (int i = 0; i < builder.headLength(); i++) {
-            for (AlterableSymbol symbol : builder.getAlternation(i)) {
-                produceEach(symbol, builder, i);
-            }
-        }
-        return builder.build(matcherFactory);
-    }
-
-    private static void produceEach(AlterableSymbol symbol, AnalysisTableBuilder builder, int headIndex) {
+    private static void produceEach(AlterableSymbol symbol, PredictiveParsingTableBuilder builder, int headIndex) {
         int rightId;
         FirstSet firstSet;
         FollowSet followSet = builder.follow(headIndex);
         if (symbol.isEpsilon()) {
-            rightId = AnalysisTableBuilder.EPSILON_REFERENCE;
+            rightId = PredictiveParsingTableBuilder.EPSILON_REFERENCE;
             firstSet = FirstSet.EPSILON;
         } else if (symbol.isConcatenable()) {
             if (symbol.isConcatenation()) {
@@ -70,22 +59,33 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
         }
     }
 
-    private static class AnalysisTableBuilder {
-        private static final int EPSILON_REFERENCE = AnalysisTable.EPSILON_REFERENCE;
-        private static final int END_MARK_REFERENCE = AnalysisTable.END_MARK_REFERENCE;
+    @Override
+    public PredictiveParsingTable produce(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
+        PredictiveParsingTableBuilder builder = new PredictiveParsingTableBuilder(context, firstMap, followMap);
+        for (int i = 0; i < builder.headLength(); i++) {
+            for (AlterableSymbol symbol : builder.getAlternation(i)) {
+                produceEach(symbol, builder, i);
+            }
+        }
+        return builder.build(matcherFactory);
+    }
+
+    private static class PredictiveParsingTableBuilder {
+        private static final int EPSILON_REFERENCE = PredictiveParsingTable.EPSILON_REFERENCE;
+        private static final int END_MARK_REFERENCE = PredictiveParsingTable.END_MARK_REFERENCE;
         private final ProductionSetContext context;
         private final FirstMap firstMap;
         private final FollowMap followMap;
         private final HeadSymbol[] headSymbolArray;
         /**
-         * index {@link AnalysisTableBuilder#END_MARK_REFERENCE} is for end mark
+         * index {@link PredictiveParsingTableBuilder#END_MARK_REFERENCE} is for end mark
          */
         private final TerminalSymbol[] terminalSymbolArray;
         private final Map<TerminalSymbol, Integer> terminalIndexMap;
         private final List<GrammarConcatenation> concatenationList;
-        private final DeterministicAnalysisTableElementBuilder[][] table;
+        private final PredictiveParsingTableElementBuilder[][] table;
 
-        public AnalysisTableBuilder(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
+        public PredictiveParsingTableBuilder(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
             this.context = context;
             this.firstMap = firstMap;
             this.followMap = followMap;
@@ -95,16 +95,16 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
             this.terminalSymbolArray = new TerminalSymbol[terminalLen];
             Iterator<TerminalSymbol> terminalIterator = terminalSet.iterator();
             terminalIndexMap = new HashMap<>();
-            terminalSymbolArray[0] = AnalysisTable.END_MARK_SYMBOL;
+            terminalSymbolArray[0] = PredictiveParsingTable.END_MARK_SYMBOL;
             for (int i = 1; i < terminalLen; i++) {
                 terminalSymbolArray[i] = terminalIterator.next();
                 terminalIndexMap.put(terminalSymbolArray[i], i);
             }
             concatenationList = new ArrayList<>();
-            table = new DeterministicAnalysisTableElementBuilder[this.headSymbolArray.length][terminalLen];
+            table = new PredictiveParsingTableElementBuilder[this.headSymbolArray.length][terminalLen];
             for (int i = 0; i < table.length; i++) {
                 for (int j = 0; j < terminalLen; j++) {
-                    table[i][j] = new DeterministicAnalysisTableElementBuilder();
+                    table[i][j] = new PredictiveParsingTableElementBuilder();
                 }
             }
         }
@@ -149,16 +149,16 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
         }
 
 
-        public AnalysisTable build(TerminalMatcherFactory matcherFactory) {
-            return new DeterministicAnalysisTable(
+        public PredictiveParsingTable build(TerminalMatcherFactory matcherFactory) {
+            return new DeterministicPredictiveParsingTable(
                     headSymbolArray,
                     terminalSymbolArray,
                     concatenationList.toArray(GrammarConcatenation[]::new),
                     Arrays.stream(table)
                             .map(a -> Arrays.stream(a)
-                                    .map(DeterministicAnalysisTableElementBuilder::build)
-                                    .toArray(AnalysisTableElement[]::new))
-                            .toArray(AnalysisTableElement[][]::new),
+                                    .map(PredictiveParsingTableElementBuilder::build)
+                                    .toArray(PredictiveParsingTableElement[]::new))
+                            .toArray(PredictiveParsingTableElement[][]::new),
                     firstMap,
                     followMap,
                     matcherFactory.produce(terminalSymbolArray)
@@ -167,20 +167,20 @@ public class DeterministicAnalysisTableFactory implements AnalysisTableFactory {
     }
 
 
-    private static class DeterministicAnalysisTableElementBuilder {
+    private static class PredictiveParsingTableElementBuilder {
         private Integer rightId;
 
 
         public void set(int rightId) {
             if (this.rightId != null) {
                 throw new IllegalStateException(
-                        "Deterministic analysis table do not allowed right production body conflict.");
+                        "Deterministic phasing table do not allowed right production body conflict.");
             }
             this.rightId = rightId;
         }
 
-        public AnalysisTableElement build() {
-            return new DeterministicAnalysisTableElement(rightId);
+        public PredictiveParsingTableElement build() {
+            return new DeterministicPredictiveParsingTableElement(rightId);
         }
     }
 }

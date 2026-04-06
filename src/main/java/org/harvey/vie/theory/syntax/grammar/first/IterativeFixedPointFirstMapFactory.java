@@ -12,20 +12,6 @@ import org.harvey.vie.theory.syntax.grammar.symbol.*;
  * @date 2026-04-03 18:26
  */
 public class IterativeFixedPointFirstMapFactory implements FirstMapFactory {
-    @Override
-    public FirstMap first(ProductionSetContext context) {
-        FirstMapBuilder mapBuilder = new FirstMapBuilder(context);
-        addAllTerminal(context, mapBuilder);
-        boolean changed;
-        do {
-            changed = false;
-            for (int i = context.length() - 1; i >= 0; i--) {
-                changed = first(context.get(i), mapBuilder) || changed;
-            }
-        } while (changed);
-        return mapBuilder.build();
-    }
-
     private static void addAllTerminal(ProductionSetContext context, FirstMapBuilder mapBuilder) {
         context.stream()
                 .map(GrammarDefineProduction::getBody)
@@ -78,13 +64,11 @@ public class IterativeFixedPointFirstMapFactory implements FirstMapFactory {
         return oldSetSize != setBuilder.setSize();
     }
 
-
     private static boolean setEpsilon(FirstSetBuilder setBuilder) {
         boolean oldContains = setBuilder.isContainsEpsilon();
         setBuilder.setContainsEpsilon(true);
         return oldContains != setBuilder.isContainsEpsilon();
     }
-
 
     private static FirstSetBuilder innerSetBuilder(GrammarUnitSymbol unitSymbol, FirstMapBuilder mapBuilder) {
         if (unitSymbol.isTerminal()) {
@@ -92,5 +76,19 @@ public class IterativeFixedPointFirstMapFactory implements FirstMapFactory {
         } else {
             return mapBuilder.getBuilder(unitSymbol.toHead());
         }
+    }
+
+    @Override
+    public FirstMap first(ProductionSetContext context) {
+        FirstMapBuilder mapBuilder = new FirstMapBuilder(context);
+        addAllTerminal(context, mapBuilder);
+        boolean changed;
+        do {
+            changed = false;
+            for (int i = context.size() - 1; i >= 0; i--) {
+                changed = first(context.get(i), mapBuilder) || changed;
+            }
+        } while (changed);
+        return mapBuilder.build();
     }
 }

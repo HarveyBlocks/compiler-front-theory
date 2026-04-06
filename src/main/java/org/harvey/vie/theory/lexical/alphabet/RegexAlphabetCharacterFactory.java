@@ -17,6 +17,10 @@ import org.harvey.vie.theory.lexical.regex.RegexOperator;
 public class RegexAlphabetCharacterFactory implements AlphabetCharacterFactory {
     private static final AlphabetCharacter[] POOL = new AlphabetCharacter[128];
 
+    private static AlphabetCharacter getAscii(byte ch) {
+        return POOL[ch] != null ? POOL[ch] : (POOL[ch] = new AsciiAlphabetCharacter(ch));
+    }
+
     @Override
     public AlphabetCharacter createRaw(int ch) {
         if (ch < 128) {
@@ -24,10 +28,6 @@ public class RegexAlphabetCharacterFactory implements AlphabetCharacterFactory {
         }
         log.warn("It is not recommended to use non-ASCII characters in the compiler's rules");
         return new CodePointAlphabetCharacter(ch);
-    }
-
-    private static AlphabetCharacter getAscii(byte ch) {
-        return POOL[ch] != null ? POOL[ch] : (POOL[ch] = new AsciiAlphabetCharacter(ch));
     }
 
     @Override
@@ -44,7 +44,7 @@ public class RegexAlphabetCharacterFactory implements AlphabetCharacterFactory {
 
     @Override
     public AlphabetCharacter byUniqueCode(int uniqueCode) {
-        if (uniqueCode==AlphabetCharacter.UNSUPPORTED.uniqueCode()){
+        if (uniqueCode == AlphabetCharacter.UNSUPPORTED.uniqueCode()) {
             return AlphabetCharacter.UNSUPPORTED;
         }
         return createRaw(uniqueCode);

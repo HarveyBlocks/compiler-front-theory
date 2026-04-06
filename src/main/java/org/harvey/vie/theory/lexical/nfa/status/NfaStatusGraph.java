@@ -1,7 +1,5 @@
 package org.harvey.vie.theory.lexical.nfa.status;
 
-import org.harvey.vie.theory.lexical.analysis.token.TokenType;
-
 /**
  * Interface representing the complete graph structure of a Non-deterministic
  * Finite Automaton (NFA).
@@ -10,7 +8,7 @@ import org.harvey.vie.theory.lexical.analysis.token.TokenType;
  * @version 1.0
  * @date 2026-03-23 17:42
  */
-public interface NfaStatusGraph<M,V> {
+public interface NfaStatusGraph<M, V> {
 
     NfaStatus<M> getStart();
 

@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.syntax.td.table;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
+import org.harvey.vie.theory.syntax.grammar.symbol.*;
 
 import java.util.Objects;
 
@@ -14,23 +14,23 @@ import java.util.Objects;
  * @version 1.0
  * @date 2026-03-31 21:36
  */
-public class DeterministicAnalysisTable implements AnalysisTable {
+public class DeterministicPredictiveParsingTable implements PredictiveParsingTable {
     private final HeadSymbol[] heads;
     /**
-     * index {@link AnalysisTable#END_MARK_REFERENCE} is for end mark (null)
+     * index {@link PredictiveParsingTable#END_MARK_REFERENCE} is for end mark (null)
      */
     private final TerminalSymbol[] terminals;
     private final GrammarConcatenation[] concatenations;
-    private final AnalysisTableElement[][] table;
+    private final PredictiveParsingTableElement[][] table;
     private final FirstMap firstMap;
     private final FollowMap followMap;
     private final TerminalMatcher terminalMatcher;
 
-    public DeterministicAnalysisTable(
+    public DeterministicPredictiveParsingTable(
             HeadSymbol[] heads,
             TerminalSymbol[] terminals,
             GrammarConcatenation[] concatenations,
-            AnalysisTableElement[][] table,
+            PredictiveParsingTableElement[][] table,
             FirstMap firstMap,
             FollowMap followMap,
             TerminalMatcher terminalMatcher) {
@@ -78,7 +78,7 @@ public class DeterministicAnalysisTable implements AnalysisTable {
         throw new IllegalStateException("Unknown head symbol");
     }
 
-    private AlterableSymbol toConcatenation(AnalysisTableElement element) {
+    private AlterableSymbol toConcatenation(PredictiveParsingTableElement element) {
         if (element.rightId() == null) {
             return null;
         }

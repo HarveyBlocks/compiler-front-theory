@@ -2,7 +2,6 @@ package org.harvey.vie.theory.syntax.grammar.normalize.trie;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarSymbol;
 
 /**
  * TODO

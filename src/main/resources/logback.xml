@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds" debug="false">
     <!-- 定义日志文件的存储地址，避免在配置文件中写死绝对路径 -->
-    <property name="LOG_HOME" value="./logs" />
+    <property name="LOG_HOME" value="./logs"/>
 
     <!-- 控制台输出 Appender：用于开发环境，将日志打印到控制台 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">

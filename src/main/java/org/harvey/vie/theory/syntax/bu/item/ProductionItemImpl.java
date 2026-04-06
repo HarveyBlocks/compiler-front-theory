@@ -3,8 +3,10 @@ package org.harvey.vie.theory.syntax.bu.item;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarConcatenation;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.util.AfterIterable;
 
 import java.util.Objects;
 import java.util.StringJoiner;
@@ -40,12 +42,39 @@ public class ProductionItemImpl implements ProductionItem {
     }
 
     @Override
+    public boolean productionEquals(ProductionItem o) {
+        if (getHead() != o.getHead()) {
+            return false;
+        }
+        AlterableSymbol thisAlterable = getAlterableSymbol();
+        AlterableSymbol thatAlterable = o.getAlterableSymbol();
+        boolean thisEpsilon = thatAlterable.isEpsilon();
+        boolean thatEpsilon = thatAlterable.isEpsilon();
+        if (thisEpsilon && thatEpsilon) {
+            return true;
+        } else if (thisEpsilon != thatEpsilon) {
+            return false;
+        }
+        GrammarConcatenation thisConcatenation = thisAlterable.toConcatenation();
+        GrammarConcatenation thatConcatenation = thatAlterable.toConcatenation();
+        return thisConcatenation.equals(thatConcatenation);
+    }
+
+    @Override
     public boolean hasNextSymbol() {
         AlterableSymbol alterableSymbol = getAlterableSymbol();
         if (alterableSymbol.isEpsilon()) {
             return false;
         }
         return currentDot < alterableSymbol.toConcatenation().size();
+    }
+
+    @Override
+    public boolean hasPreviousSymbol() {
+        if (isEpsilon()) {
+            return false;
+        }
+        return currentDot > 0;
     }
 
     @Override
@@ -58,11 +87,34 @@ public class ProductionItemImpl implements ProductionItem {
     }
 
     @Override
+    public GrammarUnitSymbol previousSymbol() {
+        AlterableSymbol alterableSymbol = getAlterableSymbol();
+        if (alterableSymbol.isEpsilon()) {
+            throw new IllegalStateException("epsilon alterable symbol do not has next symbol");
+        }
+        return alterableSymbol.toConcatenation().get(currentDot - 1);
+    }
+
+    @Override
     public ProductionItem nextItem() {
         if (!hasNextSymbol()) {
             throw new IllegalStateException("next item is not exist!");
         }
         return new ProductionItemImpl(context, productionIndex, alternationIndex, currentDot + 1);
+    }
+
+    @Override
+    public Iterable<GrammarUnitSymbol> afterIterable() {
+        AlterableSymbol alterableSymbol = getAlterableSymbol();
+        if (alterableSymbol.isEpsilon()) {
+            throw new UnsupportedOperationException("Epsilon body do not have after iterable.");
+        }
+        return new AfterIterable<>(currentDot, alterableSymbol.toConcatenation());
+    }
+
+    @Override
+    public boolean isEpsilon() {
+        return getAlterableSymbol().isEpsilon();
     }
 
     @Override

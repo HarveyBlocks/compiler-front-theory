@@ -1,8 +1,7 @@
 package org.harvey.vie.theory.syntax.bu.item;
 
+import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
-
-import java.util.Set;
 
 /**
  * TODO
@@ -12,5 +11,5 @@ import java.util.Set;
  * @date 2026-04-03 23:40
  */
 public interface ItemSetFamilyFactory {
-    ItemSetFamily produce(String startHead, ProductionSetContext context);
+    ItemSetFamily produce(String startHead, ProductionSetContext context, FirstMap firstMap);
 }

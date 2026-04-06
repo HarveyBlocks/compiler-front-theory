@@ -15,7 +15,7 @@ import org.harvey.vie.theory.util.ArrayBuilder;
 import java.io.IOException;
 
 /**
- * An iterator that performs lexical analysis using a DFA transition first.
+ * An iterator that performs lexical phase using a DFA transition first.
  * It reads characters from a {@link SourceReader}, traverses the DFA states,
  * and identifies the longest possible token match. If an invalid character
  * sequence is encountered, it handles the error and attempts to continue
@@ -37,7 +37,10 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
     private SourceToken current;
 
     public StatusTableTokenIterator(
-            ErrorContext errorContext, SourceReader reader, SourceAlphabetCharacterAdaptor saca, RegexDfaStatusTable table) {
+            ErrorContext errorContext,
+            SourceReader reader,
+            SourceAlphabetCharacterAdaptor saca,
+            RegexDfaStatusTable table) {
         this.errorContext = errorContext;
         this.reader = reader;
         this.saca = saca;

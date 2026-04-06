@@ -18,11 +18,11 @@ public interface HeadSymbol extends GrammarUnitSymbol {
         return this;
     }
 
-    default boolean isDefine(){
+    default boolean isDefine() {
         throw GrammarSymbol.unsupportedTest();
     }
 
-    default HeadDefineSymbol toDefine(){
+    default HeadDefineSymbol toDefine() {
         throw GrammarSymbol.unsupportedCast();
     }
 }

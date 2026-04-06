@@ -18,10 +18,6 @@ import java.text.ParseException;
 @AllArgsConstructor
 public class DefaultRegexParser implements RegexParser {
     private final AlphabetCharacterFactory factory;
-    @Override
-    public RegexNode parse(String regex) throws ParseException {
-        return regex == null ? null : parse(new RegexContext(factory, regex));
-    }
 
     public static RegexNode parse(RegexContext ctx) throws ParseException {
         if (ctx.current() == RegexContext.DONE) {
@@ -34,7 +30,6 @@ public class DefaultRegexParser implements RegexParser {
         }
         return result;
     }
-
 
     /**
      * <pre>{@code
@@ -111,6 +106,11 @@ public class DefaultRegexParser implements RegexParser {
      */
     private static RegexNode closure(RegexContext ctx, RegexNode node) {
         return ctx.skipIf('*') ? new ClosureRegexNode(node) : node;
+    }
+
+    @Override
+    public RegexNode parse(String regex) throws ParseException {
+        return regex == null ? null : parse(new RegexContext(factory, regex));
     }
 
 }

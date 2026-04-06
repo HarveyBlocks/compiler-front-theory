@@ -13,5 +13,6 @@ import java.util.Set;
  */
 public interface FollowSet {
     Set<TerminalSymbol> followExceptEndMarker();
+
     boolean containsEndMarker();
 }

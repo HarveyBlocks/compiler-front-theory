@@ -17,7 +17,16 @@ import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
-import org.harvey.vie.theory.syntax.bu.item.*;
+import org.harvey.vie.theory.syntax.bu.item.ItemSet;
+import org.harvey.vie.theory.syntax.bu.item.ItemSetFamily;
+import org.harvey.vie.theory.syntax.bu.item.ItemSetFamilyFactory;
+import org.harvey.vie.theory.syntax.bu.item.ItemSetFamilyFactoryImpl;
+import org.harvey.vie.theory.syntax.bu.la.LookaheadMap;
+import org.harvey.vie.theory.syntax.bu.la.LookaheadMapFactory;
+import org.harvey.vie.theory.syntax.bu.la.LookaheadMapFactoryImpl;
+import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
+import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactory;
+import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactoryImpl;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMapFactory;
 import org.harvey.vie.theory.syntax.grammar.first.IterativeFixedPointFirstMapFactory;
@@ -34,17 +43,19 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilder;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilderImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
-import org.harvey.vie.theory.syntax.td.PredictiveAnalyzer;
-import org.harvey.vie.theory.syntax.td.PredictiveAnalyzerImpl;
+import org.harvey.vie.theory.syntax.td.PredictivePhaser;
+import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
-import org.harvey.vie.theory.syntax.td.table.AnalysisTable;
-import org.harvey.vie.theory.syntax.td.table.AnalysisTableFactory;
-import org.harvey.vie.theory.syntax.td.table.DeterministicAnalysisTableFactory;
+import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTableFactory;
+import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
+import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTableFactory;
 import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * 词法分析器Demo
@@ -69,28 +80,90 @@ public class SyntaxDemo {
     };
 
     public static void main(String[] args) {
-//         testTopDown();
-        buildUpBottomAnalysisTable();
+//         testPredictive();
+        ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
+    }
+
+    private static void testShiftReduce() {
 
     }
 
-    private static void testUpBottom() {
-
-    }
-
-    private static void buildUpBottomAnalysisTable() {
+    private static ShiftReduceParsingTable buildShiftReduceParsingTable() {
         ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
+        System.out.println(context);
+        System.out.println("-----------------------");
         FirstMapFactory firstMapFactory = new IterativeFixedPointFirstMapFactory();
         FirstMap firstMap = firstMapFactory.first(context);
         firstMap.forEach(System.out::println);
         System.out.println("-----------------------");
         ItemSetFamilyFactory itemSetFamilyFactory = new ItemSetFamilyFactoryImpl();
-        ItemSetFamily family = itemSetFamilyFactory.produce("start", context);
-        family.forEach(System.out::println);
+        ItemSetFamily family = itemSetFamilyFactory.produce("S", context, firstMap);
+        showItemSetFamily(family);
         System.out.println("-----------------------");
+        LookaheadMapFactory lookaheadMapFactory = new LookaheadMapFactoryImpl();
+        LookaheadMap[] lookaheadMaps = lookaheadMapFactory.produce("S", context, family, firstMap);
+        int cur = 0;
+        for (LookaheadMap lookaheadMap : lookaheadMaps) {
+            System.out.println("I" + (cur++) + ": " + lookaheadMap);
+        }
+        System.out.println("-----------------------");
+        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl();
+        ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(
+                "S",
+                context,
+                firstMap,
+                family,
+                lookaheadMaps
+        );
+        System.out.println(shiftReduceParsingTable);
+        System.out.println("-----------------------");
+        return shiftReduceParsingTable;
     }
 
-    private static void testTopDown() {
+    private static void showItemSetFamily(ItemSetFamily family) {
+        int cur = 0;
+        for (ItemSet set : family) {
+            System.out.println("I" + (cur++) + ": " + set);
+        }
+        System.out.println("------------goto-terminal-----------");
+        cur = 0;
+        for (ItemSet set : family) {
+            Map<TerminalSymbol, Integer> map = set.getTerminalGoto();
+            int id = cur++;
+            for (TerminalSymbol symbol : map.keySet()) {
+                System.out.print("GOTO(I" + id + "," + symbol + ")=I" + map.get(symbol) + "\t");
+            }
+            if (!map.isEmpty()) {
+                System.out.println();
+            }
+        }
+        System.out.println("------------goto-head-----------");
+        cur = 0;
+        for (ItemSet set : family) {
+            Map<HeadSymbol, Integer> map = set.getHeadGoto();
+            int id = cur++;
+            for (HeadSymbol symbol : map.keySet()) {
+                System.out.print("GOTO(I" + id + "," + symbol + ")=I" + map.get(symbol) + "\t");
+            }
+            if (!map.isEmpty()) {
+                System.out.println();
+            }
+        }
+        System.out.println("------------DR-----------");
+        cur = 0;
+        for (ItemSet set : family) {
+            Map<HeadSymbol, Set<TerminalSymbol>> decisionRule = set.getDecisionRule();
+            int id = cur++;
+            for (HeadSymbol symbol : decisionRule.keySet()) {
+                System.out.print("DR(I" + id + "," + symbol + ")=" + decisionRule.get(symbol) + "\t");
+            }
+            if (!decisionRule.isEmpty()) {
+                System.out.println();
+            }
+        }
+    }
+
+    private static void testPredictive() {
         // lexical analyzer
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         RegexDfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
@@ -98,10 +171,10 @@ public class SyntaxDemo {
         LexicalAnalyzer analyzer = new DefaultLexicalAnalyzer(table, saca);
 
         // syntax analyzer
-        AnalysisTable analysisTable = buildTopDownAnalysisTable();
-        GrammarUnitSymbol start = analysisTable.headStart("expression");
-        PredictiveAnalyzer predictiveAnalyzer = new PredictiveAnalyzerImpl(
-                analysisTable,
+        PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable();
+        GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
+        PredictivePhaser predictivePhaser = new PredictivePhaserImpl(
+                predictiveParsingTable,
                 LexicalConflictResolver.passive()
         );
 
@@ -111,7 +184,7 @@ public class SyntaxDemo {
         ErrorContext errorContext = new DefaultErrorContext();
 
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
-            SyntaxTreeNode node = predictiveAnalyzer.analysis(start, iterator, errorContext);
+            SyntaxTreeNode node = predictivePhaser.phase(start, iterator, errorContext);
             System.out.println("ok");
         } catch (CompileException e) {
             log.warn("compile error", e);
@@ -124,7 +197,7 @@ public class SyntaxDemo {
         }
     }
 
-    public static AnalysisTable buildTopDownAnalysisTable() {
+    public static PredictiveParsingTable buildPredictiveParsingTable() {
         ProductionSetContext context = ProductionSetContextBuilds.build4(TERMINAL_FACTORY);
         System.out.println(context);
         System.out.println("-----------------------");
@@ -138,17 +211,15 @@ public class SyntaxDemo {
         firstMap.forEach(System.out::println);
         System.out.println("-----------------------");
         FollowSetFactory followSetFactory = new FollowSetFactoryImpl();
-        FollowMap followMap = followSetFactory.follow("expression", eliminated, firstMap);
+        FollowMap followMap = followSetFactory.follow("E", eliminated, firstMap);
         followMap.entrySet().forEach(System.out::println);
         System.out.println("-----------------------");
-        AnalysisTableFactory tableFactory = new DeterministicAnalysisTableFactory(MATCHER_FACTORY);
-        AnalysisTable analysisTable = tableFactory.produce(eliminated, firstMap, followMap);
-        System.out.println(analysisTable);
+        PredictiveParsingTableFactory tableFactory = new DeterministicPredictiveParsingTableFactory(MATCHER_FACTORY);
+        PredictiveParsingTable predictiveParsingTable = tableFactory.produce(eliminated, firstMap, followMap);
+        System.out.println(predictiveParsingTable);
         System.out.println("-----------------------");
-        return analysisTable;
+        return predictiveParsingTable;
     }
-
-
 }
 
 class ProductionSetContextBuilds {
@@ -247,24 +318,24 @@ class ProductionSetContextBuilds {
 
     public static ProductionSetContext build5(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
-        contextBuilder.define("start").alternateDefinition("expression");
+        contextBuilder.define("S").alternateDefinition("E");
         return classic(contextBuilder);
     }
 
     private static ProductionSetContext classic(ProductionSetContextBuilder contextBuilder) {
-        contextBuilder.define("expression")
-                .alternateDefinition("expression")
+        contextBuilder.define("E")
+                .alternateDefinition("E")
                 .concatenateTerminalLast(of("+"))
-                .concatenateDefinitionLast("term")
-                .alternateDefinition("term");
-        contextBuilder.define("term")
-                .alternateDefinition("term")
+                .concatenateDefinitionLast("T")
+                .alternateDefinition("T");
+        contextBuilder.define("T")
+                .alternateDefinition("T")
                 .concatenateTerminalLast(of("*"))
-                .concatenateDefinitionLast("factor")
-                .alternateDefinition("factor");
-        contextBuilder.define("factor")
+                .concatenateDefinitionLast("F")
+                .alternateDefinition("F");
+        contextBuilder.define("F")
                 .alternateTerminal(of("("))
-                .concatenateDefinitionLast("expression")
+                .concatenateDefinitionLast("E")
                 .concatenateTerminalLast(of(")"))
                 .alternateTerminal(of("id"));
         return contextBuilder.build();

@@ -36,7 +36,7 @@ public class GrammarAlternationImpl implements GrammarAlternation {
     @Override
     public void set(int i, GrammarConcatenation concatenation) {
         Objects.requireNonNull(concatenation);
-         if (list.get(i) == GrammarSymbol.EPSILON) {
+        if (list.get(i) == GrammarSymbol.EPSILON) {
             alternatedEpsilon = false;
         }
         list.set(i, concatenation);
@@ -50,11 +50,6 @@ public class GrammarAlternationImpl implements GrammarAlternation {
     @Override
     public int size() {
         return list.size();
-    }
-
-    @Override
-    public boolean isEmpty() {
-        return list.isEmpty();
     }
 
 

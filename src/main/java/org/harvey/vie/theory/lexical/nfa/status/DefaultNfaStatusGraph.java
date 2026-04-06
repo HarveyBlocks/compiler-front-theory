@@ -2,7 +2,6 @@ package org.harvey.vie.theory.lexical.nfa.status;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
 import java.util.Map;
 
@@ -17,7 +16,7 @@ import java.util.Map;
  */
 @Getter
 @AllArgsConstructor
-public class DefaultNfaStatusGraph<M,V> implements NfaStatusGraph<M,V> {
+public class DefaultNfaStatusGraph<M, V> implements NfaStatusGraph<M, V> {
     private final NfaStatus<M> start;
     private final Map<NfaStatus<M>, V> ends;
 

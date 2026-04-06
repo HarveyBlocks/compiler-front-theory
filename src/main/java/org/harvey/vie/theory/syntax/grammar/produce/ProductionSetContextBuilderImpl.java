@@ -50,7 +50,7 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
         GrammarDefineProduction[] productions = list.stream()
                 .map(GrammarProductionBuilder::build)
                 .toArray(GrammarDefineProduction[]::new);
-        return new ProductionSetContextImpl(terminalFactory,definitionIdxMap, productions);
+        return new ProductionSetContextImpl(terminalFactory, definitionIdxMap, productions);
     }
 
 
