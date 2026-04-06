@@ -13,6 +13,5 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
  */
 public interface LookaheadMapFactory {
 
-
     LookaheadMap[] produce(String startHead, ProductionSetContext context, ItemSetFamily family, FirstMap firstMap);
 }

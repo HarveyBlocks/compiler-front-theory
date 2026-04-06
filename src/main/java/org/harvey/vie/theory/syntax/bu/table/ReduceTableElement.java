@@ -1,8 +1,5 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
-import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
-
 import java.util.Objects;
 
 /**
@@ -13,16 +10,13 @@ import java.util.Objects;
  * @date 2026-04-06 21:45
  */
 public interface ReduceTableElement extends ActiveTableElement {
-    HeadSymbol getHead();
-
-    AlterableSymbol getBody();
 
     @Override
     default boolean conflict(ActiveTableElement other) {
         if (!other.isReduce() || other.isAccept()) {
             return true;
         }
-        return Objects.equals(getHead(), other.getHead()) && Objects.equals(getBody(), other.getBody());
+        return Objects.equals(getProduction(), other.getProduction());
     }
 
     @Override

@@ -5,11 +5,15 @@ import org.harvey.vie.theory.syntax.bu.item.ItemSetFamily;
 import org.harvey.vie.theory.syntax.bu.item.ProductionItem;
 import org.harvey.vie.theory.syntax.bu.la.LookaheadMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
+import org.harvey.vie.theory.syntax.grammar.produce.DefineSimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.GrammarDefineProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.util.CollectionUtil;
 
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -31,15 +35,13 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             ItemSetFamily family,
             LookaheadMap[] lookaheadMaps) {
         ParsingContext pc = new ParsingContext(startHead, context, firstMap, family, lookaheadMaps);
-        // 1 for zero is END MARK
         ActiveTableElement[][] activeTable = active(pc);
         int[][] gotoTable = gotoTable(pc);
         return pc.build(activeTable, gotoTable);
     }
 
 
-    private static ActiveTableElement[][] active(
-            ParsingContext pc) {
+    private static ActiveTableElement[][] active(ParsingContext pc) {
         // ACTION 表: 行 = 状态, 列 = 终结符(包括 $)
         ActiveTableElement[][] activeTable = pc.initActive();
         Map<TerminalSymbol, Integer> terminalDict = CollectionUtil.dict(pc.terminalSymbols);
@@ -62,12 +64,13 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     // A -> γ·
                     HeadSymbol head = item.getHead();
                     AlterableSymbol body = item.getAlterableSymbol();
+                    int production = pc.getProductionId(head, body);
                     if (pc.equalsStart(head)) {
                         // 是增广开始符
                         // 2.3 accept
                         //  若项目为 [S' -> S·](增广开始符), 则
                         //  ACTION[I, $] = accept
-                        setWithoutConflict(raw, 0, pc.accept(head, body));
+                        setWithoutConflict(raw, 0, pc.accept(production));
                     } else {
                         // 2.2 reduce
                         //  若项目为 [A -> γ·], 且 A 不是增广开始符，
@@ -76,7 +79,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                         pc.lookahead(i, item)
                                 .stream()
                                 .map(t -> CollectionUtil.validIndex(terminalDict, t))
-                                .forEach(t -> setWithoutConflict(raw, t, pc.reduce(head, body)));
+                                .forEach(t -> setWithoutConflict(raw, t, pc.reduce(production)));
                     }
                 }
             }
@@ -123,6 +126,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         private final HeadDefineSymbol start;
         private final TerminalSymbol[] terminalSymbols;
         private final HeadSymbol[] headSymbols;
+        private final Map<SimpleGrammarProduction, Integer> productionDict;
 
         public ParsingContext(
                 String startHead,
@@ -137,6 +141,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             this.lookaheadMaps = lookaheadMaps;
             this.terminalSymbols = terminalSymbolsWithEndMark();
             this.headSymbols = headSymbolsFilterHead();
+            this.productionDict = new HashMap<>();
         }
 
         private TerminalSymbol[] terminalSymbolsWithEndMark() {
@@ -151,11 +156,24 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         }
 
         private HeadSymbol[] headSymbolsFilterHead() {
-            return firstMap.headSet().stream().filter(h-> !start.equals(h)).toArray(HeadSymbol[]::new);
+            return firstMap.headSet().stream().filter(h -> !start.equals(h)).toArray(HeadSymbol[]::new);
         }
 
         public ShiftReduceParsingTable build(ActiveTableElement[][] activeTable, int[][] gotoTable) {
-            return new ShiftReduceParsingTableImpl(terminalSymbols, headSymbols, activeTable, gotoTable);
+            return new ShiftReduceParsingTableImpl(terminalSymbols,
+                    headSymbols,
+                    activeTable,
+                    gotoTable,
+                    productionArray()
+            );
+        }
+
+        private SimpleGrammarProduction[] productionArray() {
+            return productionDict.entrySet()
+                    .stream()
+                    .sorted(Comparator.comparingInt(Map.Entry::getValue))
+                    .map(Map.Entry::getKey)
+                    .toArray(SimpleGrammarProduction[]::new);
         }
 
         public ActiveTableElement[][] initActive() {
@@ -186,12 +204,22 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         }
 
 
-        private ActiveTableElement reduce(HeadSymbol head, AlterableSymbol body) {
-            return new ReduceTableElementImpl(head, body);
+        public ActiveTableElement reduce(int production) {
+            return new ReduceTableElementImpl(production);
         }
 
-        private ActiveTableElement accept(HeadSymbol head, AlterableSymbol body) {
-            return new AcceptTableElementImpl(head, body);
+        public ActiveTableElement accept(int production) {
+            return new AcceptTableElementImpl(production);
+        }
+
+        public int getProductionId(HeadSymbol head, AlterableSymbol body) {
+            if (!head.isDefine()) {
+                throw new IllegalStateException("It is not allowed to build phasing table with non-define head. " +
+                                                "It is not supported.");
+            }
+            return productionDict.computeIfAbsent(new DefineSimpleGrammarProduction(head.toDefine(), body),
+                    k -> productionDict.size()
+            );
         }
 
         public int[][] initGoto() {

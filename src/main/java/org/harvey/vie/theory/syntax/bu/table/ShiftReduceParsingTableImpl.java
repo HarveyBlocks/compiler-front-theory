@@ -1,11 +1,12 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.util.CollectionUtil;
 
+import java.util.Arrays;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 /**
  * TODO
@@ -21,35 +22,41 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     private final Map<HeadSymbol, Integer> headDict;
     private final ActiveTableElement[][] activeTable;
     private final int[][] gotoTable;
+    private final SimpleGrammarProduction[] productionPool;
 
     public ShiftReduceParsingTableImpl(
             TerminalSymbol[] terminalSymbols,
             HeadSymbol[] headSymbols,
             ActiveTableElement[][] activeTable,
-            int[][] gotoTable) {
+            int[][] gotoTable, SimpleGrammarProduction[] productionPool) {
         this.terminalSymbols = terminalSymbols;
         this.headSymbols = headSymbols;
         this.activeTable = activeTable;
         this.gotoTable = gotoTable;
         this.terminalDict = CollectionUtil.dict(terminalSymbols);
         this.headDict = CollectionUtil.dict(headSymbols);
+        this.productionPool = productionPool;
     }
-
 
     @Override
     public int gotoNext(int originStatus, HeadSymbol head) {
         return gotoTable[originStatus][CollectionUtil.validIndex(headDict, head)];
     }
 
-
     @Override
     public ActiveTableElement activeNext(int originStatus, TerminalSymbol terminal) {
         return activeTable[originStatus][CollectionUtil.validIndex(terminalDict, terminal)];
     }
 
+    @Override
+    public SimpleGrammarProduction getProduction(int i) {
+        return productionPool[i];
+    }
+
     // region show string
     @Override
     public String toString() {
+
         int stateCount = activeTable.length;
         int termCount = terminalSymbols.length;
         int nontermCount = headSymbols.length;
@@ -108,7 +115,8 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         }
 
         StringBuilder sb = new StringBuilder();
-
+        // 构建文法
+        sb.append(Arrays.toString(productionPool)).append("\n");
         // ========== 3. 构建表头第一行（State + ACTION + GOTO） ==========
         sb.append(String.format("%-" + finalStateWidth + "s", "State"));
         // ACTION 居中

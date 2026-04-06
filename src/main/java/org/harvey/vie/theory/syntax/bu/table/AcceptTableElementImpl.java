@@ -16,13 +16,12 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 @Getter
 @AllArgsConstructor
 public class AcceptTableElementImpl implements AcceptTableElement {
-    private final HeadSymbol head;
-    private final AlterableSymbol body;
+    private final int production;
 
 
     @Override
     public String toString() {
-        return "accept " + head.toString() + "->" + body;
+        return "accept " + production;
     }
 
 }

@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
@@ -17,4 +18,6 @@ public interface ShiftReduceParsingTable {
     int gotoNext(int originStatus, HeadSymbol head);
 
     ActiveTableElement activeNext(int originStatus, TerminalSymbol terminal);
+
+    SimpleGrammarProduction getProduction(int i);
 }

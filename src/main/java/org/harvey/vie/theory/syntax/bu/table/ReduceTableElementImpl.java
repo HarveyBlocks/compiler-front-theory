@@ -17,13 +17,12 @@ import java.util.Objects;
 @Getter
 @AllArgsConstructor
 public class ReduceTableElementImpl implements AcceptTableElement {
-    private final HeadSymbol head;
-    private final AlterableSymbol body;
+    private final int production;
 
 
     @Override
     public String toString() {
-        return "reduce " + head.toString() + "->" + body;
+        return "reduce " + production;
     }
 
 

@@ -13,13 +13,10 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 public interface ActiveTableElement {
     boolean conflict(ActiveTableElement other);
 
-    default HeadSymbol getHead() {
+    default int getProduction() {
         throw new UnsupportedOperationException("Do not support to invoke get production by this object");
     }
 
-    default AlterableSymbol getBody() {
-        throw new UnsupportedOperationException("Do not support to invoke get production by this object");
-    }
 
     default int nextStatus() {
         throw new UnsupportedOperationException("Do not support to invoke get production by this object");

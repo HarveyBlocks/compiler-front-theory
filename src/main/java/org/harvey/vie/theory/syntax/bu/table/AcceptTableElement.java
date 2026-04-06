@@ -21,6 +21,6 @@ public interface AcceptTableElement extends ReduceTableElement {
         if (!other.isAccept()) {
             return true;
         }
-        return Objects.equals(getHead(), other.getHead()) && Objects.equals(getBody(), other.getBody());
+        return Objects.equals(getProduction(), other.getProduction());
     }
 }
