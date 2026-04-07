@@ -1,10 +1,6 @@
 package org.harvey.vie.theory.syntax.td;
 
-import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.exception.CompileException;
-import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
-import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
+import org.harvey.vie.theory.syntax.SyntaxPhaser;
 
 /**
  * TODO 预测分析
@@ -13,7 +9,6 @@ import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
  * @version 1.0
  * @date 2026-03-31 23:16
  */
-public interface PredictivePhaser {
-    SyntaxTreeNode phase(GrammarUnitSymbol start, SourceTokenIterator iterator, ErrorContext errorContext)
-            throws CompileException;
+public interface PredictivePhaser extends SyntaxPhaser {
+
 }

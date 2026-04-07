@@ -1,7 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.table;
-
-import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+package org.harvey.vie.theory.syntax.bu.table.element;
 
 /**
  * TODO

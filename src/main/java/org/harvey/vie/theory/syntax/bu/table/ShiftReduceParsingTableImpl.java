@@ -1,7 +1,11 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalMatcher;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalMatcherFactory;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.util.CollectionUtil;
 
@@ -16,26 +20,38 @@ import java.util.Map;
  * @date 2026-04-06 23:07
  */
 public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
+    private final int start;
     private final TerminalSymbol[] terminalSymbols;
     private final HeadSymbol[] headSymbols;
-    private final Map<TerminalSymbol, Integer> terminalDict;
+
     private final Map<HeadSymbol, Integer> headDict;
     private final ActiveTableElement[][] activeTable;
     private final int[][] gotoTable;
     private final SimpleGrammarProduction[] productionPool;
+    private final TerminalMatcher terminalMatcher;
+
 
     public ShiftReduceParsingTableImpl(
+            int start,
             TerminalSymbol[] terminalSymbols,
             HeadSymbol[] headSymbols,
             ActiveTableElement[][] activeTable,
-            int[][] gotoTable, SimpleGrammarProduction[] productionPool) {
+            int[][] gotoTable,
+            SimpleGrammarProduction[] productionPool,
+            TerminalMatcherFactory matcherFactory) {
+        this.start = start;
         this.terminalSymbols = terminalSymbols;
         this.headSymbols = headSymbols;
         this.activeTable = activeTable;
         this.gotoTable = gotoTable;
-        this.terminalDict = CollectionUtil.dict(terminalSymbols);
         this.headDict = CollectionUtil.dict(headSymbols);
         this.productionPool = productionPool;
+        this.terminalMatcher = matcherFactory.produce(terminalSymbols);
+    }
+
+    @Override
+    public int getStart() {
+        return start;
     }
 
     @Override
@@ -44,8 +60,8 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     }
 
     @Override
-    public ActiveTableElement activeNext(int originStatus, TerminalSymbol terminal) {
-        return activeTable[originStatus][CollectionUtil.validIndex(terminalDict, terminal)];
+    public ActiveTableElement activeNext(int originStatus, int terminal) {
+        return activeTable[originStatus][terminal];
     }
 
     @Override
@@ -53,6 +69,10 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         return productionPool[i];
     }
 
+    @Override
+    public int matchTerminal(SourceToken token) {
+        return terminalMatcher.indexOf(token);
+    }
     // region show string
     @Override
     public String toString() {

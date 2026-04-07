@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.td.tree.node;
+package org.harvey.vie.theory.syntax.callback.tree.node;
 
 import java.util.Arrays;
 

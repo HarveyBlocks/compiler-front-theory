@@ -1,11 +1,7 @@
-package org.harvey.vie.theory.syntax.bu.table;
+package org.harvey.vie.theory.syntax.bu.table.element;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
-
-import java.util.Objects;
 
 /**
  * TODO
@@ -16,7 +12,7 @@ import java.util.Objects;
  */
 @Getter
 @AllArgsConstructor
-public class ReduceTableElementImpl implements AcceptTableElement {
+public class ReduceTableElementImpl implements ReduceTableElement {
     private final int production;
 
 

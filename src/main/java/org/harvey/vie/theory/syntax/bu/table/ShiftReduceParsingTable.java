@@ -1,9 +1,10 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
+import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
 /**
  * TODO
@@ -14,10 +15,13 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
  */
 public interface ShiftReduceParsingTable {
     int NONE = ItemSet.NONE;
+    int getStart();
 
     int gotoNext(int originStatus, HeadSymbol head);
 
-    ActiveTableElement activeNext(int originStatus, TerminalSymbol terminal);
+    ActiveTableElement activeNext(int originStatus, int terminal);
 
     SimpleGrammarProduction getProduction(int i);
+
+    int matchTerminal(SourceToken token);
 }

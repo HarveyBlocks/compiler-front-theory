@@ -1,10 +1,7 @@
-package org.harvey.vie.theory.syntax.bu.table;
+package org.harvey.vie.theory.syntax.bu.table.element;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.harvey.vie.theory.syntax.grammar.produce.GrammarProduction;
-import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
 /**
  * TODO

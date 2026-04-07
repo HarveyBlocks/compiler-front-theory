@@ -1,12 +1,12 @@
 package org.harvey.vie.theory.syntax.td;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.syntax.callback.tree.node.GrammarSyntaxTreeNode;
+import org.harvey.vie.theory.syntax.callback.tree.node.HeadNodeImpl;
+import org.harvey.vie.theory.syntax.callback.tree.node.TerminalNodeImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
-import org.harvey.vie.theory.syntax.td.tree.node.GrammarSyntaxTreeNode;
-import org.harvey.vie.theory.syntax.td.tree.node.HeadNodeImpl;
-import org.harvey.vie.theory.syntax.td.tree.node.TerminalNodeImpl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,12 +27,8 @@ public class GrammarSyntaxTreeNodeBuilder {
 
     private SourceToken token;
 
-    GrammarSyntaxTreeNodeBuilder(GrammarUnitSymbol symbol) {this.symbol = symbol;}
+    public GrammarSyntaxTreeNodeBuilder(GrammarUnitSymbol symbol) {this.symbol = symbol;}
 
-
-    public GrammarUnitSymbol getGrammarSymbol() {
-        return symbol;
-    }
 
     public GrammarSyntaxTreeNodeBuilder buildChild(GrammarUnitSymbol child) {
         GrammarSyntaxTreeNodeBuilder childBuilder = new GrammarSyntaxTreeNodeBuilder(child);
@@ -118,4 +114,7 @@ public class GrammarSyntaxTreeNodeBuilder {
     }
 
 
+    public GrammarUnitSymbol getGrammarSymbol() {
+        return symbol;
+    }
 }

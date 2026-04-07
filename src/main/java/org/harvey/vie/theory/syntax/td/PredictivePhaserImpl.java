@@ -1,13 +1,13 @@
 package org.harvey.vie.theory.syntax.td;
 
 import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.exception.CompileException;
+import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.syntax.callback.PredicativeErrorType;
+import org.harvey.vie.theory.syntax.callback.PredictiveCallback;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
-import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
-import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
 
 import java.util.Iterator;
 
@@ -22,92 +22,78 @@ public class PredictivePhaserImpl implements PredictivePhaser {
 
     private final PredictiveParsingTable predictiveParsingTable;
 
-    private final LexicalConflictResolver lexicalConflictResolver;
+    private final GrammarUnitSymbol start;
+
+    private final PredictiveCallback callback;
 
     public PredictivePhaserImpl(
-            PredictiveParsingTable predictiveParsingTable,
-            LexicalConflictResolver lexicalConflictResolver) {
+            GrammarUnitSymbol start, PredictiveParsingTable predictiveParsingTable, PredictiveCallback callback) {
+        this.start = start;
         this.predictiveParsingTable = predictiveParsingTable;
-        this.lexicalConflictResolver = lexicalConflictResolver;
+        this.callback = callback;
     }
 
     @Override
-    public SyntaxTreeNode phase(GrammarUnitSymbol start, SourceTokenIterator iterator, ErrorContext errorContext)
-            throws CompileException {
+    public void phase(SourceTokenIterator iterator, ErrorContext errorContext) {
         SyntaxParsingContext ctx = new SyntaxParsingContext(start, iterator, errorContext);
-        while (!ctx.isStackEmpty()) {
-            GrammarSyntaxTreeNodeBuilder nodeBuilder = ctx.popBuilder();
-            GrammarUnitSymbol top = nodeBuilder.getGrammarSymbol();
+        callback.onStart(ctx);
+        while (true) {
+            if (ctx.isStackEmpty()) {
+                callback.onError(ctx, PredicativeErrorType.STACK_UNDERFLOW);
+            }
+            GrammarUnitSymbol top = ctx.peekSymbol();
             if (top == SyntaxParsingContext.END_MARK) {
                 // 1. 当 X=a=$ 停止分析, 接受, 成功
                 if (!iterator.hasNext()) {
-                    // 接受, 成功
-                    break;
+                    callback.beforeAccept(ctx);
+                    if (ctx.isStackEmpty()) {
+                        // 接受, 成功
+                        callback.onAccept(ctx);
+                    } else {
+                        callback.onError(ctx, PredicativeErrorType.INVALID_ACCEPTING_STATE);
+                    }
                 } else {
-                    throw new CompileException("Unexpected token at: " + iterator.next().hintString());
+                    callback.onError(ctx, PredicativeErrorType.TRAILING_INPUT_AFTER_ACCEPT);
                 }
+                break;
             }
             SourceToken token = ctx.currentToken();
             if (top.isTerminal()) {
-                terminal(token, nodeBuilder, ctx);
+                terminal(token, top.toTerminal(), ctx);
             } else {
-                head(token, nodeBuilder, ctx);
+                head(token, top.toHead(), ctx);
                 // 3.4 goto 1
             }
         }
-        return ctx.buildTree();
     }
 
-    private void terminal(
-            SourceToken token,
-            GrammarSyntaxTreeNodeBuilder nodeBuilder,
-            SyntaxParsingContext ctx) throws CompileException {
+    private void terminal(SourceToken token, TerminalSymbol terminal, SyntaxParsingContext ctx) {
         // 2. 当 X is terminal 且 X = a != $, 弹出 X, 前进输入, goto 1
-        TerminalSymbol terminal = nodeBuilder.toTerminal();
         if (terminal.match(token)) {
-            nodeBuilder.setToken(token);
-            ctx.next(); // 消费
+            callback.onTerminal(ctx, terminal);
         } else {
             // 不匹配
-            // 冲突,是否进行修复?
-            boolean success = lexicalConflictResolver.resolveTerminalConflict(token, nodeBuilder, ctx);
-            if (success) {
-                return;
-            }
-            throw new CompileException("expected: " + terminal.hint());
+            callback.onError(ctx, PredicativeErrorType.TERMINAL_CONFLICT);
         }
     }
 
-    private void head(
-            SourceToken token,
-            GrammarSyntaxTreeNodeBuilder nodeBuilder,
-            SyntaxParsingContext ctx) throws CompileException {
+    private void head(SourceToken token, HeadSymbol head, SyntaxParsingContext ctx) {
         // 不是 terminal
         // 3. 当 X not terminal, 查表 M[X,a]
-        AlterableSymbol alterableSymbol = predictiveParsingTable.get(nodeBuilder.toHead(), token);
+        AlterableSymbol alterableSymbol = predictiveParsingTable.get(head, token);
         if (alterableSymbol == null) {
-            // 冲突,是否进行修复?
-            boolean success = lexicalConflictResolver.resolveEmptyProduction(token, nodeBuilder, ctx);
-            if (success) {
-                return;
-            }
-            throw new CompileException("Situations that cannot be found in the phasing table.");
+            // 冲突
+            callback.onError(ctx, PredicativeErrorType.UNDEFINED_PRODUCTION);
         }
         // 3.2 逆序入栈
-        if (alterableSymbol == GrammarSymbol.EPSILON) {
-            // 表项产生 X -> ε
-            nodeBuilder.setChildEpsilon();
+        else if (alterableSymbol == GrammarSymbol.EPSILON) {
+            callback.onEpsilonProduction(ctx, head);
         } else if (alterableSymbol.isConcatenation()) {
             // 表项产生 X -> UVW
             GrammarConcatenation concatenation = alterableSymbol.toConcatenation();
-            Iterator<GrammarUnitSymbol> iter = concatenation.reverseIterator();
-            while (iter.hasNext()) {
-                GrammarUnitSymbol next = iter.next();
-                GrammarSyntaxTreeNodeBuilder childBuilder = nodeBuilder.buildChild(next);
-                ctx.pushBuilder(childBuilder);
-            }
+            callback.onProduction(ctx, concatenation);
         } else {
-            throw new IllegalStateException("Grammar definition is wrong, unreasonable type.");
+            throw new CompilerException(new IllegalStateException("Grammar definition is wrong, unreasonable type."));
         }
         // 3.3 不消费输入
     }

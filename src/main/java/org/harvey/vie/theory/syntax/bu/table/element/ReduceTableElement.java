@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.table;
+package org.harvey.vie.theory.syntax.bu.table.element;
 
 import java.util.Objects;
 

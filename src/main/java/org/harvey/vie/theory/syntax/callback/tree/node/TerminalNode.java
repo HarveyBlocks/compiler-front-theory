@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.td.tree.node;
+package org.harvey.vie.theory.syntax.callback.tree.node;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;

@@ -4,6 +4,10 @@ import org.harvey.vie.theory.syntax.bu.item.ItemSet;
 import org.harvey.vie.theory.syntax.bu.item.ItemSetFamily;
 import org.harvey.vie.theory.syntax.bu.item.ProductionItem;
 import org.harvey.vie.theory.syntax.bu.la.LookaheadMap;
+import org.harvey.vie.theory.syntax.bu.table.element.AcceptTableElementImpl;
+import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
+import org.harvey.vie.theory.syntax.bu.table.element.ReduceTableElementImpl;
+import org.harvey.vie.theory.syntax.bu.table.element.ShiftTableElementImpl;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.produce.DefineSimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.GrammarDefineProduction;
@@ -27,6 +31,12 @@ import java.util.Set;
 public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTableFactory {
 
 
+    private final TerminalMatcherFactory terminalMatcherFactory;
+
+    public ShiftReduceParsingTableFactoryImpl(TerminalMatcherFactory terminalMatcherFactory) {
+        this.terminalMatcherFactory = terminalMatcherFactory;
+    }
+
     @Override
     public ShiftReduceParsingTable produce(
             String startHead,
@@ -37,7 +47,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         ParsingContext pc = new ParsingContext(startHead, context, firstMap, family, lookaheadMaps);
         ActiveTableElement[][] activeTable = active(pc);
         int[][] gotoTable = gotoTable(pc);
-        return pc.build(activeTable, gotoTable);
+        return pc.build(activeTable, gotoTable, terminalMatcherFactory);
     }
 
 
@@ -159,12 +169,16 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             return firstMap.headSet().stream().filter(h -> !start.equals(h)).toArray(HeadSymbol[]::new);
         }
 
-        public ShiftReduceParsingTable build(ActiveTableElement[][] activeTable, int[][] gotoTable) {
-            return new ShiftReduceParsingTableImpl(terminalSymbols,
+        public ShiftReduceParsingTable build(
+                ActiveTableElement[][] activeTable, int[][] gotoTable, TerminalMatcherFactory terminalMatcherFactory) {
+            return new ShiftReduceParsingTableImpl(
+                    family.startIndex(),
+                    terminalSymbols,
                     headSymbols,
                     activeTable,
                     gotoTable,
-                    productionArray()
+                    productionArray(),
+                    terminalMatcherFactory
             );
         }
 
@@ -217,7 +231,8 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                 throw new IllegalStateException("It is not allowed to build phasing table with non-define head. " +
                                                 "It is not supported.");
             }
-            return productionDict.computeIfAbsent(new DefineSimpleGrammarProduction(head.toDefine(), body),
+            return productionDict.computeIfAbsent(
+                    new DefineSimpleGrammarProduction(head.toDefine(), body),
                     k -> productionDict.size()
             );
         }

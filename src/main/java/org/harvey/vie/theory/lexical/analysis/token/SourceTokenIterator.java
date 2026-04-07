@@ -11,7 +11,7 @@ import org.harvey.vie.theory.exception.CompileException;
  * @date 2026-03-24 15:14
  */
 public interface SourceTokenIterator extends AutoCloseable {
-    SourceToken NO_MORE_TOKEN = null;
+    SourceToken NO_MORE_TOKEN = new DoneToken();
 
     boolean hasNext();
 
@@ -23,4 +23,32 @@ public interface SourceTokenIterator extends AutoCloseable {
     int getOffset();
 
     SourceToken current() throws CompileException;
+}
+
+class DoneToken implements SourceToken {
+    @Override
+    public String hintString() {
+        return "DONE";
+    }
+
+    @Override
+    public byte[] getLexeme() {
+        return new byte[0];
+    }
+
+    @Override
+    public int getOffset() {
+        return -1;
+    }
+
+    @Override
+    public String toString() {
+        return hintString();
+    }
+
+    @Override
+    public TokenType getType() {
+        return null;
+    }
+
 }

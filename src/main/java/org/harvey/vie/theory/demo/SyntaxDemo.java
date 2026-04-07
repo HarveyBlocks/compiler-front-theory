@@ -3,6 +3,8 @@ package org.harvey.vie.theory.demo;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.harvey.vie.theory.demo.semantic.callable.PrintSemanticCallback;
+import org.harvey.vie.theory.demo.semantic.callable.TreeBuilderPredictiveCallback;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompileException;
@@ -17,6 +19,8 @@ import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
+import org.harvey.vie.theory.syntax.SyntaxPhaser;
+import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
 import org.harvey.vie.theory.syntax.bu.item.ItemSetFamily;
 import org.harvey.vie.theory.syntax.bu.item.ItemSetFamilyFactory;
@@ -27,6 +31,7 @@ import org.harvey.vie.theory.syntax.bu.la.LookaheadMapFactoryImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactory;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactoryImpl;
+import org.harvey.vie.theory.syntax.callback.PredictiveCallback;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMapFactory;
 import org.harvey.vie.theory.syntax.grammar.first.IterativeFixedPointFirstMapFactory;
@@ -43,19 +48,18 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilder;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilderImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
-import org.harvey.vie.theory.syntax.td.PredictivePhaser;
 import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTableFactory;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTableFactory;
-import org.harvey.vie.theory.syntax.td.tree.node.SyntaxTreeNode;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Supplier;
 
 /**
  * 词法分析器Demo
@@ -66,6 +70,20 @@ import java.util.Set;
  */
 @Slf4j
 public class SyntaxDemo {
+
+    private static class Predicative {
+        public static void main(String[] args) {
+            TreeBuilderPredictiveCallback callback = new TreeBuilderPredictiveCallback(LexicalConflictResolver.passive());
+            SyntaxDemo.demo(() -> SyntaxDemo.testPredictive(callback), callback::getRoot);
+        }
+    }
+
+    private static class ShiftReduce {
+        public static void main(String[] args) {
+            PrintSemanticCallback callback = new PrintSemanticCallback();
+            SyntaxDemo.demo(() -> SyntaxDemo.testShiftReduce(callback), callback::getRoot);
+        }
+    }
 
     private static final TerminalFactory TERMINAL_FACTORY = terminal -> new TokenTypeTerminalSymbol((TokenType) terminal);
     private static final TerminalMatcherFactory MATCHER_FACTORY = array -> (TerminalMatcher) token -> {
@@ -79,13 +97,32 @@ public class SyntaxDemo {
                                     ". For can not found in grammar production set.");
     };
 
-    public static void main(String[] args) {
-//         testPredictive();
-        ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
+    public static <T> void demo(Supplier<SyntaxPhaser> syntaxPhaserSupplier, Supplier<T> supplier) {
+        LexicalAnalyzer analyzer = lexicalAnalyzer();
+        // syntaxPhaser
+        SyntaxPhaser syntaxPhaser = syntaxPhaserSupplier.get();
+        // resource
+        Resource resource = new AsciiStringResource("(id+id)*id");
+        // error context
+        ErrorContext errorContext = new DefaultErrorContext();
+        try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
+            syntaxPhaser.phase(iterator, errorContext);
+            T t = supplier.get();
+            System.out.println("ok: " + t);
+        } catch (CompileException e) {
+            log.warn("compile error", e);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            if (!errorContext.isEmpty()) {
+                log.info("{}", errorContext);
+            }
+        }
     }
 
-    private static void testShiftReduce() {
-
+    private static SyntaxPhaser testShiftReduce(PrintSemanticCallback callback) {
+        ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
+        return new ShiftReducePhaserImpl(shiftReduceParsingTable, callback);
     }
 
     private static ShiftReduceParsingTable buildShiftReduceParsingTable() {
@@ -107,7 +144,8 @@ public class SyntaxDemo {
             System.out.println("I" + (cur++) + ": " + lookaheadMap);
         }
         System.out.println("-----------------------");
-        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl();
+        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(
+                MATCHER_FACTORY);
         ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(
                 "S",
                 context,
@@ -163,38 +201,19 @@ public class SyntaxDemo {
         }
     }
 
-    private static void testPredictive() {
-        // lexical analyzer
+    private static SyntaxPhaser testPredictive(PredictiveCallback callback) {
+        // syntax analyzer
+        PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable();
+        GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
+        return new PredictivePhaserImpl(start, predictiveParsingTable, callback);
+    }
+
+    private static LexicalAnalyzer lexicalAnalyzer() {
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         RegexDfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
         SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
         LexicalAnalyzer analyzer = new DefaultLexicalAnalyzer(table, saca);
-
-        // syntax analyzer
-        PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable();
-        GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
-        PredictivePhaser predictivePhaser = new PredictivePhaserImpl(
-                predictiveParsingTable,
-                LexicalConflictResolver.passive()
-        );
-
-        // resource
-        Resource resource = new AsciiStringResource("(id+id)*id");
-        // error context
-        ErrorContext errorContext = new DefaultErrorContext();
-
-        try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
-            SyntaxTreeNode node = predictivePhaser.phase(start, iterator, errorContext);
-            System.out.println("ok");
-        } catch (CompileException e) {
-            log.warn("compile error", e);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            if (!errorContext.isEmpty()) {
-                log.info("{}", errorContext);
-            }
-        }
+        return analyzer;
     }
 
     public static PredictiveParsingTable buildPredictiveParsingTable() {
