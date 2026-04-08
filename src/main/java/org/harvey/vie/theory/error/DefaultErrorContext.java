@@ -3,6 +3,7 @@ package org.harvey.vie.theory.error;
 import lombok.Getter;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -29,12 +30,17 @@ public class DefaultErrorContext implements ErrorContext {
     }
 
     @Override
-    public boolean isEmpty() {
-        return errors.isEmpty();
+    public int size() {
+        return errors.size();
     }
 
     @Override
     public String toString() {
         return errors.stream().map(CompileErrorMessage::toString).collect(Collectors.joining("\n"));
+    }
+
+    @Override
+    public Iterator<CompileErrorMessage> iterator() {
+        return errors.iterator();
     }
 }

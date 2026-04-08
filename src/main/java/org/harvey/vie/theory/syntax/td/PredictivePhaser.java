@@ -1,6 +1,9 @@
 package org.harvey.vie.theory.syntax.td;
 
-import org.harvey.vie.theory.syntax.SyntaxPhaser;
+import org.harvey.vie.theory.error.ErrorContext;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.syntax.callback.PredictiveCallbackRegister;
 
 /**
  * TODO 预测分析
@@ -9,6 +12,7 @@ import org.harvey.vie.theory.syntax.SyntaxPhaser;
  * @version 1.0
  * @date 2026-03-31 23:16
  */
-public interface PredictivePhaser extends SyntaxPhaser {
+public interface PredictivePhaser {
 
+    SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext);
 }

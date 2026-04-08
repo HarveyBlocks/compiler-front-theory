@@ -4,10 +4,10 @@ import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
+import org.harvey.vie.theory.semantic.SemanticResult;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
+import org.harvey.vie.theory.syntax.callback.ShiftReduceCallback;
 import org.harvey.vie.theory.syntax.callback.ShiftReduceErrorType;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceSemanticCallback;
-import org.harvey.vie.theory.syntax.callback.tree.node.SyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
@@ -21,34 +21,37 @@ import java.util.Stack;
  * @version 1.0
  * @date 2026-04-07 12:24
  */
-public class PrintSemanticCallback implements ShiftReduceSemanticCallback {
-    private final Stack<SourceToken> treeContext;
+public class PrintCallback implements ShiftReduceCallback {
 
-    public PrintSemanticCallback() {
-        treeContext = new Stack<>();
+
+    public PrintCallback() {
+
     }
 
     @Override
     public void onStart(ShiftReducePhaseContext context) {
+        context.onStart();
+        context.setResult(new TreeContext());
     }
 
     @Override
     public void beforeAccept(ShiftReducePhaseContext context, SimpleGrammarProduction production) {
-        context.invokeBeforeAccept(production);
-        popTree(treeContext, production.getBody());
+        context.beforeAccept(production);
+        popTree(treeContext(context), production.getBody());
     }
 
     @Override
     public void onAccept(ShiftReducePhaseContext context, SimpleGrammarProduction production) {
-        System.out.println("on accept. accepted production: " + production + ". Tree: " + treeContext);
+        context.onAccept(production);
+        System.out.println("on accept. accepted production: " + production + ". Tree: " + treeContext(context));
     }
 
     @Override
     public void onReduce(ShiftReducePhaseContext context, SimpleGrammarProduction production) {
-        context.invokeReduce(production);
-        popTree(treeContext, production.getBody());
-        treeContext.push(new SourcePlaceHolder(production.getHead()));
-        System.out.println("on accept. accepted production: " + production + ". Tree: " + treeContext);
+        context.onReduce(production);
+        popTree(treeContext(context), production.getBody());
+        treeContext(context).push(new SourcePlaceHolder(production.getHead()));
+        System.out.println("on reduce. accepted production: " + production + ". Tree: " + treeContext(context));
     }
 
     private void popTree(Stack<SourceToken> treeContext, AlterableSymbol body) {
@@ -63,18 +66,28 @@ public class PrintSemanticCallback implements ShiftReduceSemanticCallback {
 
     @Override
     public void onShift(ShiftReducePhaseContext context, int nextStatus, SourceToken token) {
-        SourceToken token0 = context.invokeShift(nextStatus); // same as token
+        context.onShift(nextStatus, token);
         System.out.println("on shift. current token: " + token);
-        this.treeContext.push(token);
+        this.treeContext(context).push(token);
+    }
+
+    private Stack<SourceToken> treeContext(ShiftReducePhaseContext context) {
+        return ((TreeContext) context.getResult()).stack;
     }
 
     @Override
     public void onError(ShiftReducePhaseContext context, ShiftReduceErrorType errorType) {
         System.err.println("on error: " + errorType);
+        context.onError(errorType);
     }
 
-    public SyntaxTreeNode getRoot() {
-        return null;
+    private static class TreeContext implements SemanticResult {
+        private final Stack<SourceToken> stack = new Stack<>();
+
+        @Override
+        public String toString() {
+            return stack.toString();
+        }
     }
 
     @AllArgsConstructor

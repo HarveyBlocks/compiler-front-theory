@@ -36,9 +36,6 @@ public interface LexicalConflictResolver {
 
     /**
      * 处理分析表里没有产生式的情况
-     *
-     * @param token       和 {@link SyntaxParsingContext#currentToken()}的结果完全一致
-     * @param nodeBuilder 从 {@link SyntaxParsingContext#popBuilder()} 而来, 已经不在栈中
      */
     default boolean resolveEmptyProduction(
             SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxParsingContext ctx) {
@@ -47,9 +44,6 @@ public interface LexicalConflictResolver {
 
     /**
      * 处理需要的terminal和token无法匹配的情况
-     *
-     * @param token       和 {@link SyntaxParsingContext#currentToken()}的结果完全一致
-     * @param nodeBuilder 从 {@link SyntaxParsingContext#popBuilder()} 而来, 已经不在栈中
      */
     default boolean resolveTerminalConflict(
             SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxParsingContext ctx) {

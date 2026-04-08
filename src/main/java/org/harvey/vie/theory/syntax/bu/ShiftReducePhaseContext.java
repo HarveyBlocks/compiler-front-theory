@@ -1,17 +1,24 @@
 package org.harvey.vie.theory.syntax.bu;
 
 import lombok.Data;
+import lombok.Setter;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.error.SyntaxErrorMessage;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.SemanticResult;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
+import org.harvey.vie.theory.syntax.callback.ShiftReduceCallback;
+import org.harvey.vie.theory.syntax.callback.ShiftReduceCallbackRegister;
+import org.harvey.vie.theory.syntax.callback.ShiftReduceErrorType;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 
+import java.util.Iterator;
 import java.util.Stack;
+import java.util.function.Consumer;
 
 /**
  * TODO
@@ -25,19 +32,26 @@ public class ShiftReducePhaseContext {
     private final ShiftReduceParsingTable table;
     private final Stack<Integer> statusStack;
     private final int startStatus;
+    private final ShiftReduceCallbackRegister register;
+    private Iterator<ShiftReduceCallback> callbackIter;
     private SourceTokenIterator iterator;
     private final ErrorContext errorContext;
+    @Setter
+    private SemanticResult result;
 
     public ShiftReducePhaseContext(
             ShiftReduceParsingTable table,
             SourceTokenIterator iterator,
-            ErrorContext errorContext) {
+            ErrorContext errorContext,
+            ShiftReduceCallbackRegister register) {
         this.table = table;
         this.iterator = iterator;
         this.errorContext = errorContext;
+        this.register = register;
         this.statusStack = new Stack<>();
         this.startStatus = table.getStart();
         pushStatus(startStatus);
+        this.callbackIter = register.iterator();
     }
 
 
@@ -87,10 +101,10 @@ public class ShiftReducePhaseContext {
     }
 
 
-    private SourceToken consumerCurrentToken() {
+    private void consumerCurrentToken() {
         // 消费
         try {
-            return iterator.next();
+            iterator.next();
         } catch (CompileException e) {
             throw new CompilerException(
                     "current mechanism fails. If current must be executed before this next, then this next must not fail!  ",
@@ -99,13 +113,13 @@ public class ShiftReducePhaseContext {
         }
     }
 
-    public void invokeBeforeAccept(SimpleGrammarProduction production) {
+    private void invokeBeforeAccept(SimpleGrammarProduction production) {
         // accept 是特殊的 reduce
         AlterableSymbol body = production.getBody();
         popStatus(body);
     }
 
-    public void invokeReduce(SimpleGrammarProduction production) {
+    private void invokeReduce(SimpleGrammarProduction production) {
         // 输入指针不动(归约不消耗输入符号)
         AlterableSymbol body = production.getBody();
         popStatus(body);
@@ -114,8 +128,45 @@ public class ShiftReducePhaseContext {
         pushStatus(next);
     }
 
-    public SourceToken invokeShift(int nextStatus) {
+    private void invokeShift(int nextStatus) {
         pushStatus(nextStatus);
-        return consumerCurrentToken();
+        consumerCurrentToken();
+    }
+
+    public void onStart() {
+        invokeNext(c -> c.onStart(this), this::invokeNothing);
+    }
+
+    private void invokeNext(Consumer<ShiftReduceCallback> consumer, Runnable invoker) {
+        if (callbackIter.hasNext()) {
+            consumer.accept(callbackIter.next());
+        } else {
+            invoker.run();
+            callbackIter = register.iterator();
+        }
+    }
+
+    private void invokeNothing() {
+
+    }
+
+    public void onError(ShiftReduceErrorType errorType) {
+        invokeNext(c -> c.onError(this, errorType), this::invokeNothing);
+    }
+
+    public void onAccept(SimpleGrammarProduction production) {
+        invokeNext(c -> c.onAccept(this, production), this::invokeNothing);
+    }
+
+    public void onShift(int nextStatus, SourceToken token) {
+        invokeNext(c -> c.onShift(this, nextStatus, token), () -> invokeShift(nextStatus));
+    }
+
+    public void onReduce(SimpleGrammarProduction production) {
+        invokeNext(c -> c.onReduce(this, production), () -> invokeReduce(production));
+    }
+
+    public void beforeAccept(SimpleGrammarProduction production) {
+        invokeNext(c -> c.beforeAccept(this, production), () -> invokeBeforeAccept(production));
     }
 }

@@ -1,10 +1,7 @@
 package org.harvey.vie.theory.demo;
 
-import lombok.AllArgsConstructor;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
-import org.harvey.vie.theory.demo.semantic.callable.PrintSemanticCallback;
-import org.harvey.vie.theory.demo.semantic.callable.TreeBuilderPredictiveCallback;
+import org.harvey.vie.theory.demo.grammar.ProductionSetContextBuilds;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompileException;
@@ -19,7 +16,8 @@ import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
-import org.harvey.vie.theory.syntax.SyntaxPhaser;
+import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
 import org.harvey.vie.theory.syntax.bu.item.ItemSetFamily;
@@ -31,7 +29,6 @@ import org.harvey.vie.theory.syntax.bu.la.LookaheadMapFactoryImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactory;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactoryImpl;
-import org.harvey.vie.theory.syntax.callback.PredictiveCallback;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMapFactory;
 import org.harvey.vie.theory.syntax.grammar.first.IterativeFixedPointFirstMapFactory;
@@ -43,26 +40,19 @@ import org.harvey.vie.theory.syntax.grammar.normalize.LeftFactoringEliminator;
 import org.harvey.vie.theory.syntax.grammar.normalize.LeftFactoringEliminatorImpl;
 import org.harvey.vie.theory.syntax.grammar.normalize.LeftRecursionEliminator;
 import org.harvey.vie.theory.syntax.grammar.normalize.LeftRecursionEliminatorImpl;
-import org.harvey.vie.theory.syntax.grammar.produce.GrammarProductionBuilder;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
-import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilder;
-import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilderImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
-import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTableFactory;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTableFactory;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 
 /**
- * 词法分析器Demo
+ * 词法分析器Demo, 打印输出过程
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -73,15 +63,32 @@ public class SyntaxDemo {
 
     private static class Predicative {
         public static void main(String[] args) {
-            TreeBuilderPredictiveCallback callback = new TreeBuilderPredictiveCallback(LexicalConflictResolver.passive());
-            SyntaxDemo.demo(() -> SyntaxDemo.testPredictive(callback), callback::getRoot);
+            SemanticResult result = SyntaxDemo.demo((iter, errCtx) -> {
+                // syntax analyzer
+                PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable();
+                GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
+                PredictivePhaserImpl phaser = new PredictivePhaserImpl(
+                        start,
+                        predictiveParsingTable,
+                        SemanticDemo.buildPredicativeRegister()
+                );
+                return phaser.phase(iter, errCtx);
+            });
+            System.out.println(result);
         }
     }
 
     private static class ShiftReduce {
         public static void main(String[] args) {
-            PrintSemanticCallback callback = new PrintSemanticCallback();
-            SyntaxDemo.demo(() -> SyntaxDemo.testShiftReduce(callback), callback::getRoot);
+            SemanticResult result = SyntaxDemo.demo((iter, errCtx) -> {
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
+                ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
+                        shiftReduceParsingTable,
+                        SemanticDemo.buildShiftReduceRegister()
+                );
+                return phaser.phase(iter, errCtx);
+            });
+            System.out.println(result);
         }
     }
 
@@ -97,18 +104,14 @@ public class SyntaxDemo {
                                     ". For can not found in grammar production set.");
     };
 
-    public static <T> void demo(Supplier<SyntaxPhaser> syntaxPhaserSupplier, Supplier<T> supplier) {
+    public static SemanticResult demo(BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
         LexicalAnalyzer analyzer = lexicalAnalyzer();
-        // syntaxPhaser
-        SyntaxPhaser syntaxPhaser = syntaxPhaserSupplier.get();
         // resource
         Resource resource = new AsciiStringResource("(id+id)*id");
         // error context
         ErrorContext errorContext = new DefaultErrorContext();
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
-            syntaxPhaser.phase(iterator, errorContext);
-            T t = supplier.get();
-            System.out.println("ok: " + t);
+            return syntaxPhaserMapper.apply(iterator, errorContext);
         } catch (CompileException e) {
             log.warn("compile error", e);
         } catch (Exception e) {
@@ -118,11 +121,14 @@ public class SyntaxDemo {
                 log.info("{}", errorContext);
             }
         }
+        return null;
     }
 
-    private static SyntaxPhaser testShiftReduce(PrintSemanticCallback callback) {
-        ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
-        return new ShiftReducePhaserImpl(shiftReduceParsingTable, callback);
+    private static LexicalAnalyzer lexicalAnalyzer() {
+        AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
+        RegexDfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
+        SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
+        return new DefaultLexicalAnalyzer(table, saca);
     }
 
     private static ShiftReduceParsingTable buildShiftReduceParsingTable() {
@@ -201,21 +207,6 @@ public class SyntaxDemo {
         }
     }
 
-    private static SyntaxPhaser testPredictive(PredictiveCallback callback) {
-        // syntax analyzer
-        PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable();
-        GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
-        return new PredictivePhaserImpl(start, predictiveParsingTable, callback);
-    }
-
-    private static LexicalAnalyzer lexicalAnalyzer() {
-        AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
-        RegexDfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
-        SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
-        LexicalAnalyzer analyzer = new DefaultLexicalAnalyzer(table, saca);
-        return analyzer;
-    }
-
     public static PredictiveParsingTable buildPredictiveParsingTable() {
         ProductionSetContext context = ProductionSetContextBuilds.build4(TERMINAL_FACTORY);
         System.out.println(context);
@@ -241,142 +232,3 @@ public class SyntaxDemo {
     }
 }
 
-class ProductionSetContextBuilds {
-
-    public static ProductionSetContext build1(TerminalFactory terminalFactory) {
-        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
-        GrammarProductionBuilder itemBuilder = contextBuilder.define("item");
-        GrammarProductionBuilder digitBuilder = contextBuilder.define("digit");
-        itemBuilder.alternateSelf()
-                .concatenateTerminalLast(of("+"))
-                .concatenateDefinitionLast("digit")
-                .alternateTerminal(of("digit"));
-        digitBuilder.alternateTerminal(of("0"))
-                .alternateTerminal(of("1"))
-                .alternateTerminal(of("2"))
-                .alternateTerminal(of("3"))
-                .alternateTerminal(of("4"));
-        GrammarProductionBuilder digitBuilder2 = contextBuilder.define("digit");
-        digitBuilder2.alternateTerminal(of("5"))
-                .alternateTerminal(of("6"))
-                .alternateTerminal(of("7"))
-                .alternateTerminal(of("8"))
-                .alternateTerminal(of("9"));
-        return contextBuilder.build();
-    }
-
-    // 消解左递归, 有间接递归
-    public static ProductionSetContext build2(TerminalFactory terminalFactory) {
-        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
-        GrammarProductionBuilder sBuilder = contextBuilder.define("S");
-        GrammarProductionBuilder aBuilder = contextBuilder.define("A");
-        sBuilder.alternateDefinition("A").concatenateTerminalLast(of("a")).alternateTerminal(of("b"));
-        aBuilder.alternateSelf()
-                .concatenateTerminalLast(of("c"))
-                .alternateDefinition("S")
-                .concatenateTerminalLast(of("d"))
-                .alternateEpsilon();
-        return contextBuilder.build();
-    }
-
-    // 消解左相同因子
-    public static ProductionSetContext build3(TerminalFactory terminalFactory) {
-        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
-        contextBuilder.define("B").alternateEpsilon();
-        contextBuilder.define("M")
-                .alternateTerminal(of("N"))
-                .alternateTerminal(of("N"))
-                .concatenateTerminalLast(of("O"));
-        contextBuilder.define("X")
-                .alternateEpsilon()
-                .alternateTerminal(of("A"))
-                .concatenateDefinitionLast("B")
-                .concatenateTerminalLast(of("C"))
-                .concatenateTerminalLast(of("E"))
-                .concatenateTerminalLast(of("F"))
-                .concatenateTerminalLast(of("G"))
-                .alternateTerminal(of("A"))
-                .concatenateDefinitionLast("B")
-                .concatenateTerminalLast(of("C"))
-                .concatenateTerminalLast(of("D"))
-                .concatenateTerminalLast(of("E"))
-                .concatenateTerminalLast(of("F"))
-                .alternateTerminal(of("A"))
-                .concatenateDefinitionLast("B")
-                .concatenateTerminalLast(of("D"))
-                .alternateTerminal(of("A"))
-                .concatenateTerminalLast(of("D"))
-                .alternateTerminal(of("D"))
-                .alternateTerminal(of("A"))
-                .concatenateDefinitionLast("B")
-                .concatenateTerminalLast(of("D"))
-                .concatenateTerminalLast(of("E"))
-                .alternateTerminal(of("A"))
-                .concatenateTerminalLast(of("D"))
-                .concatenateTerminalLast(of("E"))
-                .alternateDefinition("B")
-                .concatenateTerminalLast(of("A"))
-                .concatenateTerminalLast(of("C"))
-                .concatenateTerminalLast(of("D"))
-                .concatenateTerminalLast(of("E"))
-                .alternateDefinition("B")
-                .concatenateTerminalLast(of("A"))
-                .concatenateTerminalLast(of("C"))
-                .alternateEpsilon();
-        return contextBuilder.build();
-    }
-
-    public static ProductionSetContext build4(TerminalFactory terminalFactory) {
-        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
-        return classic(contextBuilder);
-    }
-
-    private static TokenType of(String hint) {
-        return new StringTokenType(hint);
-    }
-
-    public static ProductionSetContext build5(TerminalFactory terminalFactory) {
-        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
-        contextBuilder.define("S").alternateDefinition("E");
-        return classic(contextBuilder);
-    }
-
-    private static ProductionSetContext classic(ProductionSetContextBuilder contextBuilder) {
-        contextBuilder.define("E")
-                .alternateDefinition("E")
-                .concatenateTerminalLast(of("+"))
-                .concatenateDefinitionLast("T")
-                .alternateDefinition("T");
-        contextBuilder.define("T")
-                .alternateDefinition("T")
-                .concatenateTerminalLast(of("*"))
-                .concatenateDefinitionLast("F")
-                .alternateDefinition("F");
-        contextBuilder.define("F")
-                .alternateTerminal(of("("))
-                .concatenateDefinitionLast("E")
-                .concatenateTerminalLast(of(")"))
-                .alternateTerminal(of("id"));
-        return contextBuilder.build();
-    }
-
-    @AllArgsConstructor
-    static class StringTokenType implements TokenType {
-        private final String hint;
-
-        @Override
-        public int store(OutputStream os) throws IOException {
-            throw new UnsupportedEncodingException("just test");
-        }
-
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        @Override
-        public @NonNull String hint() {
-            return hint;
-        }
-    }
-}

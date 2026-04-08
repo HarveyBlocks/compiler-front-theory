@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.syntax.td;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.syntax.callback.tree.node.GrammarSyntaxTreeNode;
-import org.harvey.vie.theory.syntax.callback.tree.node.HeadNodeImpl;
-import org.harvey.vie.theory.syntax.callback.tree.node.TerminalNodeImpl;
+import org.harvey.vie.theory.demo.semantic.node.GrammarSyntaxTreeNode;
+import org.harvey.vie.theory.demo.semantic.node.HeadNodeImpl;
+import org.harvey.vie.theory.demo.semantic.node.TerminalNodeImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;

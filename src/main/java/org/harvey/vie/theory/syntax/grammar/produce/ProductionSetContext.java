@@ -4,7 +4,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.GrammarAlternation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
-import org.harvey.vie.theory.util.SimpleCollection;
+import org.harvey.vie.theory.util.SimpleList;
 
 /**
  * TODO 上下文, 便于数据重复利用, 例如对于同一个head name definition, 产生同一个对象
@@ -14,7 +14,7 @@ import org.harvey.vie.theory.util.SimpleCollection;
  * @version 1.0
  * @date 2026-03-28 02:36
  */
-public interface ProductionSetContext extends SimpleCollection<GrammarDefineProduction> {
+public interface ProductionSetContext extends SimpleList<GrammarDefineProduction> {
 
     /**
      * @return null for not exist

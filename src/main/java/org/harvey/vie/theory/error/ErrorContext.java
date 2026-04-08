@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.error;
 
-import java.util.Collection;
+import org.harvey.vie.theory.util.SimpleList;
 
 /**
  * Interface defining the context for managing compilation errors.
@@ -11,10 +11,8 @@ import java.util.Collection;
  * @version 1.0
  * @date 2026-03-24 21:27
  */
-public interface ErrorContext {
+public interface ErrorContext extends SimpleList<CompileErrorMessage> {
     void addError(CompileErrorMessage message);
 
-    Collection<? extends CompileErrorMessage> getErrors();
 
-    boolean isEmpty();
 }

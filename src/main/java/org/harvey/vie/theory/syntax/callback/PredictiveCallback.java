@@ -12,7 +12,7 @@ import org.harvey.vie.theory.syntax.td.SyntaxParsingContext;
  * @version 1.0
  * @date 2026-04-07 12:24
  */
-public interface PredictiveCallback {
+public interface PredictiveCallback  extends SemanticCallback {
 
     void onStart(SyntaxParsingContext ctx);
 

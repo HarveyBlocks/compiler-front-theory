@@ -42,7 +42,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class LexicalDemo {
     public static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
-
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
         RegexDfaStatusTable table;
         TempType[] types = new TempType[]{
@@ -128,6 +127,13 @@ public class LexicalDemo {
     }
 }
 
+/**
+ * TokenType不做限制, 就是因为, 一个TokenType可以代表一类TokenSource.
+ * 然后如何知道source对应的是哪个Token呢?
+ * TokenType怎么和TerminalSymbol匹配呢?
+ * 可以用严格匹配, 也可以用正则之类的.
+ * 因此可以自己实现, 来实现更复杂的匹配功能
+ */
 @AllArgsConstructor
 class TempType extends AbstractTokenType {
     private final int id;

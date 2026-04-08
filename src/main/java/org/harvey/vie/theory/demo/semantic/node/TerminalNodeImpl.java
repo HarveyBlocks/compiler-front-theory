@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.callback.tree.node;
+package org.harvey.vie.theory.demo.semantic.node;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;

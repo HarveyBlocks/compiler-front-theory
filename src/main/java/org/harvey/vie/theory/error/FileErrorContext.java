@@ -4,6 +4,7 @@ import lombok.Getter;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -31,8 +32,13 @@ public class FileErrorContext implements ErrorContext {
     }
 
     @Override
-    public boolean isEmpty() {
-        return errors.isEmpty();
+    public int size() {
+        return errors.size();
     }
 
+
+    @Override
+    public Iterator<CompileErrorMessage> iterator() {
+        return errors.iterator();
+    }
 }

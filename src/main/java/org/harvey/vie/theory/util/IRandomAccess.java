@@ -11,7 +11,7 @@ import java.util.ListIterator;
  * @version 1.0
  * @date 2026-04-04 18:55
  */
-public interface IRandomAccess<E> extends SimpleCollection<E> {
+public interface IRandomAccess<E> extends SimpleList<E> {
     static <E> IRandomAccess<E> of(List<E> ls) {
         return new IRandomAccess<>() {
             @Override

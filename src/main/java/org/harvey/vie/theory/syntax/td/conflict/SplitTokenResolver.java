@@ -21,6 +21,9 @@ public class SplitTokenResolver implements LexicalConflictResolver {
     public SplitTokenResolver(ConflictTokenSplitter splitter) {this.splitter = splitter;}
 
 
+    /**
+     * @deprecated 废弃
+     */
     @Override
     @Deprecated
     public SourceTokenIterator resolve(TerminalSymbol terminal, SourceTokenIterator old) throws CompileException {

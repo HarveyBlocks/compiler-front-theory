@@ -79,7 +79,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
 
         int stateCount = activeTable.length;
         int termCount = terminalSymbols.length;
-        int nontermCount = headSymbols.length;
+        int nonTermCount = headSymbols.length;
         int padding = 2;
 
         // ========== 1. 计算各列最大内容宽度 ==========
@@ -100,15 +100,15 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         }
 
         // 非终结符列宽度（内容 + 符号本身）
-        int[] nontermWidths = new int[nontermCount];
-        for (int j = 0; j < nontermCount; j++) {
-            nontermWidths[j] = headSymbols[j].toString().length();
+        int[] nonTermWidths = new int[nonTermCount];
+        for (int j = 0; j < nonTermCount; j++) {
+            nonTermWidths[j] = headSymbols[j].toString().length();
         }
         for (int i = 0; i < stateCount; i++) {
-            for (int j = 0; j < nontermCount; j++) {
+            for (int j = 0; j < nonTermCount; j++) {
                 String cell = (gotoTable[i][j] == -1) ? "NaN" : Integer.toString(gotoTable[i][j]);
-                if (cell.length() > nontermWidths[j]) {
-                    nontermWidths[j] = cell.length();
+                if (cell.length() > nonTermWidths[j]) {
+                    nonTermWidths[j] = cell.length();
                 }
             }
         }
@@ -116,12 +116,12 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         // 加上 padding 后的最终列宽
         int finalStateWidth = stateWidth + padding;
         int[] finalTermWidths = new int[termCount];
-        int[] finalNontermWidths = new int[nontermCount];
+        int[] finalNonTermWidths = new int[nonTermCount];
         for (int j = 0; j < termCount; j++) {
             finalTermWidths[j] = termWidths[j] + padding;
         }
-        for (int j = 0; j < nontermCount; j++) {
-            finalNontermWidths[j] = nontermWidths[j] + padding;
+        for (int j = 0; j < nonTermCount; j++) {
+            finalNonTermWidths[j] = nonTermWidths[j] + padding;
         }
 
         // ========== 2. 计算 ACTION / GOTO 区域总宽（用于标题居中） ==========
@@ -130,7 +130,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             actionTotalWidth += w;
         }
         int gotoTotalWidth = 0;
-        for (int w : finalNontermWidths) {
+        for (int w : finalNonTermWidths) {
             gotoTotalWidth += w;
         }
 
@@ -156,8 +156,8 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         for (int j = 0; j < termCount; j++) {
             sb.append(String.format("%-" + finalTermWidths[j] + "s", terminalSymbols[j].toString()));
         }
-        for (int j = 0; j < nontermCount; j++) {
-            sb.append(String.format("%-" + finalNontermWidths[j] + "s", headSymbols[j].toString()));
+        for (int j = 0; j < nonTermCount; j++) {
+            sb.append(String.format("%-" + finalNonTermWidths[j] + "s", headSymbols[j].toString()));
         }
         sb.append('\n');
 
@@ -170,9 +170,9 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
                 sb.append(String.format("%-" + finalTermWidths[j] + "s", cell));
             }
             // GOTO 部分
-            for (int j = 0; j < nontermCount; j++) {
+            for (int j = 0; j < nonTermCount; j++) {
                 String cell = (gotoTable[i][j] == -1) ? "NaN" : Integer.toString(gotoTable[i][j]);
-                sb.append(String.format("%-" + finalNontermWidths[j] + "s", cell));
+                sb.append(String.format("%-" + finalNonTermWidths[j] + "s", cell));
             }
             sb.append('\n');
         }

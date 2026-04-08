@@ -1,12 +1,15 @@
 package org.harvey.vie.theory.demo.semantic.callable;
 
-import lombok.Getter;
+import org.harvey.vie.theory.demo.semantic.node.GrammarSyntaxTreeNode;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.SemanticResult;
 import org.harvey.vie.theory.syntax.callback.PredicativeErrorType;
 import org.harvey.vie.theory.syntax.callback.PredictiveCallback;
-import org.harvey.vie.theory.syntax.callback.tree.node.GrammarSyntaxTreeNode;
-import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarConcatenation;
+import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.syntax.td.GrammarSyntaxTreeNodeBuilder;
 import org.harvey.vie.theory.syntax.td.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
@@ -24,52 +27,53 @@ import java.util.Stack;
  */
 public class TreeBuilderPredictiveCallback implements PredictiveCallback {
     private final LexicalConflictResolver lexicalConflictResolver;
-    private final TreeContext treeContext;
-    @Getter
-    private GrammarSyntaxTreeNode root;
 
     public TreeBuilderPredictiveCallback(LexicalConflictResolver lexicalConflictResolver) {
         this.lexicalConflictResolver = lexicalConflictResolver;
-        this.treeContext = new TreeContext();
     }
 
 
     @Override
     public void onStart(SyntaxParsingContext ctx) {
+        TreeContext treeContext = new TreeContext();
         treeContext.start(ctx.getStart());
+        ctx.setResult(treeContext);
+        ctx.onStart();
     }
 
     @Override
     public void onTerminal(SyntaxParsingContext ctx, TerminalSymbol terminal) {
-        SourceToken token = ctx.invokeTerminal();
-        GrammarSyntaxTreeNodeBuilder nodeBuilder = treeContext.popBuilder();
+        SourceToken token = ctx.currentToken();
+        ctx.onTerminal(terminal);
+        GrammarSyntaxTreeNodeBuilder nodeBuilder = getTreeContext(ctx).popBuilder();
         nodeBuilder.setToken(token);
 
     }
 
     @Override
     public void onEpsilonProduction(SyntaxParsingContext ctx, HeadSymbol head) {
-        ctx.invokeEpsilonProduction(head);
-        GrammarSyntaxTreeNodeBuilder nodeBuilder = treeContext.popBuilder();
+        ctx.onEpsilonProduction(head);
+        GrammarSyntaxTreeNodeBuilder nodeBuilder = getTreeContext(ctx).popBuilder();
         // 表项产生 X -> ε
         nodeBuilder.setChildEpsilon();
     }
 
     @Override
-    public void onProduction(SyntaxParsingContext ctx,  GrammarConcatenation concatenation) {
-        GrammarSyntaxTreeNodeBuilder nodeBuilder = treeContext.popBuilder();
+    public void onProduction(SyntaxParsingContext ctx, GrammarConcatenation concatenation) {
+        GrammarSyntaxTreeNodeBuilder nodeBuilder = getTreeContext(ctx).popBuilder();
         Iterator<GrammarUnitSymbol> iter = concatenation.reverseIterator();
         while (iter.hasNext()) {
             GrammarUnitSymbol next = iter.next();
             GrammarSyntaxTreeNodeBuilder childBuilder = nodeBuilder.buildChild(next);
-            treeContext.pushBuilder(childBuilder);
+            getTreeContext(ctx).pushBuilder(childBuilder);
         }
-        ctx.invokeProduction(concatenation);
+        ctx.onProduction(concatenation);
     }
 
     @Override
     public void onAccept(SyntaxParsingContext ctx) {
-        this.root = treeContext.buildTree();
+        ctx.onAccept();
+        getTreeContext(ctx).buildTree();
     }
 
     @Override
@@ -87,7 +91,7 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
             case TRAILING_INPUT_AFTER_ACCEPT:
                 // accept 了, 但是还有输入
                 token = ctx.currentToken();
-                resolveTrailingInput(ctx, token);
+                resolveTrailingInput(token);
                 break;
             case INVALID_ACCEPTING_STATE:
                 // accept 了, 但是stack还有未处理的状态
@@ -98,14 +102,15 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
                 resolveTerminalConflict(ctx, token);
                 break;
         }
+        ctx.onError(errorType);
     }
 
     @Override
     public void beforeAccept(SyntaxParsingContext ctx) {
-        ctx.invokeBeforeAccept();
+        ctx.beforeAccept();
     }
 
-    private void resolveTrailingInput(SyntaxParsingContext ctx, SourceToken token) {
+    private void resolveTrailingInput(SourceToken token) {
         try {
             throw new CompileException("Unexpected token at: " + token.hintString());
         } catch (CompileException e) {
@@ -114,7 +119,7 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
     }
 
     private void resolveTerminalConflict(SyntaxParsingContext ctx, SourceToken token) {
-        GrammarSyntaxTreeNodeBuilder nodeBuilder = treeContext.popBuilder();
+        GrammarSyntaxTreeNodeBuilder nodeBuilder = getTreeContext(ctx).popBuilder();
         // 冲突,是否进行修复?
         boolean success = lexicalConflictResolver.resolveTerminalConflict(token, nodeBuilder, ctx);
         if (success) {
@@ -124,7 +129,7 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
     }
 
     private void resolveEmptyProduction(SyntaxParsingContext ctx, SourceToken token) {
-        GrammarSyntaxTreeNodeBuilder nodeBuilder = treeContext.popBuilder();
+        GrammarSyntaxTreeNodeBuilder nodeBuilder = getTreeContext(ctx).popBuilder();
         boolean success = lexicalConflictResolver.resolveEmptyProduction(token, nodeBuilder, ctx);
         if (success) {
             return;
@@ -132,11 +137,16 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
         System.err.println("Situations that cannot be found in the phasing table.");
     }
 
+    private static TreeContext getTreeContext(SyntaxParsingContext ctx) {
+        return (TreeContext) ctx.getResult();
+    }
 
-    private static class TreeContext {
+
+    private static class TreeContext implements SemanticResult {
         public static final TerminalSymbol END_MARK = PredictiveParsingTable.END_MARK_SYMBOL;
         private final GrammarSyntaxTreeNodeBuilder root;
         private final Stack<GrammarSyntaxTreeNodeBuilder> nodeBuilderStack;
+        private GrammarSyntaxTreeNode result;
 
         public TreeContext() {
             // --tree--
@@ -157,11 +167,16 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
             nodeBuilderStack.push(builder);
         }
 
-        public GrammarSyntaxTreeNode buildTree() {
+        public void buildTree() {
             if (nodeBuilderStack.size() != 1 || nodeBuilderStack.pop().getGrammarSymbol() != END_MARK) {
                 throw new IllegalStateException("In the case of impossible, the stack must be empty");
             }
-            return root.build();
+            this.result = root.build();
+        }
+
+        @Override
+        public String toString() {
+            return result.toString();
         }
     }
 }

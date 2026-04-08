@@ -4,10 +4,11 @@ import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.SemanticResult;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
+import org.harvey.vie.theory.syntax.callback.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.syntax.callback.ShiftReduceErrorType;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceSemanticCallback;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -19,16 +20,18 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     private final ShiftReduceParsingTable table;
-    private final ShiftReduceSemanticCallback callback;
+
+    private final ShiftReduceCallbackRegister register;
 
     public ShiftReducePhaserImpl(
-            ShiftReduceParsingTable table, ShiftReduceSemanticCallback callback) {
+            ShiftReduceParsingTable table,
+            ShiftReduceCallbackRegister register) {
         this.table = table;
-        this.callback = callback;
+        this.register = register;
     }
 
     @Override
-    public void phase(SourceTokenIterator iterator, ErrorContext errorContext) {
+    public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
         // 初始化
         //  将初始状态压入栈。
         //  输入指针 ip 指向第一个符号 a。
@@ -51,19 +54,19 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         // 结束条件：
         //  遇到 accept 时成功
         //  若在无 accept 的情况下栈空且输入未结束则失败。
-        ShiftReducePhaseContext context = new ShiftReducePhaseContext(table, iterator, errorContext);
-        callback.onStart(context);
+        ShiftReducePhaseContext context = new ShiftReducePhaseContext(table, iterator, errorContext, register);
+        context.onStart();
         while (true) {
             SourceToken current = context.currentToken();
             if (context.isStackEmpty()) {
-                callback.onError(context, ShiftReduceErrorType.STACK_UNDERFLOW);
+                context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;
             }
             int top = context.peekStatus();
             ActiveTableElement element = table.activeNext(top, table.matchTerminal(current));
             if (element == null) {
                 // error
-                callback.onError(context, ShiftReduceErrorType.UNDEFINED_ACTION);
+                context.onError(ShiftReduceErrorType.UNDEFINED_ACTION);
             } else if (element.isShift()) {
                 onShift(context, element, current);
             } else if (element.isReduce()) {
@@ -75,15 +78,16 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
                 throw new CompilerException(new IllegalStateException("Unknown active table element type."));
             }
         }
+        return context.getResult();
     }
 
     private void onReduce(ShiftReducePhaseContext context, ActiveTableElement element) {
         SimpleGrammarProduction production = table.getProduction(element.getProduction());
         if (element.isAccept()) {
-            callback.beforeAccept(context, production);
+            context.beforeAccept(production);
             onAccept(context, production);
         } else {
-            callback.onReduce(context, production);
+            context.onReduce(production);
         }
     }
 
@@ -91,16 +95,16 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
 
         if (!context.hasNextToken()) {
             if (context.validAcceptStack()) {
-                callback.onAccept(context, production);
+                context.onAccept(production);
             } else {
-                callback.onError(context, ShiftReduceErrorType.INVALID_ACCEPTING_STATE);
+                context.onError(ShiftReduceErrorType.INVALID_ACCEPTING_STATE);
             }
         } else {
-            callback.onError(context, ShiftReduceErrorType.TRAILING_INPUT_AFTER_ACCEPT);
+            context.onError(ShiftReduceErrorType.TRAILING_INPUT_AFTER_ACCEPT);
         }
     }
 
     private void onShift(ShiftReducePhaseContext context, ActiveTableElement element, SourceToken token) {
-        callback.onShift(context, element.nextStatus(), token);
+        context.onShift(element.nextStatus(), token);
     }
 }

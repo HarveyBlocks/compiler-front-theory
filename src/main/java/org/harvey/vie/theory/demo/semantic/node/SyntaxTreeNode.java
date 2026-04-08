@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.callback.tree.node;
+package org.harvey.vie.theory.demo.semantic.node;
 
 /**
  * TODO 暂时不考虑LL和LR算法的AST类进行合一, 复用, 因为不知道能不能复用, 强行复用会对代码质量造成打击, 故暂不考虑.

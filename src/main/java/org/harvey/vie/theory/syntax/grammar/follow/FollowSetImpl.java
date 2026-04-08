@@ -14,7 +14,7 @@ import java.util.StringJoiner;
  * @date 2026-03-31 00:42
  */
 public class FollowSetImpl implements FollowSet {
-    ;
+
     private final Set<TerminalSymbol> set;
     private final boolean containsEndMarker;
 

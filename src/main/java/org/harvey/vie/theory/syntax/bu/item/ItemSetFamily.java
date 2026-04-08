@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.syntax.bu.item;
 
-import org.harvey.vie.theory.util.SimpleCollection;
+import org.harvey.vie.theory.util.SimpleList;
 
 /**
  * TODO 项集族
@@ -9,7 +9,7 @@ import org.harvey.vie.theory.util.SimpleCollection;
  * @version 1.0
  * @date 2026-04-03 22:13
  */
-public interface ItemSetFamily extends SimpleCollection<ItemSet> {
+public interface ItemSetFamily extends SimpleList<ItemSet> {
     ItemSet get(int i);
 
     int startIndex();
