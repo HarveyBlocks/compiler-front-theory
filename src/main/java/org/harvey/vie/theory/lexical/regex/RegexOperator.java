@@ -1,8 +1,9 @@
 package org.harvey.vie.theory.lexical.regex;
 
 import lombok.Getter;
+import org.harvey.vie.theory.util.CollectionUtil;
 
-import java.util.Arrays;
+import java.util.Map;
 
 /**
  * Enumeration of special characters (operators) used in regular expression syntax.
@@ -19,16 +20,22 @@ public enum RegexOperator {
     PARENTHESES_POST((byte) ')'),
     CLOSURE((byte) '*'),
     OR((byte) '|'),
+    MATCH_ANY((byte) '.'),
+    ESCAPE((byte) '\\'),
     ;
 
     private final byte c;
+    private static final Map<Byte, RegexOperator> ENUM_DICT = CollectionUtil.dictOnEnum(
+            RegexOperator.values(),
+            RegexOperator::getC
+    );
 
     RegexOperator(byte c) {
         this.c = c;
     }
 
     public static RegexOperator regexOperator(byte c) {
-        return Arrays.stream(RegexOperator.values()).filter(op -> c == op.c).findFirst().orElse(null);
+        return ENUM_DICT.get(c);
     }
 
     public static boolean isRegexOperator(byte c) {

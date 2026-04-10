@@ -66,7 +66,7 @@ public class DefaultRegexParser implements RegexParser {
      * factor -> char
      *         | \char
      *         | '(' expression ')'
-     *         | '()'
+     *         | '()' ε
      * }</pre>
      */
     private static RegexNode factor(RegexContext ctx) throws ParseException {

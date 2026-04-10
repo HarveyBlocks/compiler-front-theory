@@ -13,6 +13,7 @@ import org.harvey.vie.theory.io.ILoader;
  */
 public interface AlphabetCharacter extends Comparable<AlphabetCharacter> {
     AlphabetCharacter UNSUPPORTED = new UnsupportedCharacter();
+    int UNSUPPORTED_UNIQUE_CODE = -1;
 
     boolean match(int codePoint);
 
@@ -32,7 +33,11 @@ class UnsupportedCharacter extends AbstractAlphabetCharacter {
 
     @Override
     public int uniqueCode() {
-        return Integer.MIN_VALUE;
+        return AlphabetCharacter.UNSUPPORTED_UNIQUE_CODE;
     }
 
+    @Override
+    public String toString() {
+        return "UNSUPPORTED";
+    }
 }
