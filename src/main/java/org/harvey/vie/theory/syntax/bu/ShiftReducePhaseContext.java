@@ -3,12 +3,12 @@ package org.harvey.vie.theory.syntax.bu;
 import lombok.Data;
 import lombok.Setter;
 import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.error.SyntaxErrorMessage;
-import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.syntax.PanicSourceTokenIterator;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.callback.ShiftReduceCallback;
 import org.harvey.vie.theory.syntax.callback.ShiftReduceCallbackRegister;
@@ -34,7 +34,7 @@ public class ShiftReducePhaseContext {
     private final int startStatus;
     private final ShiftReduceCallbackRegister register;
     private Iterator<ShiftReduceCallback> callbackIter;
-    private SourceTokenIterator iterator;
+    private PanicSourceTokenIterator iterator;
     private final ErrorContext errorContext;
     @Setter
     private SemanticResult result;
@@ -42,10 +42,11 @@ public class ShiftReducePhaseContext {
     public ShiftReducePhaseContext(
             ShiftReduceParsingTable table,
             SourceTokenIterator iterator,
+            TokenFilterPredict tokenFilterPredict,
             ErrorContext errorContext,
             ShiftReduceCallbackRegister register) {
         this.table = table;
-        this.iterator = iterator;
+        this.iterator = new PanicSourceTokenIterator(iterator, errorContext, tokenFilterPredict);
         this.errorContext = errorContext;
         this.register = register;
         this.statusStack = new Stack<>();
@@ -82,36 +83,13 @@ public class ShiftReducePhaseContext {
     }
 
     public boolean hasNextToken() {
-        return iterator.hasNext();
+        return this.iterator.hasNext();
     }
 
     public SourceToken currentToken() {
-        if (!iterator.hasNext()) {
-            return SourceTokenIterator.NO_MORE_TOKEN;
-        }
-        while (true) {
-            try {
-                return iterator.current();
-            } catch (CompileException e) {
-                // 未完成的token
-                errorContext.addError(new SyntaxErrorMessage(iterator.getOffset(), e.getMessage()));
-                // 跳过(panic模式)
-            }
-        }
+        return this.iterator.currentToken();
     }
 
-
-    private void consumerCurrentToken() {
-        // 消费
-        try {
-            iterator.next();
-        } catch (CompileException e) {
-            throw new CompilerException(
-                    "current mechanism fails. If current must be executed before this next, then this next must not fail!  ",
-                    e
-            );
-        }
-    }
 
     private void invokeBeforeAccept(SimpleGrammarProduction production) {
         // accept 是特殊的 reduce
@@ -130,7 +108,7 @@ public class ShiftReducePhaseContext {
 
     private void invokeShift(int nextStatus) {
         pushStatus(nextStatus);
-        consumerCurrentToken();
+        iterator.consumeCurrentToken();
     }
 
     public void onStart() {

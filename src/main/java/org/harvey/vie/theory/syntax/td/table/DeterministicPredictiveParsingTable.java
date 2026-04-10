@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.syntax.td.table;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.follow.FollowMap;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
@@ -45,8 +46,9 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
 
     @Override
     public AlterableSymbol get(HeadSymbol head, SourceToken token) {
-        return toConcatenation(table[headIndexOf(head)][token == null ? END_MARK_REFERENCE :
-                terminalMatcher.indexOf(token)]);
+        int terminalIndex = token == SourceTokenIterator.NO_MORE_TOKEN ? END_MARK_REFERENCE : terminalMatcher.indexOf(token);
+        PredictiveParsingTableElement element = table[headIndexOf(head)][terminalIndex];
+        return toConcatenation(element);
     }
 
     @Override

@@ -70,7 +70,8 @@ public class SyntaxDemo {
                 PredictivePhaserImpl phaser = new PredictivePhaserImpl(
                         start,
                         predictiveParsingTable,
-                        SemanticDemo.buildPredicativeRegister()
+                        SemanticDemo.buildPredicativeRegister(),
+                        t->true
                 );
                 return phaser.phase(iter, errCtx);
             });
@@ -84,6 +85,7 @@ public class SyntaxDemo {
                 ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
                 ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                         shiftReduceParsingTable,
+                        t -> true,
                         SemanticDemo.buildShiftReduceRegister()
                 );
                 return phaser.phase(iter, errCtx);

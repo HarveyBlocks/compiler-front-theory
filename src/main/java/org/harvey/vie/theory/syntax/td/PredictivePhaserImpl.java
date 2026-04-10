@@ -2,6 +2,7 @@ package org.harvey.vie.theory.syntax.td;
 
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.SemanticResult;
@@ -23,18 +24,29 @@ public class PredictivePhaserImpl implements PredictivePhaser {
 
     private final GrammarUnitSymbol start;
     private final PredictiveCallbackRegister register;
+    private final TokenFilterPredict tokenFilterPredict;
 
-    public PredictivePhaserImpl(GrammarUnitSymbol start, PredictiveParsingTable predictiveParsingTable,
-            PredictiveCallbackRegister register) {
+    public PredictivePhaserImpl(
+            GrammarUnitSymbol start,
+            PredictiveParsingTable predictiveParsingTable,
+            PredictiveCallbackRegister register,
+            TokenFilterPredict tokenFilterPredict) {
         this.start = start;
         this.predictiveParsingTable = predictiveParsingTable;
         this.register = register;
 
+        this.tokenFilterPredict = tokenFilterPredict;
     }
 
     @Override
     public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
-        SyntaxParsingContext ctx = new SyntaxParsingContext(start, iterator, errorContext, register);
+        SyntaxParsingContext ctx = new SyntaxParsingContext(
+                start,
+                iterator,
+                errorContext,
+                tokenFilterPredict,
+                register
+        );
         ctx.onStart();
         while (true) {
             if (ctx.isStackEmpty()) {
@@ -43,7 +55,7 @@ public class PredictivePhaserImpl implements PredictivePhaser {
             GrammarUnitSymbol top = ctx.peekSymbol();
             if (top == SyntaxParsingContext.END_MARK) {
                 // 1. 当 X=a=$ 停止分析, 接受, 成功
-                if (!iterator.hasNext()) {
+                if (!ctx.hasNext()) {
                     ctx.beforeAccept();
                     if (ctx.isStackEmpty()) {
                         // 接受, 成功

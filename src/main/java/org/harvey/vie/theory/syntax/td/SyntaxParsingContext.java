@@ -3,12 +3,11 @@ package org.harvey.vie.theory.syntax.td;
 import lombok.Getter;
 import lombok.Setter;
 import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.error.SyntaxErrorMessage;
-import org.harvey.vie.theory.exception.CompileException;
-import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.syntax.PanicSourceTokenIterator;
 import org.harvey.vie.theory.syntax.callback.PredicativeErrorType;
 import org.harvey.vie.theory.syntax.callback.PredictiveCallback;
 import org.harvey.vie.theory.syntax.callback.PredictiveCallbackRegister;
@@ -33,10 +32,11 @@ import java.util.function.Consumer;
 public class SyntaxParsingContext {
     public static final TerminalSymbol END_MARK = PredictiveParsingTable.END_MARK_SYMBOL;
     private final Stack<GrammarUnitSymbol> symbolStack;
-    private final SourceTokenIterator iterator;
+    private final PanicSourceTokenIterator iterator;
     private final ErrorContext errorContext;
     private final GrammarUnitSymbol start;
     private final PredictiveCallbackRegister register;
+    private final SourceTokenIterator iterator0;
     private Iterator<PredictiveCallback> callbackIter;
     @Setter
     private SemanticResult result;
@@ -45,8 +45,9 @@ public class SyntaxParsingContext {
             GrammarUnitSymbol start,
             SourceTokenIterator iterator,
             ErrorContext errorContext,
-            PredictiveCallbackRegister register) {
-        this.iterator = iterator;
+            TokenFilterPredict tokenFilterPredict, PredictiveCallbackRegister register) {
+        this.iterator = new PanicSourceTokenIterator(iterator, errorContext, tokenFilterPredict);
+        this.iterator0 = iterator;
         this.errorContext = errorContext;
         // --symbol--
         this.symbolStack = new Stack<>();
@@ -57,32 +58,12 @@ public class SyntaxParsingContext {
         this.callbackIter = register.iterator();
     }
 
+
     public SourceToken currentToken() {
-        SourceToken token;
-        while (true) {
-            try {
-                token = iterator.current();
-                break;
-            } catch (CompileException e) {
-                // 未完成的token
-                errorContext.addError(new SyntaxErrorMessage(iterator.getOffset(), e.getMessage()));
-                // 跳过
-            }
-        }
-        return token;
+        return iterator.currentToken();
+
     }
 
-    private SourceToken next() {
-        // 消费
-        try {
-            return iterator.next();
-        } catch (CompileException e) {
-            throw new CompilerException(
-                    "current mechanism fails. If current must be executed before this next, then this next must not fail!  ",
-                    e
-            );
-        }
-    }
 
     public boolean isStackEmpty() {
         return symbolStack.isEmpty();
@@ -106,7 +87,7 @@ public class SyntaxParsingContext {
 
 
     private void invokeTerminal() {
-        SourceToken consumed = next();// 消费
+        iterator.consumeCurrentToken();// 消费;
         popSymbol();
     }
 
@@ -133,6 +114,7 @@ public class SyntaxParsingContext {
 
     public void onError(PredicativeErrorType predicativeErrorType) {
         registerNext(c -> c.onError(this, predicativeErrorType), this::invokeNothing);
+        throw new RuntimeException("DEBUG");
     }
 
 
@@ -164,5 +146,9 @@ public class SyntaxParsingContext {
             invoker.run();
             callbackIter = register.iterator();
         }
+    }
+
+    public boolean hasNext() {
+        return iterator.hasNext();
     }
 }
