@@ -3,7 +3,6 @@ package org.harvey.vie.theory.syntax.td;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.SemanticResult;
-import org.harvey.vie.theory.syntax.callback.PredictiveCallbackRegister;
 
 /**
  * TODO 预测分析

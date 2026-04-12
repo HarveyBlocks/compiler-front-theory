@@ -2,7 +2,10 @@ package org.harvey.vie.theory.demo;
 
 import org.harvey.vie.theory.demo.semantic.callable.PrintCallback;
 import org.harvey.vie.theory.demo.semantic.callable.TreeBuilderPredictiveCallback;
-import org.harvey.vie.theory.syntax.callback.*;
+import org.harvey.vie.theory.semantic.callback.PredictiveCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.PredictiveCallbackRegisterImpl;
+import org.harvey.vie.theory.semantic.callback.ShiftReduceCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.ShiftReduceCallbackRegisterImpl;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 
 /**
@@ -13,9 +16,6 @@ import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
  * @date 2026-04-08 12:56
  */
 public class SemanticDemo {
-    public static void a(){
-
-    }
 
     public static ShiftReduceCallbackRegister buildShiftReduceRegister() {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();

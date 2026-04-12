@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.callback;
+package org.harvey.vie.theory.semantic.callback;
 
 import org.harvey.vie.theory.util.SimpleList;
 

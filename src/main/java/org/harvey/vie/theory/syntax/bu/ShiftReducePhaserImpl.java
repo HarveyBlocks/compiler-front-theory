@@ -6,10 +6,12 @@ import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.semantic.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.callback.ShiftReduceCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.ShiftReduceErrorType;
+import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceCallbackRegister;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceErrorType;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -60,21 +62,23 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
      */
     @Override
     public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
-
-        ShiftReducePhaseContext context = new ShiftReducePhaseContext(table,
+        ShiftReducePhaseContext ctx = new ShiftReducePhaseContext(
+                table,
                 iterator,
                 tokenFilterPredict,
-                errorContext,
-                register
+                errorContext
+        );
+        ShiftReduceSemanticContext context = new ShiftReduceSemanticContext(
+                register, ctx
         );
         context.onStart();
         while (true) {
-            SourceToken current = context.currentToken();
-            if (context.isStackEmpty()) {
+            SourceToken current = ctx.currentToken();
+            if (ctx.isStackEmpty()) {
                 context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;
             }
-            int top = context.peekStatus();
+            int top = ctx.peek();
             ActiveTableElement element = table.activeNext(top, table.matchTerminal(current));
             if (element == null) {
                 // error
@@ -93,7 +97,7 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         return context.getResult();
     }
 
-    private void onReduce(ShiftReducePhaseContext context, ActiveTableElement element) {
+    private void onReduce(ShiftReduceSemanticContext context, ActiveTableElement element) {
         SimpleGrammarProduction production = table.getProduction(element.getProduction());
         if (element.isAccept()) {
             context.beforeAccept(production);
@@ -103,10 +107,10 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         }
     }
 
-    private void onAccept(ShiftReducePhaseContext context, SimpleGrammarProduction production) {
-
-        if (!context.hasNextToken()) {
-            if (context.validAcceptStack()) {
+    private void onAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
+        SyntaxParsingContext<Integer> syntaxContext = context.getContext();
+        if (!syntaxContext.hasNext()) {
+            if (syntaxContext.validAcceptStack()) {
                 context.onAccept(production);
             } else {
                 context.onError(ShiftReduceErrorType.INVALID_ACCEPTING_STATE);
@@ -116,7 +120,7 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         }
     }
 
-    private void onShift(ShiftReducePhaseContext context, ActiveTableElement element, SourceToken token) {
+    private void onShift(ShiftReduceSemanticContext context, ActiveTableElement element, SourceToken token) {
         context.onShift(element.nextStatus(), token);
     }
 }

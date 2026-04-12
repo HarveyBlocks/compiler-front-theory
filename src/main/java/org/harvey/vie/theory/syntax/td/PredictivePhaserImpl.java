@@ -5,9 +5,10 @@ import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.PredictiveSemanticContext;
 import org.harvey.vie.theory.semantic.SemanticResult;
-import org.harvey.vie.theory.syntax.callback.PredicativeErrorType;
-import org.harvey.vie.theory.syntax.callback.PredictiveCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.PredicativeErrorType;
+import org.harvey.vie.theory.semantic.callback.PredictiveCallbackRegister;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 
@@ -40,24 +41,27 @@ public class PredictivePhaserImpl implements PredictivePhaser {
 
     @Override
     public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
-        SyntaxParsingContext ctx = new SyntaxParsingContext(
+        PredicativeSyntaxParsingContext context = new PredicativeSyntaxParsingContext(
                 start,
                 iterator,
                 errorContext,
-                tokenFilterPredict,
-                register
+                tokenFilterPredict
+        );
+        PredictiveSemanticContext ctx = new PredictiveSemanticContext(
+                register,
+                context
         );
         ctx.onStart();
         while (true) {
-            if (ctx.isStackEmpty()) {
+            if (context.isStackEmpty()) {
                 ctx.onError(PredicativeErrorType.STACK_UNDERFLOW);
             }
-            GrammarUnitSymbol top = ctx.peekSymbol();
-            if (top == SyntaxParsingContext.END_MARK) {
+            GrammarUnitSymbol top = context.peek();
+            if (top == PredicativeSyntaxParsingContext.END_MARK) {
                 // 1. 当 X=a=$ 停止分析, 接受, 成功
-                if (!ctx.hasNext()) {
+                if (!context.hasNext()) {
                     ctx.beforeAccept();
-                    if (ctx.isStackEmpty()) {
+                    if (context.isStackEmpty()) {
                         // 接受, 成功
                         ctx.onAccept();
                     } else {
@@ -68,7 +72,7 @@ public class PredictivePhaserImpl implements PredictivePhaser {
                 }
                 break;
             }
-            SourceToken token = ctx.currentToken();
+            SourceToken token = context.currentToken();
             if (top.isTerminal()) {
                 terminal(token, top.toTerminal(), ctx);
             } else {
@@ -79,7 +83,7 @@ public class PredictivePhaserImpl implements PredictivePhaser {
         return ctx.getResult();
     }
 
-    private void terminal(SourceToken token, TerminalSymbol terminal, SyntaxParsingContext ctx) {
+    private void terminal(SourceToken token, TerminalSymbol terminal, PredictiveSemanticContext ctx) {
         // 2. 当 X is terminal 且 X = a != $, 弹出 X, 前进输入, goto 1
         if (terminal.match(token)) {
             ctx.onTerminal(terminal);
@@ -89,7 +93,7 @@ public class PredictivePhaserImpl implements PredictivePhaser {
         }
     }
 
-    private void head(SourceToken token, HeadSymbol head, SyntaxParsingContext ctx) {
+    private void head(SourceToken token, HeadSymbol head, PredictiveSemanticContext ctx) {
         // 不是 terminal
         // 3. 当 X not terminal, 查表 M[X,a]
         AlterableSymbol alterableSymbol = predictiveParsingTable.get(head, token);

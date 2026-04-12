@@ -3,9 +3,9 @@ package org.harvey.vie.theory.syntax.td.conflict;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.PredictiveSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.syntax.td.GrammarSyntaxTreeNodeBuilder;
-import org.harvey.vie.theory.syntax.td.SyntaxParsingContext;
 
 /**
  * TODO 由于词法分析采用最长匹配, 因此解决冲突的方法是切割
@@ -38,7 +38,7 @@ public interface LexicalConflictResolver {
      * 处理分析表里没有产生式的情况
      */
     default boolean resolveEmptyProduction(
-            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxParsingContext ctx) {
+            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, PredictiveSemanticContext ctx) {
         return false;
     }
 
@@ -46,7 +46,7 @@ public interface LexicalConflictResolver {
      * 处理需要的terminal和token无法匹配的情况
      */
     default boolean resolveTerminalConflict(
-            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, SyntaxParsingContext ctx) {
+            SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, PredictiveSemanticContext ctx) {
         return false;
     }
 }

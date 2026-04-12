@@ -1,24 +1,16 @@
 package org.harvey.vie.theory.syntax.bu;
 
 import lombok.Data;
-import lombok.Setter;
 import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.semantic.SemanticResult;
 import org.harvey.vie.theory.syntax.PanicSourceTokenIterator;
+import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceCallback;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceCallbackRegister;
-import org.harvey.vie.theory.syntax.callback.ShiftReduceErrorType;
-import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
-import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
-import java.util.Iterator;
 import java.util.Stack;
-import java.util.function.Consumer;
 
 /**
  * TODO
@@ -28,123 +20,73 @@ import java.util.function.Consumer;
  * @date 2026-04-07 15:07
  */
 @Data
-public class ShiftReducePhaseContext {
+public class ShiftReducePhaseContext implements SyntaxParsingContext<Integer> {
     private final ShiftReduceParsingTable table;
     private final Stack<Integer> statusStack;
     private final int startStatus;
-    private final ShiftReduceCallbackRegister register;
-    private Iterator<ShiftReduceCallback> callbackIter;
     private PanicSourceTokenIterator iterator;
     private final ErrorContext errorContext;
-    @Setter
-    private SemanticResult result;
 
     public ShiftReducePhaseContext(
             ShiftReduceParsingTable table,
             SourceTokenIterator iterator,
             TokenFilterPredict tokenFilterPredict,
-            ErrorContext errorContext,
-            ShiftReduceCallbackRegister register) {
+            ErrorContext errorContext) {
         this.table = table;
         this.iterator = new PanicSourceTokenIterator(iterator, errorContext, tokenFilterPredict);
         this.errorContext = errorContext;
-        this.register = register;
         this.statusStack = new Stack<>();
         this.startStatus = table.getStart();
-        pushStatus(startStatus);
-        this.callbackIter = register.iterator();
+        push(startStatus);
     }
 
-
+    @Override
     public boolean isStackEmpty() {
         return statusStack.isEmpty();
     }
 
-    public int peekStatus() {
+    @Override
+    public Integer peek() {
         return statusStack.peek();
     }
 
+    @Override
     public boolean validAcceptStack() {
         return statusStack.size() == 1 && statusStack.peek() == startStatus;
     }
 
-    private void pushStatus(int next) {
+
+    @Override
+    public void push(Integer next) {
         statusStack.push(next);
     }
 
-    private void popStatus(AlterableSymbol body) {
-        int k = body.isEpsilon() ? 0 : body.toConcatenation().size();
-        while (k-- > 0) {
-            if (statusStack.isEmpty()) {
-                throw new CompilerException("no more status in stack to be pop while reducing");
-            }
-            statusStack.pop();
-        }
+    @Override
+    public Integer getStart() {
+        return startStatus;
     }
 
-    public boolean hasNextToken() {
+    @Override
+    public void pop() {
+        statusStack.pop();
+    }
+
+    @Override
+    public boolean hasNext() {
         return this.iterator.hasNext();
     }
 
+    @Override
+    public void consumeCurrentToken() {
+        iterator.consumeCurrentToken();
+    }
+
+    @Override
     public SourceToken currentToken() {
         return this.iterator.currentToken();
     }
 
-
-    private void invokeBeforeAccept(SimpleGrammarProduction production) {
-        // accept 是特殊的 reduce
-        AlterableSymbol body = production.getBody();
-        popStatus(body);
-    }
-
-    private void invokeReduce(SimpleGrammarProduction production) {
-        // 输入指针不动(归约不消耗输入符号)
-        AlterableSymbol body = production.getBody();
-        popStatus(body);
-        int top = peekStatus();
-        int next = table.gotoNext(top, production.getHead());
-        pushStatus(next);
-    }
-
-    private void invokeShift(int nextStatus) {
-        pushStatus(nextStatus);
-        iterator.consumeCurrentToken();
-    }
-
-    public void onStart() {
-        invokeNext(c -> c.onStart(this), this::invokeNothing);
-    }
-
-    private void invokeNext(Consumer<ShiftReduceCallback> consumer, Runnable invoker) {
-        if (callbackIter.hasNext()) {
-            consumer.accept(callbackIter.next());
-        } else {
-            invoker.run();
-            callbackIter = register.iterator();
-        }
-    }
-
-    private void invokeNothing() {
-
-    }
-
-    public void onError(ShiftReduceErrorType errorType) {
-        invokeNext(c -> c.onError(this, errorType), this::invokeNothing);
-    }
-
-    public void onAccept(SimpleGrammarProduction production) {
-        invokeNext(c -> c.onAccept(this, production), this::invokeNothing);
-    }
-
-    public void onShift(int nextStatus, SourceToken token) {
-        invokeNext(c -> c.onShift(this, nextStatus, token), () -> invokeShift(nextStatus));
-    }
-
-    public void onReduce(SimpleGrammarProduction production) {
-        invokeNext(c -> c.onReduce(this, production), () -> invokeReduce(production));
-    }
-
-    public void beforeAccept(SimpleGrammarProduction production) {
-        invokeNext(c -> c.beforeAccept(this, production), () -> invokeBeforeAccept(production));
+    public int gotoNext(int top, HeadSymbol head) {
+        return table.gotoNext(top, head);
     }
 }
