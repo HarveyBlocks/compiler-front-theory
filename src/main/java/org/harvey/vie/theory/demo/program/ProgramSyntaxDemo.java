@@ -21,6 +21,7 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilderI
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 import org.harvey.vie.theory.syntax.grammar.symbol.TokenTypeTerminalSymbol;
 
+import java.util.Set;
 import java.util.function.BiFunction;
 
 /**
@@ -33,16 +34,21 @@ import java.util.function.BiFunction;
 @Slf4j
 public class ProgramSyntaxDemo {
 
+    public static final Set<TokenType> SHOULD_BE_FILTERED = Set.of(
+            ProgramTokenType.SPACE,
+            ProgramTokenType.COMMENT_LINE,
+            ProgramTokenType.COMMENT_BLOCK
+    );
 
     public static void main(String[] args) {
-        SemanticResult result = demo("int64 i = 1 + 2;", (iter, errCtx) -> {
+        SemanticResult result = demo("int32 i = 1 + 2;", (iter, errCtx) -> {
             ProductionSetContext context = build();
             System.out.println(context);
             ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
                     "program", context);
             ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                     shiftReduceParsingTable,
-                    t -> true,
+                    t -> !SHOULD_BE_FILTERED.contains(t.getType()),
                     SemanticDemo.buildShiftReduceRegister()
             );
             return phaser.phase(iter, errCtx);
@@ -90,21 +96,22 @@ public class ProgramSyntaxDemo {
                 .alternateDefinition("matched_stmt")
                 .alternateDefinition("unmatched_stmt");
 
-        // matched_stmt ::= declaration_stmt | assignment_stmt | while_stmt | do_while_stmt
+        // matched_stmt ::= declaration_stmt | assignment_stmt | matched_while_stmt | do_while_stmt
         //                | expr_stmt | block | empty_stmt | matched_if_stmt
         contextBuilder.define("matched_stmt")
                 .alternateDefinition("declaration_stmt")
                 .alternateDefinition("assignment_stmt")
-                .alternateDefinition("while_stmt")
+                .alternateDefinition("matched_while_stmt")
                 .alternateDefinition("do_while_stmt")
                 .alternateDefinition("expr_stmt")
                 .alternateDefinition("block")
                 .alternateDefinition("empty_stmt")
                 .alternateDefinition("matched_if_stmt");
 
-        // unmatched_stmt ::= unmatched_if_stmt
+        // unmatched_stmt ::= unmatched_if_stmt | unmatched_while_stmt
         contextBuilder.define("unmatched_stmt")
-                .alternateDefinition("unmatched_if_stmt");
+                .alternateDefinition("unmatched_if_stmt")
+                .alternateDefinition("unmatched_while_stmt");
 
         // matched_if_stmt ::= if ( expr ) matched_stmt else matched_stmt
         contextBuilder.define("matched_if_stmt")
@@ -132,13 +139,21 @@ public class ProgramSyntaxDemo {
                 .concatenateTerminalLast(ProgramTokenType.CONTROL_STRUCTURES_ELSE)
                 .concatenateDefinitionLast("unmatched_stmt");
 
-        // while_stmt ::= while ( expr ) stmt
-        contextBuilder.define("while_stmt")
+        // matched_while_stmt   ::= while ( expr ) matched_stmt
+        contextBuilder.define("matched_while_stmt")
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_WHILE)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
                 .concatenateDefinitionLast("expr")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
-                .concatenateDefinitionLast("stmt");
+                .concatenateDefinitionLast("matched_stmt");
+
+        // unmatched_while_stmt ::= while ( expr ) unmatched_stmt
+        contextBuilder.define("unmatched_while_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_WHILE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("expr")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateDefinitionLast("unmatched_stmt");
 
         // do_while_stmt ::= do stmt while ( expr ) ;
         contextBuilder.define("do_while_stmt")
@@ -210,23 +225,14 @@ public class ProgramSyntaxDemo {
                 .concatenateDefinitionLast("factor")
                 .alternateDefinition("factor");
 
-        // factor ::= primary suffix_list
+        // factor ::= primary
         contextBuilder.define("factor")
-                .alternateDefinition("primary")
-                .concatenateDefinitionLast("suffix_list");
+                .alternateDefinition("primary");
 
-        // suffix_list ::= ε | [ expr ] suffix_list
-        contextBuilder.define("suffix_list")
-                .alternateEpsilon()
-                .alternateTerminal(ProgramTokenType.OPERATOR_SQUARE_OPEN)
-                .concatenateDefinitionLast("expr")
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
-                .concatenateDefinitionLast("suffix_list");
-
-        // primary ::= id | const_int | const_float | const_char | const_str
+        // primary ::= lvalue | const_int | const_float | const_char | const_str
         //           | true | false | ( expr )
         contextBuilder.define("primary")
-                .alternateTerminal(ProgramTokenType.IDENTIFIER)
+                .alternateDefinition("lvalue")
                 .alternateTerminal(ProgramTokenType.CONSTANT_INTEGER)
                 .alternateTerminal(ProgramTokenType.CONSTANT_FLOAT)
                 .alternateTerminal(ProgramTokenType.CONSTANT_CHARACTER)

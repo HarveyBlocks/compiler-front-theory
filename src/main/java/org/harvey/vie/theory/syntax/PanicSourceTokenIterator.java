@@ -33,8 +33,13 @@ public class PanicSourceTokenIterator {
                 // 跳过(panic模式)
                 continue;
             }
-            if (current == SourceTokenIterator.NO_MORE_TOKEN || tokenFilterPredict.test(current)) {
+            if (current == SourceTokenIterator.NO_MORE_TOKEN) {
                 return current;
+            }
+            if (tokenFilterPredict.test(current)) {
+                return current;
+            } else {
+                consumeCurrentToken0(); // 消费
             }
         }
     }
@@ -42,11 +47,16 @@ public class PanicSourceTokenIterator {
 
     public void consumeCurrentToken() {
         // 消费
+        SourceToken next = consumeCurrentToken0();
+        if (!tokenFilterPredict.test(next)) {
+            throw new CompilerException("Incorrect current-next using: for consumed token what should be filtered");
+        }
+    }
+
+    private SourceToken consumeCurrentToken0() {
+
         try {
-            SourceToken next = iterator.next();
-            if (!tokenFilterPredict.test(next)) {
-                throw new CompilerException("Incorrect current-next using: for consumed token what should be filtered");
-            }
+            return iterator.next();
         } catch (CompileException e) {
             throw new CompilerException(
                     "current mechanism fails. If current must be executed before this next, then this next must not fail!  ",

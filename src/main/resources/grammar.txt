@@ -8,7 +8,7 @@ stmt             ::= matched_stmt
 
 matched_stmt     ::= declaration_stmt
                    | assignment_stmt
-                   | while_stmt
+                   | matched_while_stmt
                    | do_while_stmt
                    | expr_stmt
                    | block
@@ -16,13 +16,16 @@ matched_stmt     ::= declaration_stmt
                    | matched_if_stmt
 
 unmatched_stmt   ::= unmatched_if_stmt
+                   | unmatched_while_stmt
 
 matched_if_stmt  ::= if ( expr ) matched_stmt else matched_stmt
 
 unmatched_if_stmt ::= if ( expr ) stmt
                     | if ( expr ) matched_stmt else unmatched_stmt
 
-while_stmt       ::= while ( expr ) stmt
+matched_while_stmt   ::= while ( expr ) matched_stmt
+
+unmatched_while_stmt ::= while ( expr ) unmatched_stmt
 
 do_while_stmt    ::= do stmt while ( expr ) ;
 
@@ -48,12 +51,9 @@ expr             ::= expr + term
 term             ::= term * factor
                    | factor
 
-factor           ::= primary suffix_list
+factor           ::= primary
 
-suffix_list      ::= ε
-                   | [ expr ] suffix_list
-
-primary          ::= id
+primary          ::= lvalue
                    | const_int
                    | const_float
                    | const_char

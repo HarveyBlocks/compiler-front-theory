@@ -65,17 +65,16 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         if (current != null) {
             return true;
         }
-        if (lexeme.isEmpty()) {
-            return false;
-        }
-        try {
-            current = trySplitToken();
-            return true;
-        } catch (CompileException e) {
-            return false;
-        }
+        return !lexeme.isEmpty();
     }
 
+    @Override
+    public SourceToken current() throws CompileException {
+        if (current == null) {
+            current = next0();
+        }
+        return current;
+    }
 
     @Override
     public SourceToken next() throws CompileException {
@@ -119,14 +118,6 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
                 status = next;
             }
         }
-    }
-
-    @Override
-    public SourceToken current() throws CompileException {
-        if (current == null) {
-            current = next0();
-        }
-        return current;
     }
 
     private SourceCharacter read() {

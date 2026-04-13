@@ -48,7 +48,7 @@ public class ProductionItemImpl implements ProductionItem {
         }
         AlterableSymbol thisAlterable = getAlterableSymbol();
         AlterableSymbol thatAlterable = o.getAlterableSymbol();
-        boolean thisEpsilon = thatAlterable.isEpsilon();
+        boolean thisEpsilon = thisAlterable.isEpsilon();
         boolean thatEpsilon = thatAlterable.isEpsilon();
         if (thisEpsilon && thatEpsilon) {
             return true;

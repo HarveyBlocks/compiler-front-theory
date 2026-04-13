@@ -127,6 +127,7 @@ public class ProgramLexicalDemo {
                       "int32 a = 32+453+b;\n" +
                       "string str = \"str\"+a+b;\n" +
                       " ";
+        text = "int32 i = 1 + 2;";
         LexicalDemo.testLexical(text, alphabetCharacterFactory, table);
     }
 
