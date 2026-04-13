@@ -16,7 +16,7 @@ public interface ReduceTableElement extends ActiveTableElement {
         if (!other.isReduce() || other.isAccept()) {
             return true;
         }
-        return Objects.equals(getProduction(), other.getProduction());
+        return !Objects.equals(getProduction(), other.getProduction());
     }
 
     @Override

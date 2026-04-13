@@ -91,44 +91,54 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         int nStates = table.length;
         int nCols = alphabet.length;
 
-        // 计算状态编号的固定宽度（零填充）
+        // 状态编号零填充宽度
         int width = Integer.toString(nStates - 1).length();
         String zeroPad = "%0" + width + "d";
 
-        // 状态列字符串：接受状态为 ((数字))，非接受状态为 "  数字  "（左右各两个空格）
-        String[] stateStrings = new String[nStates];
-        int maxStateColWidth = 0;
+        // 1. 生成原始状态字符串（不带填充）
+        String[] rawStateStrs = new String[nStates];
         for (int i = 0; i < nStates; i++) {
             String stateNum = String.format(zeroPad, i);
-            String stateStr;
             if (accepts[i] != null) {
-                stateStr = String.format("%s %s", stateNum, accepts[i].hint());
+                rawStateStrs[i] = stateNum + " " + accepts[i].hint();
             } else {
-                stateStr = String.format("%s    ", stateNum);  // 左右各两个空格，保证长度与接受状态一致
+                rawStateStrs[i] = stateNum;
             }
-            stateStrings[i] = stateStr;
-            maxStateColWidth = Math.max(maxStateColWidth, stateStr.length());
         }
-        // 计算每一列转移值的最大宽度，并缓存所有转移字符串
+
+        // 2. 计算状态列需要的最大宽度
+        int maxStateColWidth = 0;
+        for (String s : rawStateStrs) {
+            maxStateColWidth = Math.max(maxStateColWidth, s.length());
+        }
+
+        // 3. 生成最终状态列字符串（统一宽度，分别对齐）
+        String[] stateStrings = new String[nStates];
+        for (int i = 0; i < nStates; i++) {
+            if (accepts[i] != null) {
+                // 接受状态：左对齐，右侧填充空格
+                stateStrings[i] = String.format("%-" + maxStateColWidth + "s", rawStateStrs[i]);
+            } else {
+                // 非接受状态：居中对齐
+                stateStrings[i] = center(rawStateStrs[i], maxStateColWidth);
+            }
+        }
+
+        // 4. 计算转移列宽度及转移字符串（与原逻辑相同，保留右对齐）
         String[][] transStrings = new String[nStates][nCols];
         int[] colWidths = new int[nCols];
         for (int j = 0; j < nCols; j++) {
             colWidths[j] = alphabet[j].toString().length(); // 列标题宽度
             for (int i = 0; i < nStates; i++) {
                 int target = table[i][j];
-                String str;
-                if (target == UNKNOWN_CHAR_STATUS) {
-                    str = "NaN";
-                } else {
-                    str = String.format(zeroPad, target);
-                }
+                String str = (target == UNKNOWN_CHAR_STATUS) ? "NaN" : String.format(zeroPad, target);
                 transStrings[i][j] = str;
                 colWidths[j] = Math.max(colWidths[j], str.length());
             }
         }
 
-        // 动态构建行格式字符串
-        StringBuilder rowFormat = new StringBuilder("%" + maxStateColWidth + "s");
+        // 5. 构建行格式：状态列左对齐，转移列右对齐
+        StringBuilder rowFormat = new StringBuilder("%-" + maxStateColWidth + "s");
         for (int j = 0; j < nCols; j++) {
             rowFormat.append("  %").append(colWidths[j]).append("s");
         }
@@ -136,9 +146,9 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         StringBuilder sb = new StringBuilder();
         sb.append("Start state: ").append(start).append("\n");
 
-        // 打印表头（第一列留空）
-        String headerFirstCol = String.format("%" + maxStateColWidth + "s", " ");
-        sb.append(headerFirstCol);
+        // 表头第一列：左对齐空字符串（与状态列对齐方式一致）
+        // String headerFirstCol = String.format("%-" + maxStateColWidth + "s", " ");
+        sb.append(" ".repeat(maxStateColWidth));
         for (int j = 0; j < nCols; j++) {
             sb.append(String.format("  %" + colWidths[j] + "s", alphabet[j].toString()));
         }
@@ -153,6 +163,16 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         }
 
         return sb.toString();
+    }
+
+    private String center(String s, int width) {
+        if (s.length() >= width) {
+            return s;
+        }
+        int totalPadding = width - s.length();
+        int leftPad = totalPadding / 2;
+        int rightPad = totalPadding - leftPad;
+        return " ".repeat(leftPad) + s + " ".repeat(rightPad);
     }
 
     @Override

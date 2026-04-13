@@ -11,14 +11,14 @@ public interface ShiftTableElement extends ActiveTableElement {
     int nextStatus();
     @Override
     default boolean conflict(ActiveTableElement other) {
-        if ( !other.isShift()) {
-            return false;
+        if (!other.isShift()) {
+            return true;
         } else if (other.nextStatus() != nextStatus()) {
             throw new IllegalStateException(
                     "For the same state I and the same terminal a, the result of GOTO(I, a) is uniquely determined, " +
                     "and thus it cannot be assigned two different shift targets.");
         }
-        return true;
+        return false;
     }
 
     @Override

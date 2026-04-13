@@ -79,5 +79,9 @@ class EpsilonSymbol implements GrammarSymbol, AlterableSymbol {
         return true;
     }
 
+    @Override
+    public boolean isConcatenation() {
+        return false;
+    }
 }
 

@@ -71,7 +71,7 @@ public class SyntaxDemo {
                         start,
                         predictiveParsingTable,
                         SemanticDemo.buildPredicativeRegister(),
-                        t->true
+                        t -> true
                 );
                 return phaser.phase(iter, errCtx);
             });
@@ -82,7 +82,9 @@ public class SyntaxDemo {
     private static class ShiftReduce {
         public static void main(String[] args) {
             SemanticResult result = SyntaxDemo.demo((iter, errCtx) -> {
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable();
+                ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
+                System.out.println(context);
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S", context);
                 ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                         shiftReduceParsingTable,
                         t -> true,
@@ -133,36 +135,34 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    private static ShiftReduceParsingTable buildShiftReduceParsingTable() {
-        ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
-        System.out.println(context);
-        System.out.println("-----------------------");
+    public static ShiftReduceParsingTable buildShiftReduceParsingTable(String startHead, ProductionSetContext context) {
+        System.out.println("----------first map-------------");
         FirstMapFactory firstMapFactory = new IterativeFixedPointFirstMapFactory();
         FirstMap firstMap = firstMapFactory.first(context);
         firstMap.forEach(System.out::println);
-        System.out.println("-----------------------");
+        System.out.println("-----------item set family------------");
         ItemSetFamilyFactory itemSetFamilyFactory = new ItemSetFamilyFactoryImpl();
-        ItemSetFamily family = itemSetFamilyFactory.produce("S", context, firstMap);
+        ItemSetFamily family = itemSetFamilyFactory.produce(startHead, context, firstMap);
         showItemSetFamily(family);
-        System.out.println("-----------------------");
+        System.out.println("-----------look ahead------------");
         LookaheadMapFactory lookaheadMapFactory = new LookaheadMapFactoryImpl();
-        LookaheadMap[] lookaheadMaps = lookaheadMapFactory.produce("S", context, family, firstMap);
+        LookaheadMap[] lookaheadMaps = lookaheadMapFactory.produce(startHead, context, family, firstMap);
         int cur = 0;
         for (LookaheadMap lookaheadMap : lookaheadMaps) {
             System.out.println("I" + (cur++) + ": " + lookaheadMap);
         }
-        System.out.println("-----------------------");
+        System.out.println("------------shift reduce table-----------");
         ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(
                 MATCHER_FACTORY);
         ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(
-                "S",
+                startHead,
                 context,
                 firstMap,
                 family,
                 lookaheadMaps
         );
         System.out.println(shiftReduceParsingTable);
-        System.out.println("-----------------------");
+        System.out.println("---------finish all--------------");
         return shiftReduceParsingTable;
     }
 
@@ -213,7 +213,7 @@ public class SyntaxDemo {
         ProductionSetContext context = ProductionSetContextBuilds.build4(TERMINAL_FACTORY);
         System.out.println(context);
         System.out.println("-----------------------");
-        LeftRecursionEliminator leftRecursionEliminator = new LeftRecursionEliminatorImpl(s -> s + '\'');
+        LeftRecursionEliminator leftRecursionEliminator = new LeftRecursionEliminatorImpl(s -> s + '\'' );
         LeftFactoringEliminator leftFactoringEliminator = new LeftFactoringEliminatorImpl((s, i) -> s + i);
         ProductionSetContext eliminated = leftFactoringEliminator.eliminate(leftRecursionEliminator.eliminate(context));
         System.out.println(eliminated);

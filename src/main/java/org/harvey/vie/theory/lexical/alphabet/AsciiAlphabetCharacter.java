@@ -3,6 +3,9 @@ package org.harvey.vie.theory.lexical.alphabet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Map;
+import java.util.Optional;
+
 /**
  * Implementation of {@link AlphabetCharacter} representing a single-byte ASCII character.
  *
@@ -25,10 +28,17 @@ public class AsciiAlphabetCharacter extends AbstractAlphabetCharacter {
         return ascii;
     }
 
+    private static final Map<Byte, String> ESCAPE_MAP = Map.of(
+            (byte) '\f', "\\f",
+            (byte) '\t', "\\t",
+            (byte) '\r', "\\r",
+            (byte) '\n', "\\n",
+            (byte) ' ', "` `"
+    );
 
     @Override
     public String toString() {
-        return Character.toString(ascii);
+        return Optional.ofNullable(ESCAPE_MAP.get(ascii)).orElseGet(() -> Character.toString(ascii));
     }
 
 }
