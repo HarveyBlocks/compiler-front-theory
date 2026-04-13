@@ -27,7 +27,7 @@ public class SourceTokenImpl implements SourceToken {
 
     @Override
     public String hintString() {
-        return String.format("%d:%s('%s')", offset, type.hint(), new String(lexeme));
+        return String.format("%d:%s`%s`", offset, type.hint(), new String(lexeme));
     }
 
 

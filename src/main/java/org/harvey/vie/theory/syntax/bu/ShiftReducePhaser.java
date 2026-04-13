@@ -3,7 +3,7 @@ package org.harvey.vie.theory.syntax.bu;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 
-import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.semantic.context.SemanticResult;
 
 /**
  * TODO

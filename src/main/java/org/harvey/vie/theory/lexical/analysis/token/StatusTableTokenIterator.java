@@ -53,12 +53,26 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
     @Override
     public boolean hasNext() {
         try {
-            return reader.peek() != SourceCharacter.EOF;
+            if (reader.peek() != SourceCharacter.EOF) {
+                return true;
+            }
         } catch (IOException e) {
             throw new CompilerException("Exception on io", e);
         } catch (CompileException e) {
             // 错误, 读到了非Ascii码
             return true;
+        }
+        if (current != null) {
+            return true;
+        }
+        if (lexeme.isEmpty()) {
+            return false;
+        }
+        try {
+            current = trySplitToken();
+            return true;
+        } catch (CompileException e) {
+            return false;
         }
     }
 

@@ -20,6 +20,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Predicate;
 
 /**
  * TODO
@@ -166,7 +167,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         }
 
         private HeadSymbol[] headSymbolsFilterHead() {
-            return firstMap.headSet().stream().filter(h -> !start.equals(h)).toArray(HeadSymbol[]::new);
+            return firstMap.headSet().stream().filter(Predicate.not(start::equals)).toArray(HeadSymbol[]::new);
         }
 
         public ShiftReduceParsingTable build(

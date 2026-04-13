@@ -1,11 +1,11 @@
-package org.harvey.vie.theory.semantic;
+package org.harvey.vie.theory.semantic.context;
 
 /**
  * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
- * @date 2026-04-08 20:15
+ * @date 2026-04-12 22:44
  */
-public interface SemanticResult {
+public interface SemanticContext {
 }

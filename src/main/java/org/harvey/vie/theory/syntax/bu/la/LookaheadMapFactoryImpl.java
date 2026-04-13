@@ -13,6 +13,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -184,7 +185,7 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
                             .stream()
                             .filter(LookaheadSet::usable)
                             .collect(Collectors.toMap(la -> la.item, la -> la.lookahead)))
-                    .filter(m -> !m.isEmpty())
+                    .filter(Predicate.not(Map::isEmpty))
                     .orElse(null);
         }
     }

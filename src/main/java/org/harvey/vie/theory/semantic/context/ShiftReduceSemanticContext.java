@@ -1,11 +1,10 @@
-package org.harvey.vie.theory.semantic;
+package org.harvey.vie.theory.semantic.context;
 
 import lombok.Getter;
 import lombok.Setter;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.*;
-import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;

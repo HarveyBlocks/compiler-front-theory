@@ -47,4 +47,8 @@ public class ArrayBuilder<T> {
     public List<T> toList(T[] a) {
         return list.subList(0, pos);
     }
+
+    public boolean isEmpty() {
+        return pos==0;
+    }
 }

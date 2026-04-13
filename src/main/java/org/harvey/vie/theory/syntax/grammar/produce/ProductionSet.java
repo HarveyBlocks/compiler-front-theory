@@ -2,7 +2,7 @@ package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.ReferredHeadSymbol;
-import org.harvey.vie.theory.util.SimpleList;
+import org.harvey.vie.theory.util.SimpleCollection;
 
 /**
  * TODO 产生式集合, 也就是文法. 已经被映射了
@@ -11,7 +11,7 @@ import org.harvey.vie.theory.util.SimpleList;
  * @version 1.0
  * @date 2026-03-28 00:48
  */
-public interface ProductionSet extends SimpleList<GrammarProduction> {
+public interface ProductionSet extends SimpleCollection<GrammarProduction> {
     ReferredHeadSymbol getHead(int i);
 
     AlterableSymbol getBody(int i);

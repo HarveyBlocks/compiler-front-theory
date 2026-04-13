@@ -3,7 +3,7 @@ package org.harvey.vie.theory.syntax.td.conflict;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.semantic.PredictiveSemanticContext;
+import org.harvey.vie.theory.semantic.context.PredictiveSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.syntax.td.GrammarSyntaxTreeNodeBuilder;
 

@@ -4,13 +4,11 @@ import lombok.Getter;
 import lombok.Setter;
 import org.harvey.vie.theory.syntax.grammar.first.FirstSet;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
-import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.*;
 
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -57,7 +55,7 @@ public class ItemSetBuilder {
         return set.stream()
                 .filter(ProductionItem::hasNextSymbol)
                 .map(ProductionItem::nextSymbol)
-                .filter(u -> !u.isTerminal())
+                .filter(Predicate.not(GrammarSymbol::isTerminal))
                 .map(GrammarUnitSymbol::toHead)
                 .filter(HeadSymbol::isDefine)
                 .map(HeadSymbol::toDefine)

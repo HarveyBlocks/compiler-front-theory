@@ -16,7 +16,7 @@ import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
-import org.harvey.vie.theory.semantic.SemanticResult;
+import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;

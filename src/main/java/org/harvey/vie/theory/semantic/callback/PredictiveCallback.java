@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.semantic.callback;
 
-import org.harvey.vie.theory.semantic.PredictiveSemanticContext;
+import org.harvey.vie.theory.semantic.context.PredictiveSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarConcatenation;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;

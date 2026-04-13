@@ -44,13 +44,8 @@ public class LexicalDemo {
     public static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
         RegexDfaStatusTable table;
-        TempType[] types = new TempType[]{
-                new TempType(0, 1, "space"),
-                new TempType(1, 1, "id"),
-                new TempType(2, 1, "+"),
-                new TempType(3, 1, "*"),
-                new TempType(4, 1, "("),
-                new TempType(5, 1, ")")};
+        TempType[] types = new TempType[]{new TempType(0, 1, "space"), new TempType(1, 1, "id"),
+                new TempType(2, 1, "+"), new TempType(3, 1, "*"), new TempType(4, 1, "("), new TempType(5, 1, ")")};
         try {
             table = director.direct(List.of(
                     // 1个或多个空格,
@@ -71,50 +66,8 @@ public class LexicalDemo {
         extracted();
     }
 
-    private static void extracted1() {
-        AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
-        LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
-        RegexDfaStatusTable table;
-        TempType[] types = new TempType[]{
-                new TempType(0, 1, "SPACE"),
-                new TempType(1, 2, "BLOCK_COMMIT"),
-                new TempType(2, 1, "LINE_COMMIT"),
-                new TempType(3, 1, "STRING_CONSTANT"),
-                new TempType(4, 1, "CHARACTER_CONSTANT")};
-        try {
-            table = director.direct(List.of(
-                    new LexicalPattern("\\s\\s*", types[0]),
-                    new LexicalPattern("/\\*.*\\*/", types[1]),
-                    new LexicalPattern("//.*\n", types[2]),
-                    new LexicalPattern("\".*\"", types[3]),
-                    new LexicalPattern("'(..*)|(\\\\')'", types[4])
-            ));
-        } catch (ParseException e) {
-            throw new RuntimeException(e);
-        }
-        log.info("{}", table);
-        String text = "/* 块注释内含\n" +
-                   "   // 这不是行注释\n" +
-                   "   \"这也不是字符串\"\n" +
-                   "   '这也不是字符'\n" +
-                   "   空白符：\\t\\n\\r\\f\\v\n" +
-                   "*/\n" +
-                   "// 行注释内含 /* 块注释标记 */ \"字符串标记\" '字符标记' 以及空白符\\t\\v\n" +
-                   "\"字符串字面量内含 \\\"转义双引号\\\" 和 // 不是行注释 以及 /* 不是块注释 */ 以及 '不是字符'\"\n" +
-                   "'a'   // 普通字符字面量\n" +
-                   "'\\''  // 转义的单引号字符字面量\n" +
-                   "'\\n'  // 换行符字面量\n" +
-                   "'\\t'  // 制表符\n" +
-                   "/* 另一个块注释 */ // 行注释后跟空白符 \\f\n" +
-                   "\"跨行字符串\\\n" +
-                   "第二行（反斜杠换行）\"   // 合法的跨行字符串（反斜杠后跟换行）";
-        testLexical(text, alphabetCharacterFactory, table);
-    }
-
-    private static void testLexical(
-            String text,
-            AlphabetCharacterFactory alphabetCharacterFactory,
-            RegexDfaStatusTable table) {
+    public static void testLexical(
+            String text, AlphabetCharacterFactory alphabetCharacterFactory, RegexDfaStatusTable table) {
         Resource resource = new AsciiStringResource(text);
         ErrorContext errorContext = new DefaultErrorContext();
         SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
@@ -122,7 +75,7 @@ public class LexicalDemo {
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
             while (iterator.hasNext()) {
                 SourceToken next = iterator.next();
-                log.info(next.hintString());
+                log.info("hint: {}, value: {}", next.hintString(), next.getLexeme());
             }
             log.info("yes");
         } catch (CompileException e) {

@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.lexical;
 
+import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacterFactory;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
@@ -30,6 +31,7 @@ import java.util.List;
  * @version 1.0
  * @date 2026-03-24 00:32
  */
+@Slf4j
 public class DefaultLexicalDirector implements LexicalDirector {
 
     private final RegexParser regexParser;
@@ -57,11 +59,14 @@ public class DefaultLexicalDirector implements LexicalDirector {
         for (LexicalPattern pattern : patterns) {
             // 正则解析成树
             pairs.add(new RegexTypePair(regexParser.parse(pattern.getRegex()), pattern.getType()));
+            log.info("phased regex tree: " + pattern.getType());
         }
         // 正则->nfa
         NfaStatusGraph<AlphabetCharacter, TokenType> nfaStatusGraph = regexNfaAdaptor.adapt(pairs);
+        log.info("phased nfa.");
         // nfa->dfa
         DfaStatusGraph<AlphabetCharacter, TokenType> dfaStatusGraph = nfaDfaAdaptor.adapt(nfaStatusGraph);
+        log.info("phased dfa.");
         // 最小化
         return dfaMinimizer.minimize(regexDfaStatusTableFactory, dfaStatusGraph);
     }

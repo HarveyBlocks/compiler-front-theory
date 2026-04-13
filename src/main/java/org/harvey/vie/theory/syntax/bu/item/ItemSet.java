@@ -3,7 +3,7 @@ package org.harvey.vie.theory.syntax.bu.item;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
-import org.harvey.vie.theory.util.SimpleList;
+import org.harvey.vie.theory.util.SimpleCollection;
 
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +15,7 @@ import java.util.Set;
  * @version 1.0
  * @date 2026-04-03 22:13
  */
-public interface ItemSet extends SimpleList<ProductionItem> {
+public interface ItemSet extends SimpleCollection<ProductionItem> {
     int NONE = -1;
 
     boolean contains(ProductionItem item);

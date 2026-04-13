@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.error;
 
-import org.harvey.vie.theory.util.SimpleList;
+import org.harvey.vie.theory.util.SimpleCollection;
 
 /**
  * Interface defining the context for managing compilation errors.
@@ -11,7 +11,7 @@ import org.harvey.vie.theory.util.SimpleList;
  * @version 1.0
  * @date 2026-03-24 21:27
  */
-public interface ErrorContext extends SimpleList<CompileErrorMessage> {
+public interface ErrorContext extends SimpleCollection<CompileErrorMessage> {
     void addError(CompileErrorMessage message);
 
 

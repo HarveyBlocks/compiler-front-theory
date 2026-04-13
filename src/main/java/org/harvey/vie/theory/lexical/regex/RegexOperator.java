@@ -20,7 +20,6 @@ public enum RegexOperator {
     PARENTHESES_POST((byte) ')'),
     CLOSURE((byte) '*'),
     OR((byte) '|'),
-    MATCH_ANY((byte) '.'),
     ESCAPE((byte) '\\'),
     ;
 

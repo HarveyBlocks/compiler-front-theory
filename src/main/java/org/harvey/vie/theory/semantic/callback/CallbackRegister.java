@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.semantic.callback;
 
-import org.harvey.vie.theory.util.SimpleList;
+import org.harvey.vie.theory.util.SimpleCollection;
 
 /**
  * TODO
@@ -9,6 +9,6 @@ import org.harvey.vie.theory.util.SimpleList;
  * @version 1.0
  * @date 2026-04-08 13:00
  */
-public  interface CallbackRegister<T extends SemanticCallback> extends SimpleList<T> {
+public  interface CallbackRegister<T extends SemanticCallback> extends SimpleCollection<T> {
     void add(T callable);
 }

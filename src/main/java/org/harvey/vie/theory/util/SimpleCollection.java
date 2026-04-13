@@ -10,7 +10,7 @@ import java.util.stream.StreamSupport;
  * @version 1.0
  * @date 2026-04-06 15:42
  */
-public interface SimpleList<T> extends Iterable<T> {
+public interface SimpleCollection<T> extends Iterable<T> {
     default Stream<T> stream() {
         return StreamSupport.stream(spliterator(), false);
     }

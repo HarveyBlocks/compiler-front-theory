@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.semantic;
+package org.harvey.vie.theory.semantic.context;
 
 import lombok.Getter;
 import lombok.Setter;
