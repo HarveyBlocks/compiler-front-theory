@@ -65,7 +65,7 @@ public class SyntaxDemo {
         public static void main(String[] args) {
             SemanticResult result = SyntaxDemo.demo((iter, errCtx) -> {
                 // syntax analyzer
-                PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable();
+                PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable("E");
                 GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
                 PredictivePhaserImpl phaser = new PredictivePhaserImpl(
                         start,
@@ -209,28 +209,32 @@ public class SyntaxDemo {
         }
     }
 
-    public static PredictiveParsingTable buildPredictiveParsingTable() {
-        ProductionSetContext context = ProductionSetContextBuilds.build4(TERMINAL_FACTORY);
+    public static PredictiveParsingTable buildPredictiveParsingTable(String startHead) {
+        ProductionSetContext context = ProductionSetContextBuilds.buildSchoolWork7(TERMINAL_FACTORY);
         System.out.println(context);
-        System.out.println("-----------------------");
+        System.out.println("-----------消除左递归和提取左因子------------");
         LeftRecursionEliminator leftRecursionEliminator = new LeftRecursionEliminatorImpl(s -> s + '\'' );
         LeftFactoringEliminator leftFactoringEliminator = new LeftFactoringEliminatorImpl((s, i) -> s + i);
         ProductionSetContext eliminated = leftFactoringEliminator.eliminate(leftRecursionEliminator.eliminate(context));
         System.out.println(eliminated);
-        System.out.println("-----------------------");
+        System.out.println("------------first-----------");
         FirstMapFactory firstMapFactory = new NaiveRecursiveFirstMapFactory();
         FirstMap firstMap = firstMapFactory.first(eliminated);
         firstMap.forEach(System.out::println);
-        System.out.println("-----------------------");
+        System.out.println("-----------follow------------");
         FollowSetFactory followSetFactory = new FollowSetFactoryImpl();
-        FollowMap followMap = followSetFactory.follow("E", eliminated, firstMap);
+        FollowMap followMap = followSetFactory.follow(startHead, eliminated, firstMap);
         followMap.entrySet().forEach(System.out::println);
-        System.out.println("-----------------------");
+        System.out.println("---------table--------------");
         PredictiveParsingTableFactory tableFactory = new DeterministicPredictiveParsingTableFactory(MATCHER_FACTORY);
         PredictiveParsingTable predictiveParsingTable = tableFactory.produce(eliminated, firstMap, followMap);
         System.out.println(predictiveParsingTable);
         System.out.println("-----------------------");
         return predictiveParsingTable;
+    }
+
+    public static void main(String[] args) {
+        buildPredictiveParsingTable("bexpr");
     }
 }
 

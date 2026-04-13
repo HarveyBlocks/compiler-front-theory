@@ -21,7 +21,7 @@ public interface ProductionSetContext extends SimpleCollection<GrammarDefineProd
      */
     HeadDefineSymbol getDefinition(String name);
 
-    Integer indexOf(String name);
+    int indexOf(String name);
 
     GrammarDefineProduction get(int i);
 

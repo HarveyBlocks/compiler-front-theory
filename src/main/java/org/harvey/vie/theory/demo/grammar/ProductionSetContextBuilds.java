@@ -158,4 +158,88 @@ public class ProductionSetContextBuilds {
             return hint;
         }
     }
+
+    public static ProductionSetContext buildSchoolWork1(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        contextBuilder.define("S")
+                .alternateTerminal(of("0"))
+                .concatenateSelfLast()
+                .concatenateTerminalLast(of("1"));
+        return contextBuilder.build();
+    }
+    public static ProductionSetContext buildSchoolWork2(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        contextBuilder.define("S")
+                .alternateTerminal(of("+"))
+                .concatenateSelfLast()
+                .concatenateSelfLast()
+                .alternateTerminal(of("*"))
+                .concatenateSelfLast()
+                .concatenateSelfLast()
+                .alternateTerminal(of("a"));
+        return contextBuilder.build();
+    }
+    public static ProductionSetContext buildSchoolWork3(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        contextBuilder.define("S")
+                .alternateEpsilon()
+                .alternateSelf()
+                .concatenateTerminalLast(of("("))
+                .concatenateSelfLast()
+                .concatenateTerminalLast(of(")"))
+                .concatenateSelfLast();
+        return contextBuilder.build();
+    }
+    public static ProductionSetContext buildSchoolWork4(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        contextBuilder.define("S")
+                .alternateSelf()
+                .concatenateTerminalLast(of("+"))
+                .concatenateSelfLast()
+                .alternateSelf()
+                .concatenateSelfLast()
+                .alternateTerminal(of("("))
+                .concatenateSelfLast()
+                .concatenateTerminalLast(of(")"))
+                .alternateSelf()
+                .concatenateTerminalLast(of("*"))
+                .alternateTerminal(of("a"));
+        return contextBuilder.build();
+    }
+    public static ProductionSetContext buildSchoolWork5(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        contextBuilder.define("S")
+                .alternateTerminal(of("("))
+                .concatenateDefinitionLast("L")
+                .concatenateTerminalLast(of(")"))
+                .alternateTerminal(of("a"));
+        contextBuilder.define("L")
+                .alternateSelf()
+                .concatenateTerminalLast(of(","))
+                .concatenateDefinitionLast("S")
+                .alternateDefinition("S");
+        return contextBuilder.build();
+    }
+    public static ProductionSetContext buildSchoolWork7(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        contextBuilder.define("bexpr")
+                .alternateSelf()
+                .concatenateTerminalLast(of("or"))
+                .concatenateDefinitionLast("bterm")
+                .alternateDefinition("bterm");
+        contextBuilder.define("bterm")
+                .alternateSelf()
+                .concatenateTerminalLast(of("and"))
+                .concatenateDefinitionLast("bfactor")
+                .alternateDefinition("bfactor");
+        contextBuilder.define("bfactor")
+                .alternateTerminal(of("not"))
+                .concatenateSelfLast()
+                .alternateTerminal(of("("))
+                .concatenateDefinitionLast("bexpr")
+                .concatenateTerminalLast(of(")"))
+                .alternateTerminal(of("true"))
+                .alternateTerminal(of("false"));
+        return contextBuilder.build();
+    }
 }

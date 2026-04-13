@@ -39,8 +39,12 @@ public class ProductionSetContextImpl implements ProductionSetContext {
     }
 
     @Override
-    public Integer indexOf(String name) {
-        return definitionIdxMap.get(name);
+    public int indexOf(String name) {
+        Integer index = definitionIdxMap.get(name);
+        if (index == null) {
+            throw new IllegalStateException("Can not found definition of: " + name);
+        }
+        return index;
     }
 
     @Override
