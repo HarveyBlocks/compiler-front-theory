@@ -26,7 +26,8 @@ import static org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter.UNSUPPORT
  * @date 2026-03-24 11:31
  */
 public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, TokenType>, Storage {
-    public static final int UNKNOWN_CHAR_STATUS = -1;
+    public static final int UNKNOWN_CHAR_STATUS = -2;
+    public static final int UNKNOWN_MOVE_STATUS = -1;
     /**
      * status first
      */
@@ -131,7 +132,7 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
             colWidths[j] = alphabet[j].toString().length(); // 列标题宽度
             for (int i = 0; i < nStates; i++) {
                 int target = table[i][j];
-                String str = (target == UNKNOWN_CHAR_STATUS) ? "NaN" : String.format(zeroPad, target);
+                String str = (target == UNKNOWN_MOVE_STATUS) ? "NaN" : String.format(zeroPad, target);
                 transStrings[i][j] = str;
                 colWidths[j] = Math.max(colWidths[j], str.length());
             }

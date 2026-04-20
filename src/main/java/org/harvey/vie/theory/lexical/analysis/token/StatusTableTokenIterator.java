@@ -99,12 +99,14 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
             }
             AlphabetCharacter ac = saca.adapt(read);
             if (ac == AlphabetCharacter.UNSUPPORTED) {
-                offset = reader.getOffset();
-                errorContext.addError(new LexicalErrorMessage(offset, "Unsupported character in source"));
-                return trySplitToken();
+                return unsupportedCharacter();
             }
+
             int next = table.move(status, ac);
             if (next == RegexDfaStatusTable.UNKNOWN_CHAR_STATUS) {
+                return unsupportedCharacter();
+            }
+            if (next == RegexDfaStatusTable.UNKNOWN_MOVE_STATUS) {
                 // 不存在了才进行尝试分解token, 说明是最长匹配
                 try {
                     return trySplitToken();
@@ -118,6 +120,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
                 status = next;
             }
         }
+    }
+
+    private SourceToken unsupportedCharacter() throws CompileException {
+        offset = reader.getOffset();
+        errorContext.addError(new LexicalErrorMessage(offset, "Unsupported character in source"));
+        return trySplitToken();
     }
 
     private SourceCharacter read() {

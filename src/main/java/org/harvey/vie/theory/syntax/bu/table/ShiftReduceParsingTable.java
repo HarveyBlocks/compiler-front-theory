@@ -24,4 +24,6 @@ public interface ShiftReduceParsingTable {
     SimpleGrammarProduction getProduction(int i);
 
     int matchTerminal(SourceToken token);
+
+    Integer getProductionId(SimpleGrammarProduction production);
 }

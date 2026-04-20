@@ -1,46 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration scan="true" scanPeriod="30 seconds" debug="false">
-    <!-- 定义日志文件的存储地址，避免在配置文件中写死绝对路径 -->
     <property name="LOG_HOME" value="./logs"/>
 
-    <!-- 控制台输出 Appender：用于开发环境，将日志打印到控制台 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- 使用高亮、可读性好的编码格式 -->
         <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <!-- 日志输出格式：时间 线程 日志级别 类名(行号) - 消息 换行 -->
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}.%M\(%line\) - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50}.%M\(%line\) - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!-- 文件 Appender：按天滚动，超过指定大小也触发滚动，保留历史日志 -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 正在写入的日志文件 -->
         <file>${LOG_HOME}/app.log</file>
         <!-- 滚动策略：基于时间和文件大小 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <!-- 滚动后文件的命名格式：日志名-年月日.索引.log.gz 自动压缩 -->
             <fileNamePattern>${LOG_HOME}/app.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
-            <!-- 每个日志文件的最大大小 -->
             <maxFileSize>100KB</maxFileSize>
-            <!-- 保留30天的历史日志，且总大小不超过5GB -->
             <maxHistory>30</maxHistory>
             <totalSizeCap>10MB</totalSizeCap>
         </rollingPolicy>
-        <!-- 日志格式 -->
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}.%M\(%line\) - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50}.%M\(%line\) - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!-- 异步 Appender：包装 FILE 和 CONSOLE，提升性能（非关键日志推荐使用） -->
     <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
-        <!-- 不丢失日志，默认如果队列80%满，则会丢弃 TRACE、DEBUG、INFO 级别 -->
         <discardingThreshold>0</discardingThreshold>
-        <!-- 队列大小，默认为256，可根据并发量调整 -->
         <queueSize>512</queueSize>
-        <!-- 引用同步 appender -->
         <appender-ref ref="FILE"/>
     </appender>
 
@@ -73,6 +60,6 @@
         <appender-ref ref="ASYNC_FILE"/>
     </root>
 
-    <logger name="org.harvey.vie.theory" level="DEBUG"/>
+    <logger name="org.harvey.vie.theory" level="TRACE"/>
 
 </configuration>

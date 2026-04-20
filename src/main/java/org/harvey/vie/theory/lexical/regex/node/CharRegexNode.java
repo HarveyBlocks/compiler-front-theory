@@ -7,7 +7,7 @@ import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 
 /**
  * A {@link RegexNode} representing a single literal character in a regular expression.
- * This node serves as a leaf in the regex parse tree.
+ * This tree serves as a leaf in the regex parse tree.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

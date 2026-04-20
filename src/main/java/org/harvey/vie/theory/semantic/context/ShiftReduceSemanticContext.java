@@ -2,12 +2,20 @@ package org.harvey.vie.theory.semantic.context;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.harvey.vie.theory.error.SemanticErrorMessage;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.callback.*;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
+import org.harvey.vie.theory.semantic.command.CommandContext;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
+import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
-import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 
 import java.util.Iterator;
 import java.util.function.Consumer;
@@ -24,23 +32,31 @@ public class ShiftReduceSemanticContext {
     @Setter
     private SemanticResult result;
     private final ShiftReduceCallbackRegister register;
-    private final ShiftReducePhaseContext context;
+    private final ShiftReducePhaseContext syntaxContext;
     private Iterator<ShiftReduceCallback> callbackIter;
+    @Getter
+    private final TreeContext treeContext = new TreeContext();
+    @Getter
+    private final CommandContext commandContext = new CommandContext();
+    private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
 
-    public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register,ShiftReducePhaseContext context) {
+    public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register, ShiftReducePhaseContext syntaxContext) {
         this.register = register;
-        this.context = context;
+        this.syntaxContext = syntaxContext;
         callbackIter = register.iterator();
     }
+
+    // region callback
     private void popStatus(AlterableSymbol body) {
         int k = body.isEpsilon() ? 0 : body.toConcatenation().size();
         while (k-- > 0) {
-            if (context.isStackEmpty()) {
+            if (syntaxContext.isStackEmpty()) {
                 throw new CompilerException("no more status in stack to be pop while reducing");
             }
-            context.pop();
+            syntaxContext.pop();
         }
     }
+
     private void invokeBeforeAccept(SimpleGrammarProduction production) {
         // accept 是特殊的 reduce
         AlterableSymbol body = production.getBody();
@@ -51,14 +67,14 @@ public class ShiftReduceSemanticContext {
         // 输入指针不动(归约不消耗输入符号)
         AlterableSymbol body = production.getBody();
         popStatus(body);
-        int top = context.peek();
-        int next = context.gotoNext(top, production.getHead());
-        context.push(next);
+        int top = syntaxContext.peek();
+        int next = syntaxContext.gotoNext(top, production.getHead());
+        syntaxContext.push(next);
     }
 
     private void invokeShift(int nextStatus) {
-        context.push(nextStatus);
-        context.consumeCurrentToken();
+        syntaxContext.push(nextStatus);
+        syntaxContext.consumeCurrentToken();
     }
 
     public void onStart() {
@@ -74,9 +90,7 @@ public class ShiftReduceSemanticContext {
         }
     }
 
-    private void invokeNothing() {
-
-    }
+    private void invokeNothing() {}
 
     public void onError(ShiftReduceErrorType errorType) {
         invokeNext(c -> c.onError(this, errorType), this::invokeNothing);
@@ -97,4 +111,35 @@ public class ShiftReduceSemanticContext {
     public void beforeAccept(SimpleGrammarProduction production) {
         invokeNext(c -> c.beforeAccept(this, production), () -> invokeBeforeAccept(production));
     }
+    // endregion
+
+    // region error context
+    public void addError(int offset, String message) {
+        syntaxContext.getErrorContext().addError(new SemanticErrorMessage(offset,message));
+    }
+    // endregion
+
+    // region identifier table builder
+    public boolean existIdentifier(SourceToken identifierToken) {
+        return identifierTableBuilder.existIdentifier(identifierToken);
+    }
+
+    public IdentifierRecord getIdentifier(SourceToken identifierToken) {
+        return identifierTableBuilder.getIdentifier(identifierToken);
+    }
+
+    public void registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
+        identifierTableBuilder.registerIdentifier(typeHeadNode, identifierToken, initialized);
+    }
+
+
+    public void scopeInto() {
+        identifierTableBuilder.scopeInto();
+    }
+
+    public IdentifierRecord[] scopeExist() {
+        return identifierTableBuilder.scopeExist();
+    }
+
+    // endregion
 }

@@ -31,6 +31,7 @@ public class TokenTypeTerminalSymbol implements TerminalSymbol {
 
     @Override
     public boolean match(SourceToken token) {
+        // TODO: NOT GOOD TO COMPARE EQUALS
         return type.hint().equals(token.getType().hint());
     }
 

@@ -81,7 +81,7 @@ public class ItemSetBuilder {
     public ItemSet build() {
         if (index < 0) {
             throw new IllegalStateException(
-                    "A Builder that is not assigned an id indicates an unfinished Builder and should not be built");
+                    "A CommandNodeListBuilder that is not assigned an id indicates an unfinished CommandNodeListBuilder and should not be built");
         }
         // 构造一下dr
         Map<HeadSymbol, Set<TerminalSymbol>> decisionRules = buildDecisionRules();

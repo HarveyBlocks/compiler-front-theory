@@ -9,8 +9,7 @@ package org.harvey.vie.theory.lexical.analysis.token;
  * @date 2026-03-24 15:13
  */
 public interface SourceToken {
-    String
-    hintString();
+    String hintString();
 
     byte[] getLexeme();
 

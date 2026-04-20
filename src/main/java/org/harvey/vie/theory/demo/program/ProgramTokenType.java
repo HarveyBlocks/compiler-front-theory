@@ -46,7 +46,9 @@ public enum ProgramTokenType implements TokenType {
     CONTROL_STRUCTURES_IF(2),
     CONTROL_STRUCTURES_ELSE(2),
     CONTROL_STRUCTURES_WHILE(2),
-    CONTROL_STRUCTURES_DO(2);
+    CONTROL_STRUCTURES_DO(2),
+    CONTROL_STRUCTURES_BREAK(2),
+    CONTROL_STRUCTURES_CONTINUE(2);
 
     private final int priority;
 

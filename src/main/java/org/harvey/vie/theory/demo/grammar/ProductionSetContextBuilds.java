@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.demo.grammar;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
@@ -12,6 +13,8 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO
@@ -111,7 +114,7 @@ public class ProductionSetContextBuilds {
     }
 
     private static TokenType of(String hint) {
-        return new StringTokenType(hint);
+        return StringTokenType.of(hint);
     }
 
     public static ProductionSetContext build5(TerminalFactory terminalFactory) {
@@ -139,9 +142,59 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
-    @AllArgsConstructor
+    public static ProductionSetContext build6(TerminalFactory terminalFactory) {
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+        // S -> expr
+        // expr -> expr > term
+        // expr -> expr < term
+        // expr -> term
+        // term -> ( type ) factor
+        // factor -> ( expr ) | id
+        // type -> id < type_list >
+        // type_list -> type , type_list
+        // type_list -> type
+        contextBuilder.define("S").alternateDefinition("expr");
+        contextBuilder.define("expr")
+                .alternateSelf()
+                .concatenateTerminalLast(of(">"))
+                .concatenateDefinitionLast("term")
+                .alternateSelf()
+                .concatenateTerminalLast(of("<"))
+                .concatenateDefinitionLast("term")
+                .alternateDefinition("term");
+        contextBuilder.define("term")
+                .alternateTerminal(of("("))
+                .concatenateDefinitionLast("type")
+                .concatenateTerminalLast(of(")"))
+                .concatenateDefinitionLast("factor")
+                .alternateDefinition("factor");
+        contextBuilder.define("factor")
+                .alternateTerminal(of("("))
+                .concatenateDefinitionLast("expr")
+                .concatenateTerminalLast(of(")"))
+                .alternateTerminal(of("id"));
+        contextBuilder.define("type")
+                .alternateTerminal(of("id"))
+                .concatenateTerminalLast(of("<"))
+                .concatenateDefinitionLast("type_list")
+                .concatenateTerminalLast(of(">"))
+                .alternateTerminal(of("id"));
+        contextBuilder.define("type_list")
+                .alternateSelf()
+                .concatenateTerminalLast(of(","))
+                .concatenateDefinitionLast("type")
+                .alternateDefinition("type");
+        return contextBuilder.build();
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
     static class StringTokenType implements TokenType {
         private final String hint;
+        private static final Map<String, StringTokenType> POOL = new HashMap<>();
+
+        public static TokenType of(String hint) {
+            return POOL.computeIfAbsent(hint, StringTokenType::new);
+        }
 
         @Override
         public int store(OutputStream os) throws IOException {
@@ -167,6 +220,7 @@ public class ProductionSetContextBuilds {
                 .concatenateTerminalLast(of("1"));
         return contextBuilder.build();
     }
+
     public static ProductionSetContext buildSchoolWork2(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -179,6 +233,7 @@ public class ProductionSetContextBuilds {
                 .alternateTerminal(of("a"));
         return contextBuilder.build();
     }
+
     public static ProductionSetContext buildSchoolWork3(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -190,6 +245,7 @@ public class ProductionSetContextBuilds {
                 .concatenateSelfLast();
         return contextBuilder.build();
     }
+
     public static ProductionSetContext buildSchoolWork4(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -206,6 +262,7 @@ public class ProductionSetContextBuilds {
                 .alternateTerminal(of("a"));
         return contextBuilder.build();
     }
+
     public static ProductionSetContext buildSchoolWork5(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -220,6 +277,7 @@ public class ProductionSetContextBuilds {
                 .alternateDefinition("S");
         return contextBuilder.build();
     }
+
     public static ProductionSetContext buildSchoolWork7(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("bexpr")

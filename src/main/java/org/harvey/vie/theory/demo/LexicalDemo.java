@@ -44,16 +44,24 @@ public class LexicalDemo {
     public static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
         RegexDfaStatusTable table;
-        TempType[] types = new TempType[]{new TempType(0, 1, "space"), new TempType(1, 1, "id"),
-                new TempType(2, 1, "+"), new TempType(3, 1, "*"), new TempType(4, 1, "("), new TempType(5, 1, ")")};
+        TempType[] types = new TempType[]{
+                new TempType(0, 1, "space"), new TempType(1, 1, "id"),
+                new TempType(2, 1, "+"), new TempType(3, 1, "*"),
+                new TempType(4, 1, "("), new TempType(5, 1, ")"),
+                new TempType(6, 1, "<"), new TempType(7, 1, ">"),
+                new TempType(8, 1, ",")
+        };
         try {
             table = director.direct(List.of(
-                    // 1个或多个空格,
+                    new LexicalPattern(" ", types[0]),// 1个或多个空格,
                     new LexicalPattern("id", types[1]),
                     new LexicalPattern("+", types[2]),
                     new LexicalPattern("\\*", types[3]),
                     new LexicalPattern("\\(", types[4]),
-                    new LexicalPattern("\\)", types[5])
+                    new LexicalPattern("\\)", types[5]),
+                    new LexicalPattern("<", types[6]),
+                    new LexicalPattern(">", types[7]),
+                    new LexicalPattern(",", types[8])
             ));
         } catch (ParseException e) {
             throw new RuntimeException(e);

@@ -6,7 +6,7 @@ import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.regex.node.RegexNode;
 
 /**
- * A simple data structure that pairs a regular expression node with a
+ * A simple data structure that pairs a regular expression tree with a
  * corresponding token type. This is used during the conversion process
  * to associate patterns with their results.
  *

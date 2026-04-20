@@ -1,0 +1,57 @@
+-------------------------- 形如 A->B, B 为非终结符 --------------------------
+15	: program->stmt_list                    // simple shrink
+11	: stmt->unmatched_stmt                  // simple shrink
+12	: stmt->matched_stmt                    // simple shrink
+2	: matched_stmt->declaration_stmt        // simple shrink
+9	: matched_stmt->continue_stmt           // simple shrink
+10	: matched_stmt->do_while_stmt           // simple shrink
+17	: matched_stmt->block                   // simple shrink
+20	: matched_stmt->matched_if_stmt         // simple shrink
+22	: matched_stmt->empty_stmt              // simple shrink
+25	: matched_stmt->assignment_stmt         // simple shrink
+26	: matched_stmt->break_stmt              // simple shrink
+27	: matched_stmt->expr_stmt               // simple shrink
+32	: matched_stmt->matched_while_stmt      // simple shrink
+18	: unmatched_stmt->unmatched_if_stmt     // simple shrink
+31	: unmatched_stmt->unmatched_while_stmt  // simple shrink
+13	: expr->term                            // simple shrink
+14	: term->factor                          // simple shrink
+1	: factor->primary                       // simple shrink
+-------------------------- 形如 A->a, a 为终结符 --------------------------
+0	: stmt_list->ε                          // do nothing
+5	: primary->CONSTANT_BOOLEAN_FALSE       // simple shrink
+7	: primary->CONSTANT_BOOLEAN_TRUE        // simple shrink
+8	: primary->CONSTANT_INTEGER             // simple shrink
+28	: primary->CONSTANT_CHARACTER           // simple shrink
+29	: primary->CONSTANT_STRING              // simple shrink
+24	: primary->CONSTANT_FLOAT               // simple shrink
+3	: type->TYPE_STRING                     // do nothing
+4	: type->TYPE_FLOAT64                    // do nothing
+6	: type->TYPE_CHARACTER                  // do nothing
+19	: type->TYPE_BOOLEAN                    // do nothing
+16	: type->TYPE_INT32                      // do nothing
+-------------------------- 表达式 --------------------------
+23	: lvalue->id
+30	: primary->lvalue
+38	: term->term * factor
+39	: expr->expr + term
+40	: primary->( expr )                     // simple shrink
+41	: block->{ stmt_list }                  // simple shrink
+42	: assignment_stmt->lvalue = expr ;      // simple shrink
+43	: lvalue->lvalue [ expr ]
+-------------------------- 顺序结构 --------------------------
+33	: break_stmt->break ;                   // simple shrink
+21	: empty_stmt->;                         // do nothing
+36	: continue_stmt->continue ;             // simple shrink
+34	: expr_stmt->expr ;                     // simple shrink
+35	: stmt_list->stmt stmt_list
+37	: declaration_stmt->type id ;
+44	: declaration_stmt->type id = expr ;
+-------------------------- 循环结构 --------------------------
+45	: unmatched_while_stmt->while ( expr ) unmatched_stmt
+46	: matched_while_stmt->while ( expr ) matched_stmt
+48	: do_while_stmt->do stmt while ( expr ) ;
+-------------------------- 分支结构 --------------------------
+47	: unmatched_if_stmt->if ( expr ) stmt
+49	: unmatched_if_stmt->if ( expr ) matched_stmt else unmatched_stmt
+50	: matched_if_stmt->if ( expr ) matched_stmt else matched_stmt

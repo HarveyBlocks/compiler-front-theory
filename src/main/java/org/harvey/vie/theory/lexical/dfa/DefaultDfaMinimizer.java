@@ -22,7 +22,7 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
     /**
      * DEAD
      */
-    private static final int UNKNOWN_CHAR_STATUS = RegexDfaStatusTable.UNKNOWN_CHAR_STATUS;
+    private static final int UNKNOWN_MOVE_STATUS = RegexDfaStatusTable.UNKNOWN_MOVE_STATUS;
 
     private static <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> M[] collectAlphabet(
             DfaStatusTableFactory<M, V, P> factory, Collection<DfaStatus<M, V>> allStates) {
@@ -95,7 +95,7 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
             DfaStatus<M, V> s, M[] alphabet, Map<DfaStatus<M, V>, Integer> stateToBlockIdx) {
         return new IntArraySignature(Arrays.stream(alphabet)
                 .map(s::move)
-                .mapToInt(target -> target == null ? UNKNOWN_CHAR_STATUS : stateToBlockIdx.get(target))
+                .mapToInt(target -> target == null ? UNKNOWN_MOVE_STATUS : stateToBlockIdx.get(target))
                 .toArray());
     }
 
@@ -114,7 +114,7 @@ public class DefaultDfaMinimizer implements DfaMinimizer {
             DfaStatus<M, V> representative = block.iterator().next();// 任选一
             for (int j = 0; j < alphabet.length; j++) {
                 DfaStatus<M, V> target = representative.move(alphabet[j]);
-                newStates[i][j] = target == null ? UNKNOWN_CHAR_STATUS : partition.getIndexByStatus(target);
+                newStates[i][j] = target == null ? UNKNOWN_MOVE_STATUS : partition.getIndexByStatus(target);
             }
         }
         // 定位新的起始状态

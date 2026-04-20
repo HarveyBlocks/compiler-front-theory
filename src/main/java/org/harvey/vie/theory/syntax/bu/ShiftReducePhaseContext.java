@@ -2,14 +2,17 @@ package org.harvey.vie.theory.syntax.bu;
 
 import lombok.Data;
 import org.harvey.vie.theory.error.ErrorContext;
+import org.harvey.vie.theory.error.SyntaxErrorMessage;
 import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.syntax.PanicSourceTokenIterator;
 import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
+import java.util.Objects;
 import java.util.Stack;
 
 /**
@@ -88,5 +91,13 @@ public class ShiftReducePhaseContext implements SyntaxParsingContext<Integer> {
 
     public int gotoNext(int top, HeadSymbol head) {
         return table.gotoNext(top, head);
+    }
+    public void addError(int offset, String message) {
+        errorContext.addError(new SyntaxErrorMessage(offset,message));
+    }
+    public int getProductionId(SimpleGrammarProduction production) {
+        Integer id = table.getProductionId(production);
+        Objects.requireNonNull(id, ()-> "can not found id in table by the production: " + production);
+        return id;
     }
 }

@@ -102,7 +102,9 @@ public class ProgramLexicalDemo {
             new LexicalPattern("if", ProgramTokenType.CONTROL_STRUCTURES_IF),
             new LexicalPattern("else", ProgramTokenType.CONTROL_STRUCTURES_ELSE),
             new LexicalPattern("while", ProgramTokenType.CONTROL_STRUCTURES_WHILE),
-            new LexicalPattern("do", ProgramTokenType.CONTROL_STRUCTURES_DO)
+            new LexicalPattern("do", ProgramTokenType.CONTROL_STRUCTURES_DO),
+            new LexicalPattern("break", ProgramTokenType.CONTROL_STRUCTURES_BREAK),
+            new LexicalPattern("continue", ProgramTokenType.CONTROL_STRUCTURES_CONTINUE)
     );
 
     public static void main(String[] args) {

@@ -5,7 +5,6 @@ import org.harvey.vie.theory.demo.SemanticDemo;
 import org.harvey.vie.theory.demo.SyntaxDemo;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
-import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.io.resource.AsciiStringResource;
 import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
@@ -41,7 +40,11 @@ public class ProgramSyntaxDemo {
     );
 
     public static void main(String[] args) {
-        SemanticResult result = demo("int32 i = 1 + 2;", (iter, errCtx) -> {
+        String text = "int32 i = 3 + 4*6;" +
+                      "int32 j = (1+i)*i;" +
+                      "{ int32 x=i+j;  }" +
+                      "{ int32 x=i*j;  }";
+        SemanticResult result = demo(text, (iter, errCtx) -> {
             ProductionSetContext context = build();
             System.out.println(context);
             ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
@@ -56,8 +59,7 @@ public class ProgramSyntaxDemo {
     }
 
     public static SemanticResult demo(
-            String text,
-            BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
+            String text, BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
         LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
         // resource
         Resource resource = new AsciiStringResource(text);
@@ -65,16 +67,14 @@ public class ProgramSyntaxDemo {
         ErrorContext errorContext = new DefaultErrorContext();
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
             return syntaxPhaserMapper.apply(iterator, errorContext);
-        } catch (CompileException e) {
-            log.warn("compile error", e);
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finally {
             if (!errorContext.isEmpty()) {
-                log.info("{}", errorContext);
+                log.error("{}", errorContext);
             }
         }
-        return null;
+
     }
 
 
@@ -97,7 +97,7 @@ public class ProgramSyntaxDemo {
                 .alternateDefinition("unmatched_stmt");
 
         // matched_stmt ::= declaration_stmt | assignment_stmt | matched_while_stmt | do_while_stmt
-        //                | expr_stmt | block | empty_stmt | matched_if_stmt
+        //                | expr_stmt | block | empty_stmt | break_stmt | continue_stmt | matched_if_stmt
         contextBuilder.define("matched_stmt")
                 .alternateDefinition("declaration_stmt")
                 .alternateDefinition("assignment_stmt")
@@ -106,6 +106,8 @@ public class ProgramSyntaxDemo {
                 .alternateDefinition("expr_stmt")
                 .alternateDefinition("block")
                 .alternateDefinition("empty_stmt")
+                .alternateDefinition("break_stmt")
+                .alternateDefinition("continue_stmt")
                 .alternateDefinition("matched_if_stmt");
 
         // unmatched_stmt ::= unmatched_if_stmt | unmatched_while_stmt
@@ -183,19 +185,13 @@ public class ProgramSyntaxDemo {
                 .concatenateDefinitionLast("expr")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
-        // lvalue ::= id lvalue_suffix
+        // lvalue ::= id | lvalue [ expr ]
         contextBuilder.define("lvalue")
                 .alternateTerminal(ProgramTokenType.IDENTIFIER)
-                .concatenateDefinitionLast("lvalue_suffix");
-
-        // lvalue_suffix ::= ε | [ expr ] lvalue_suffix
-        contextBuilder.define("lvalue_suffix")
-                .alternateEpsilon()
-                .alternateTerminal(ProgramTokenType.OPERATOR_SQUARE_OPEN)
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_OPEN)
                 .concatenateDefinitionLast("expr")
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
-                .concatenateDefinitionLast("lvalue_suffix");
-
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE);
         // expr_stmt ::= expr ;
         contextBuilder.define("expr_stmt")
                 .alternateDefinition("expr")
@@ -210,6 +206,14 @@ public class ProgramSyntaxDemo {
         // empty_stmt ::= ;
         contextBuilder.define("empty_stmt")
                 .alternateTerminal(ProgramTokenType.OPERATOR_SEMICOLON);
+        // break_stmt ::= break ;
+        contextBuilder.define("break_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_BREAK)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+        // continue_stmt ::= continue ;
+        contextBuilder.define("continue_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
         // expr ::= expr + term | term
         contextBuilder.define("expr")

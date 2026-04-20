@@ -19,4 +19,8 @@ public class IdGenerator {
     public int next() {
         return generator.getAndIncrement();
     }
+
+    public int current() {
+        return generator.get();
+    }
 }

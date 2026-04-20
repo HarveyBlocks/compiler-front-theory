@@ -7,8 +7,8 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.callback.ShiftReduceCallbackRegister;
-import org.harvey.vie.theory.semantic.callback.ShiftReduceErrorType;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
 import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
@@ -108,7 +108,7 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     }
 
     private void onAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        SyntaxParsingContext<Integer> syntaxContext = context.getContext();
+        SyntaxParsingContext<Integer> syntaxContext = context.getSyntaxContext();
         if (!syntaxContext.hasNext()) {
             if (syntaxContext.validAcceptStack()) {
                 context.onAccept(production);

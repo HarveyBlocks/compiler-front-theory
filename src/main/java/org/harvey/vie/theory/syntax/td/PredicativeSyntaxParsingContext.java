@@ -5,7 +5,6 @@ import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.semantic.callback.PredictiveCallbackRegister;
 import org.harvey.vie.theory.syntax.PanicSourceTokenIterator;
 import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;

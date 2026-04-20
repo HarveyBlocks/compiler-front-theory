@@ -2,7 +2,7 @@ package org.harvey.vie.theory.lexical.nfa.status;
 
 /**
  * Abstract base class for {@link NfaStatus} implementations.
- * Provides basic identity logic using the state's unique ID.
+ * Provides log identity logic using the state's unique ID.
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

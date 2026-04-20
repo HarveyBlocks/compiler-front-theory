@@ -9,8 +9,9 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalMatcherFactory;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
 import org.harvey.vie.theory.util.CollectionUtil;
 
-import java.util.Arrays;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * TODO
@@ -27,6 +28,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     private final Map<HeadSymbol, Integer> headDict;
     private final ActiveTableElement[][] activeTable;
     private final int[][] gotoTable;
+    private final Map<SimpleGrammarProduction, Integer> productionDict;
     private final SimpleGrammarProduction[] productionPool;
     private final TerminalMatcher terminalMatcher;
 
@@ -37,6 +39,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             HeadSymbol[] headSymbols,
             ActiveTableElement[][] activeTable,
             int[][] gotoTable,
+            Map<SimpleGrammarProduction, Integer> productionDict,
             SimpleGrammarProduction[] productionPool,
             TerminalMatcherFactory matcherFactory) {
         this.start = start;
@@ -45,6 +48,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         this.activeTable = activeTable;
         this.gotoTable = gotoTable;
         this.headDict = CollectionUtil.dict(headSymbols);
+        this.productionDict = productionDict;
         this.productionPool = productionPool;
         this.terminalMatcher = matcherFactory.produce(terminalSymbols);
     }
@@ -73,6 +77,12 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     public int matchTerminal(SourceToken token) {
         return terminalMatcher.indexOf(token);
     }
+
+    @Override
+    public Integer getProductionId(SimpleGrammarProduction production) {
+        return productionDict.get(production);
+    }
+
     // region show string
     @Override
     public String toString() {
@@ -106,7 +116,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         }
         for (int i = 0; i < stateCount; i++) {
             for (int j = 0; j < nonTermCount; j++) {
-                String cell = (gotoTable[i][j] == -1) ? "NaN" : Integer.toString(gotoTable[i][j]);
+                String cell = (gotoTable[i][j] == NONE) ? "NaN" : Integer.toString(gotoTable[i][j]);
                 if (cell.length() > nonTermWidths[j]) {
                     nonTermWidths[j] = cell.length();
                 }
@@ -136,7 +146,9 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
 
         StringBuilder sb = new StringBuilder();
         // 构建文法
-        sb.append(Arrays.toString(productionPool)).append("\n");
+        sb.append("production pool: \n").append(IntStream.range(0, productionPool.length)
+                .mapToObj(i -> i + "\t: " + productionPool[i])
+                .collect(Collectors.joining("\n"))).append("\n");
         // ========== 3. 构建表头第一行（State + ACTION + GOTO） ==========
         sb.append(String.format("%-" + finalStateWidth + "s", "State"));
         // ACTION 居中
@@ -171,7 +183,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             }
             // GOTO 部分
             for (int j = 0; j < nonTermCount; j++) {
-                String cell = (gotoTable[i][j] == -1) ? "NaN" : Integer.toString(gotoTable[i][j]);
+                String cell = (gotoTable[i][j] == NONE) ? "NaN" : Integer.toString(gotoTable[i][j]);
                 sb.append(String.format("%-" + finalNonTermWidths[j] + "s", cell));
             }
             sb.append('\n');

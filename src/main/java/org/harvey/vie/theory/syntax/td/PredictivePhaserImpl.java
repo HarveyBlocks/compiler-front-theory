@@ -7,8 +7,8 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.semantic.context.PredictiveSemanticContext;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
-import org.harvey.vie.theory.semantic.callback.PredicativeErrorType;
-import org.harvey.vie.theory.semantic.callback.PredictiveCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.td.PredicativeErrorType;
+import org.harvey.vie.theory.semantic.callback.td.PredictiveCallbackRegister;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 

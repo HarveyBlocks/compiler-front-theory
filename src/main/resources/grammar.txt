@@ -13,6 +13,8 @@ matched_stmt     ::= declaration_stmt
                    | expr_stmt
                    | block
                    | empty_stmt
+                   | break_stmt
+                   | continue_stmt
                    | matched_if_stmt
 
 unmatched_stmt   ::= unmatched_if_stmt
@@ -34,17 +36,23 @@ declaration_stmt ::= type id = expr ;
 
 assignment_stmt  ::= lvalue = expr ;
 
+# -------------------不对-------------------
 lvalue           ::= id lvalue_suffix
-
 lvalue_suffix    ::= ε
                    | [ expr ] lvalue_suffix
+# -------------------修正-------------------
+lvalue           ::= id
+                   | lvalue [ expr ]
+# -------------------完毕-------------------
 
 expr_stmt        ::= expr ;
+
 
 block            ::= { stmt_list }
 
 empty_stmt       ::= ;
-
+break_stmt       ::= break ;
+continue_stmt    ::= continue ;
 expr             ::= expr + term
                    | term
 

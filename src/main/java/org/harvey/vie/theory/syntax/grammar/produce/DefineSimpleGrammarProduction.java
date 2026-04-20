@@ -6,6 +6,8 @@ import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 
+import java.util.Objects;
+
 /**
  * TODO
  *
@@ -17,6 +19,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 @Getter
 @EqualsAndHashCode
 public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
+
     private final HeadDefineSymbol head;
     private final AlterableSymbol body;
 
@@ -28,4 +31,5 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
     public String toString() {
         return head + "->" + body;
     }
+
 }

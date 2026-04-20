@@ -63,7 +63,7 @@ public class SyntaxDemo {
 
     private static class Predicative {
         public static void main(String[] args) {
-            SemanticResult result = SyntaxDemo.demo((iter, errCtx) -> {
+            SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 // syntax analyzer
                 PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable("E");
                 GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
@@ -81,14 +81,14 @@ public class SyntaxDemo {
 
     private static class ShiftReduce {
         public static void main(String[] args) {
-            SemanticResult result = SyntaxDemo.demo((iter, errCtx) -> {
+            SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
                 System.out.println(context);
                 ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S", context);
                 ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                         shiftReduceParsingTable,
                         t -> true,
-                        SemanticDemo.buildShiftReduceRegister()
+                        SemanticDemo.buildSimpleShiftReduceRegister()
                 );
                 return phaser.phase(iter, errCtx);
             });
@@ -108,10 +108,12 @@ public class SyntaxDemo {
                                     ". For can not found in grammar production set.");
     };
 
-    public static SemanticResult demo(BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
+    public static SemanticResult demo(
+            String text,
+            BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
         LexicalAnalyzer analyzer = lexicalAnalyzer();
         // resource
-        Resource resource = new AsciiStringResource("(id+id)*id");
+        Resource resource = new AsciiStringResource(text);
         // error context
         ErrorContext errorContext = new DefaultErrorContext();
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
@@ -210,10 +212,10 @@ public class SyntaxDemo {
     }
 
     public static PredictiveParsingTable buildPredictiveParsingTable(String startHead) {
-        ProductionSetContext context = ProductionSetContextBuilds.buildSchoolWork7(TERMINAL_FACTORY);
+        ProductionSetContext context = ProductionSetContextBuilds.build4(TERMINAL_FACTORY);
         System.out.println(context);
         System.out.println("-----------消除左递归和提取左因子------------");
-        LeftRecursionEliminator leftRecursionEliminator = new LeftRecursionEliminatorImpl(s -> s + '\'' );
+        LeftRecursionEliminator leftRecursionEliminator = new LeftRecursionEliminatorImpl(s -> s + '\'');
         LeftFactoringEliminator leftFactoringEliminator = new LeftFactoringEliminatorImpl((s, i) -> s + i);
         ProductionSetContext eliminated = leftFactoringEliminator.eliminate(leftRecursionEliminator.eliminate(context));
         System.out.println(eliminated);
