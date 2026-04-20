@@ -24,7 +24,6 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     private final int start;
     private final TerminalSymbol[] terminalSymbols;
     private final HeadSymbol[] headSymbols;
-
     private final Map<HeadSymbol, Integer> headDict;
     private final ActiveTableElement[][] activeTable;
     private final int[][] gotoTable;
@@ -32,14 +31,12 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     private final SimpleGrammarProduction[] productionPool;
     private final TerminalMatcher terminalMatcher;
 
-
     public ShiftReduceParsingTableImpl(
             int start,
             TerminalSymbol[] terminalSymbols,
             HeadSymbol[] headSymbols,
             ActiveTableElement[][] activeTable,
             int[][] gotoTable,
-            Map<SimpleGrammarProduction, Integer> productionDict,
             SimpleGrammarProduction[] productionPool,
             TerminalMatcherFactory matcherFactory) {
         this.start = start;
@@ -48,7 +45,7 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         this.activeTable = activeTable;
         this.gotoTable = gotoTable;
         this.headDict = CollectionUtil.dict(headSymbols);
-        this.productionDict = productionDict;
+        this.productionDict = CollectionUtil.dict(productionPool);
         this.productionPool = productionPool;
         this.terminalMatcher = matcherFactory.produce(terminalSymbols);
     }

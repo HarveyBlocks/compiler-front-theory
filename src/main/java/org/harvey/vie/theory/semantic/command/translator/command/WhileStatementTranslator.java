@@ -1,9 +1,14 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
+import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.node.LabelNode;
+import org.harvey.vie.theory.semantic.command.node.TerminalNode;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -16,10 +21,10 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class WhileStatementTranslator implements CommandTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandContext.CommandNodeRegister[] children) {
+            CommandNodeRegister[] children) {
         // while 循环语句
         //    L1:
         //    expr.command();
@@ -31,14 +36,14 @@ public class WhileStatementTranslator implements CommandTranslator {
             throw new CompilerException("illegal statement on while statement production.");
         }
         CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
-        CommandContext.Label whileStartLabel = new CommandContext.DefaultLabel();
-        CommandContext.Label whileEndLabel = new CommandContext.DefaultLabel();
-        thisBuilder.add(new CommandContext.LabelNode(whileStartLabel));
+        SemanticLabel whileStartLabel = new DefaultSemanticLabel();
+        SemanticLabel whileEndLabel = new DefaultSemanticLabel();
+        thisBuilder.add(new LabelNode(whileStartLabel));
         children[0].register(thisBuilder); // expr
-        thisBuilder.add(new CommandContext.TerminalNode(CommandFactory.ifnGoto(whileEndLabel))); // ifn_goto L2
+        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(whileEndLabel))); // ifn_goto L2
         children[1].register(thisBuilder); // matched_stmt|unmatched_stmt
-        thisBuilder.add(new CommandContext.TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1
-        thisBuilder.add(new CommandContext.LabelNode(whileEndLabel)); // L2
+        thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1
+        thisBuilder.add(new LabelNode(whileEndLabel)); // L2
         return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
     }
 }

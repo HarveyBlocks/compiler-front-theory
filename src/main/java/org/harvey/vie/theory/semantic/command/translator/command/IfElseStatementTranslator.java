@@ -2,9 +2,14 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
+import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.node.LabelNode;
+import org.harvey.vie.theory.semantic.command.node.TerminalNode;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -17,10 +22,10 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class IfElseStatementTranslator implements CommandTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandContext.CommandNodeRegister[] children) {
+            CommandNodeRegister[] children) {
         // if-else 语句
         //    expr.command();
         //    CommandFactory.ifn_goto(L1);
@@ -33,14 +38,14 @@ public class IfElseStatementTranslator implements CommandTranslator {
             throw new CompilerException("illegal statement on if-else statement production.");
         }
         CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
-        CommandContext.Label elseStartLabel = new CommandContext.DefaultLabel();
-        CommandContext.Label elseEndLabel = new CommandContext.DefaultLabel();
+        SemanticLabel elseStartLabel = new DefaultSemanticLabel();
+        SemanticLabel elseEndLabel = new DefaultSemanticLabel();
         children[0].register(thisBuilder); // expr
-        thisBuilder.add(new CommandContext.TerminalNode(CommandFactory.ifnGoto(elseStartLabel))); // ifn_goto L1
+        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(elseStartLabel))); // ifn_goto L1
         children[1].register(thisBuilder); // stmt
-        thisBuilder.add(new CommandContext.LabelNode(elseStartLabel));
+        thisBuilder.add(new LabelNode(elseStartLabel));
         children[2].register(thisBuilder); // (unmatched_stmt|matched_stmt)
-        thisBuilder.add(new CommandContext.LabelNode(elseEndLabel));
+        thisBuilder.add(new LabelNode(elseEndLabel));
         return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
     }
 }

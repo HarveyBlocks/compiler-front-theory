@@ -1,9 +1,11 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.node.TerminalNode;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -16,10 +18,10 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandContext.CommandNodeRegister[] children) {
+            CommandNodeRegister[] children) {
         // primary->lvalue
         // 此时id保存的commend是reference, primary是右值, 因此需要将引用转成值
         // lvalue.command(); 获取到引用
@@ -29,7 +31,7 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
         }
         CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        thisBuilder.add(new CommandContext.TerminalNode(CommandFactory.stTopRefToVal()));
+        thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal()));
         return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
     }
 }

@@ -3,6 +3,10 @@ package org.harvey.vie.theory.semantic.command;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.semantic.command.node.CommandContext;
+import org.harvey.vie.theory.semantic.command.node.CommandNode;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.util.IdGenerator;
@@ -21,12 +25,12 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
 
     @Override
     public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        CommandContext.CommandNodeRegister top = topCommandNodeRegister(context);
+        CommandNodeRegister top = topCommandNodeRegister(context);
         ShiftReduceCallback.super.beforeAccept(context, production);
         printResult(top);
     }
 
-    private static CommandContext.CommandNodeRegister topCommandNodeRegister(ShiftReduceSemanticContext context) {
+    private static CommandNodeRegister topCommandNodeRegister(ShiftReduceSemanticContext context) {
         CommandContext commandContext = context.getCommandContext();
         if (commandContext.size() != 1) {
             // 由于增广语法 S' -> S, 右部只有一个
@@ -35,16 +39,16 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         return commandContext.peek();
     }
 
-    private static void printResult(CommandContext.CommandNodeRegister top) {
+    private static void printResult(CommandNodeRegister top) {
         CommandNodeListBuilder resultBuilder = new CommandNodeListBuilder();
         top.register(resultBuilder);
-        CommandContext.CommandNode[] array = resultBuilder.toArray();
+        CommandNode[] array = resultBuilder.toArray();
         if (array.length != 1) {
             // 由于增广语法 S' -> S, 右部只有一个
             throw new CompilerException("illegal statement before accept on production.");
         }
         // 右部
-        CommandContext.CommandNode programNode = array[0];
+        CommandNode programNode = array[0];
         List<SemanticCommand> result = new ArrayList<>();
         programNode.flat(result);
         System.out.println("command result: ");

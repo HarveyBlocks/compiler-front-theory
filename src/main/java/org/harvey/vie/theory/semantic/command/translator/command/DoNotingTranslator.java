@@ -1,8 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.translator.command.CommandTranslator;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -15,10 +14,10 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class DoNotingTranslator implements CommandTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandContext.CommandNodeRegister[] children) {
-        return new CommandBuildCallback.PlaceholderNodeRegister();
+            CommandNodeRegister[] children) {
+        return new PlaceholderNodeRegister();
     }
 }

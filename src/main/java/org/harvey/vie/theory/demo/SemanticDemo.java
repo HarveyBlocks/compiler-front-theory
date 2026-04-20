@@ -8,8 +8,9 @@ import org.harvey.vie.theory.semantic.callback.bu.*;
 import org.harvey.vie.theory.semantic.callback.td.PredictiveCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.td.PredictiveCallbackRegisterImpl;
 import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
-import org.harvey.vie.theory.semantic.command.CommandContext;
 import org.harvey.vie.theory.semantic.command.SemanticCommandPrintCallback;
+import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
+import org.harvey.vie.theory.semantic.command.translator.TokenTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
 import org.harvey.vie.theory.semantic.command.translator.token.DoNothingTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.LoadIdentifierReferenceTokenTranslator;
@@ -59,13 +60,13 @@ public class SemanticDemo {
     static CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
 
     private static ShiftReduceCallback instanceSyntaxDirectedTranslationCallback() {
-        CommandContext.TokenTranslatorStrategy shiftStrategies = shiftStrategies();
-        CommandContext.CommandTranslatorStrategy reduceStrategies = reduceStrategies();
+        TokenTranslatorStrategy shiftStrategies = shiftStrategies();
+        CommandTranslatorStrategy reduceStrategies = reduceStrategies();
         // 需要涉及符号表的具体构建
         return new CommandBuildCallback(shiftStrategies, reduceStrategies);
     }
 
-    private static CommandContext.TokenTranslatorStrategy shiftStrategies() {
+    private static TokenTranslatorStrategy shiftStrategies() {
         Map<TokenType, TokenTranslator> shiftStrategies = new HashMap<>();
         // 需要涉及符号表的具体构建
         TokenTranslator loadIdentifierReferenceTokenTranslator = new LoadIdentifierReferenceTokenTranslator();
@@ -104,9 +105,11 @@ public class SemanticDemo {
         return t -> shiftStrategies.getOrDefault(t, defaultTokenTranslator);
     }
 
-    private static CommandContext.CommandTranslatorStrategy reduceStrategies() {
+    private static CommandTranslatorStrategy reduceStrategies() {
         // TODO 每次文法改变->分析表改变->产生式的池/id改变->需要改变这里的id映射
         HashMap<Integer, CommandTranslator> map = new HashMap<>();
+        // 35 stmt_list->stmt stmt_list
+        map.put(35, new StatementListTranslator());
         // 37	: declaration_stmt->type id ; 声明语句, 但是没有复制, 好像没啥用, 不需要做声明
         map.put(37, new DoNotingTranslator());
         // 38	: term->term * factor                   // In-suffix expression

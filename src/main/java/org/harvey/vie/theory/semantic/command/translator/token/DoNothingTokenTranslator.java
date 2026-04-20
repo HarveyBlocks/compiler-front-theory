@@ -1,9 +1,8 @@
 package org.harvey.vie.theory.semantic.command.translator.token;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeBuilder;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 
 /**
@@ -15,8 +14,8 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
  */
 public class DoNothingTokenTranslator implements TokenTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        return new CommandBuildCallback.PlaceholderNodeRegister();
+    public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
+        return new PlaceholderNodeRegister();
     }
 
 

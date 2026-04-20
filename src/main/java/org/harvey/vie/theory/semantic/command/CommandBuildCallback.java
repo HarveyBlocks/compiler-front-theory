@@ -4,6 +4,10 @@ import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.BuildStackContextCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
+import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
+import org.harvey.vie.theory.semantic.command.translator.TokenTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.CommandTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
@@ -20,68 +24,61 @@ import java.util.function.Predicate;
  * @version 1.0
  * @date 2026-04-19 19:10
  */
-public class CommandBuildCallback extends BuildStackContextCallback<CommandContext.CommandNodeRegister> implements
+public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeRegister> implements
         ShiftReduceCallback {
     public CommandBuildCallback(
-            CommandContext.TokenTranslatorStrategy shiftStrategies,
-            CommandContext.CommandTranslatorStrategy reduceStrategies) {
+            TokenTranslatorStrategy shiftStrategies,
+            CommandTranslatorStrategy reduceStrategies) {
         super(new CommandSupplier(shiftStrategies, reduceStrategies), new CommandVisitor());
     }
 
-    private static class CommandSupplier implements Supplier<CommandContext.CommandNodeRegister> {
-        private final CommandContext.TokenTranslatorStrategy shiftStrategies;
-        private final CommandContext.CommandTranslatorStrategy reduceStrategies;
+    private static class CommandSupplier implements Supplier<CommandNodeRegister> {
+        private final TokenTranslatorStrategy shiftStrategies;
+        private final CommandTranslatorStrategy reduceStrategies;
 
         public CommandSupplier(
-                CommandContext.TokenTranslatorStrategy shiftStrategies,
-                CommandContext.CommandTranslatorStrategy reduceStrategies) {
+                TokenTranslatorStrategy shiftStrategies,
+                CommandTranslatorStrategy reduceStrategies) {
             this.shiftStrategies = shiftStrategies;
             this.reduceStrategies = reduceStrategies;
 
         }
 
         @Override
-        public Stack<CommandContext.CommandNodeRegister> getStackContext(ShiftReduceSemanticContext context) {
+        public Stack<CommandNodeRegister> getStackContext(ShiftReduceSemanticContext context) {
             return context.getCommandContext();
         }
 
         @Override
-        public CommandContext.CommandNodeRegister[] instanceChildrenArray(int n) {
-            return new CommandContext.CommandNodeRegister[n];
+        public CommandNodeRegister[] instanceChildrenArray(int n) {
+            return new CommandNodeRegister[n];
         }
 
         @Override
-        public CommandContext.CommandNodeRegister instanceNodeOnReduce(
+        public CommandNodeRegister instanceNodeOnReduce(
                 ShiftReduceSemanticContext context,
                 SimpleGrammarProduction production,
-                CommandContext.CommandNodeRegister[] children) {
+                CommandNodeRegister[] children) {
             int productionId = context.getSyntaxContext().getProductionId(production);
             CommandTranslator translator = reduceStrategies.get(productionId);
             return translator.translate(context, production, filterPlaceholderChildren(children));
         }
 
-        private CommandContext.CommandNodeRegister[] filterPlaceholderChildren(CommandContext.CommandNodeRegister[] children) {
+        private CommandNodeRegister[] filterPlaceholderChildren(CommandNodeRegister[] children) {
             return Arrays.stream(children)
                     .filter(Predicate.not(c -> c instanceof PlaceholderNodeRegister))
-                    .toArray(CommandContext.CommandNodeRegister[]::new);
+                    .toArray(CommandNodeRegister[]::new);
         }
 
         @Override
-        public CommandContext.CommandNodeRegister instanceNodeOnShift(
+        public CommandNodeRegister instanceNodeOnShift(
                 ShiftReduceSemanticContext context, SourceToken token) {
             TokenTranslator tokenTranslator = shiftStrategies.get(token.getType());
             return tokenTranslator.translate(context, token);
         }
     }
 
-    public static class PlaceholderNodeRegister implements CommandContext.CommandNodeRegister {
-        @Override
-        public void register(CommandNodeBuilder outer) {
-            // do nothing
-        }
-    }
-
     @AllArgsConstructor
-    private static class CommandVisitor implements Visitor<CommandContext.CommandNodeRegister> {
+    private static class CommandVisitor implements Visitor<CommandNodeRegister> {
     }
 }

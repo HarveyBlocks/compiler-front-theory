@@ -1,9 +1,10 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -16,16 +17,20 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class StatementListTranslator implements CommandTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandContext.CommandNodeRegister[] children) {
-        if (children.length != 2) {
-            throw new CompilerException("illegal statement on statement list production.");
+            CommandNodeRegister[] children) {
+        if (children.length == 0) {
+            return new PlaceholderNodeRegister();
         }
         CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        children[1].register(thisBuilder);
+        if (children.length == 2) {
+            children[1].register(thisBuilder);
+        } else if (children.length > 2) {
+            throw new CompilerException("illegal statement on statement list production.");
+        }
         return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
     }
 }

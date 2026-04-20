@@ -40,6 +40,17 @@ public class ProgramSyntaxDemo {
     );
 
     public static void main(String[] args) {
+        // TODO
+        //  由于ProductionPool的实现是依赖与hash的底层实现的, 而这个值是随着JVM变化的
+        //  比如调试和运行的结果不一样
+        //  解决方法, 要不是持久化, 要不就是在一开始引入id
+        //  持久化的坏处是文法改变id也随之改变
+        //  一开始引入ID的坏处是难以处理 Epsilon
+        //      一个不直观的解决方法是, 在 head 处存储id, 如果 body 是 epsilon, 则使用 head 的 id
+        //      否则使用 body 的 id
+        //      这样需要考虑到消除左递归等操作, 会创建新的产生式
+        //      说实话, 很烦, 因为只有这里需要id, 而引入id主要的困难会发生在predicate
+        //      所以持久化才是比较好的方案?
         String text = "int32 i = 3 + 4*6;" +
                       "int32 j = (1+i)*i;" +
                       "{ int32 x=i+j;  }" +
@@ -48,8 +59,7 @@ public class ProgramSyntaxDemo {
         SemanticResult result = demo(text, (iter, errCtx) -> {
             ProductionSetContext context = build();
             System.out.println(context);
-            ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
-                    "program", context);
+            ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable("program", context);
             ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                     shiftReduceParsingTable,
                     t -> !SHOULD_BE_FILTERED.contains(t.getType()),

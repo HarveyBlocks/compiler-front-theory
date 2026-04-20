@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.semantic.command.translator.token;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.CommandContext;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.TokenCommandRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 
@@ -15,7 +15,7 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
  */
 public class LoadIdentifierReferenceTokenTranslator implements TokenTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
+    public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
         return new TokenCommandRegister(CommandFactory.loadIdentifierReference(token));
     }
 }

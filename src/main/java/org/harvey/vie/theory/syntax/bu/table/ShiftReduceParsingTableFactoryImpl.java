@@ -178,7 +178,6 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     headSymbols,
                     activeTable,
                     gotoTable,
-                    productionDict,
                     productionArray(),
                     terminalMatcherFactory
             );

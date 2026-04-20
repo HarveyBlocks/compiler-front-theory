@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.semantic.command;
+package org.harvey.vie.theory.semantic.command.node;
 
 /**
  * TODO
@@ -8,5 +8,5 @@ package org.harvey.vie.theory.semantic.command;
  * @date 2026-04-20 23:02
  */
 public interface CommandNodeBuilder {
-    void add(CommandContext.CommandNode node);
+    void add(CommandNode node);
 }

@@ -2,9 +2,11 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.node.TerminalNode;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -20,9 +22,9 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
     private final OperatorFactor operatorFactor;
 
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
-            SimpleGrammarProduction production, CommandContext.CommandNodeRegister[] children) {
+            SimpleGrammarProduction production, CommandNodeRegister[] children) {
         // 中缀表达式, 是处理形如 expr -> expr operator item 的产生式
         // expr.command();
         // term.command();
@@ -33,7 +35,7 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[1].register(thisBuilder);
-        thisBuilder.add(new CommandContext.TerminalNode(CommandFactory.stOperator(operatorFactor)));
+        thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor)));
         return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
     }
 }

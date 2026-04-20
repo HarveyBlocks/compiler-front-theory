@@ -2,9 +2,11 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.node.TerminalNode;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -19,9 +21,9 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 public class AssignStatementTranslator implements CommandTranslator {
 
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
-            SimpleGrammarProduction production, CommandContext.CommandNodeRegister[] children) {
+            SimpleGrammarProduction production, CommandNodeRegister[] children) {
         // lvalue是reference, expr是value, 直接赋值即可
         // lvalue.command();
         // expr.command();
@@ -32,7 +34,7 @@ public class AssignStatementTranslator implements CommandTranslator {
         CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder); // lvalue
         children[1].register(thisBuilder); // expr
-        thisBuilder.add(new CommandContext.TerminalNode(CommandFactory.assignFromStTopToRef()));
+        thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef()));
         return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
     }
 }

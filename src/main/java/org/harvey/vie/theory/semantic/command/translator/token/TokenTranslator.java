@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.token;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.CommandContext;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 
 /**
@@ -12,5 +12,5 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
  * @date 2026-04-20 21:43
  */
 public interface TokenTranslator {
-    CommandContext.CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token);
+    CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token);
 }

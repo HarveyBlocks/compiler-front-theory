@@ -1,9 +1,11 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.extern.slf4j.Slf4j;
-import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
-import org.harvey.vie.theory.semantic.command.CommandContext;
-import org.harvey.vie.theory.semantic.command.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.node.CommandNode;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -19,12 +21,12 @@ import java.util.Arrays;
 @Slf4j
 public class SimpleShrinkTranslator implements CommandTranslator {
     @Override
-    public CommandContext.CommandNodeRegister translate(
+    public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandContext.CommandNodeRegister[] children) {
+            CommandNodeRegister[] children) {
         if (children.length == 0) {
-            return new CommandBuildCallback.PlaceholderNodeRegister();
+            return new PlaceholderNodeRegister();
         } else {
             if (children.length != 1) {
                 log.warn(
@@ -34,7 +36,7 @@ public class SimpleShrinkTranslator implements CommandTranslator {
             }
             CommandNodeListBuilder listBuilder = new CommandNodeListBuilder();
             Arrays.stream(children).forEach(c -> c.register(listBuilder));
-            CommandContext.CommandNode[] childrenNode = listBuilder.toArray();
+            CommandNode[] childrenNode = listBuilder.toArray();
             return new NormalCommandNodeRegister(childrenNode, production);
         }
     }

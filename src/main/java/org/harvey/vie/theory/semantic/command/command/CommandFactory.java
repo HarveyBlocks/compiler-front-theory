@@ -1,11 +1,10 @@
 package org.harvey.vie.theory.semantic.command.command;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.CommandContext;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 
 /**
- * TODO
+ * TODO 静态工厂是不解耦的
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -45,15 +44,15 @@ public class CommandFactory {
         return new StringCommand("bias_from_st_top_to_ref");
     }
 
-    public static SemanticCommand ifGoto(CommandContext.Label label) {
+    public static SemanticCommand ifGoto(SemanticLabel label) {
         return new StringCommand("if_goto " + label.getIndex());
     }
 
-    public static SemanticCommand ifnGoto(CommandContext.Label label) {
+    public static SemanticCommand ifnGoto(SemanticLabel label) {
         return new StringSupplierCommand(() -> "ifn_goto " + label.getIndex());
     }
 
-    public static SemanticCommand gotoCommand(CommandContext.Label label) {
+    public static SemanticCommand gotoCommand(SemanticLabel label) {
         return new StringSupplierCommand(() -> "goto " + label.getIndex());
     }
 
