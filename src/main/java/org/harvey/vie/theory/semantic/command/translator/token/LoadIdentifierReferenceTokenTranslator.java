@@ -16,6 +16,6 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 public class LoadIdentifierReferenceTokenTranslator implements TokenTranslator {
     @Override
     public CommandContext.CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        return new TokenCommandRegister(token, CommandFactory.loadIdentifierReference(token));
+        return new TokenCommandRegister(CommandFactory.loadIdentifierReference(token));
     }
 }

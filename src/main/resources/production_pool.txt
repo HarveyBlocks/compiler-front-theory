@@ -33,15 +33,15 @@
 -------------------------- 表达式 --------------------------
 23	: lvalue->id
 30	: primary->lvalue
-38	: term->term * factor
-39	: expr->expr + term
+38	: term->term * factor                   // In-suffix expression
+39	: expr->expr + term                     // In-suffix expression
 40	: primary->( expr )                     // simple shrink
 41	: block->{ stmt_list }                  // simple shrink
-42	: assignment_stmt->lvalue = expr ;      // simple shrink
+42	: assignment_stmt->lvalue = expr ;
 43	: lvalue->lvalue [ expr ]
 -------------------------- 顺序结构 --------------------------
-33	: break_stmt->break ;                   // simple shrink
 21	: empty_stmt->;                         // do nothing
+33	: break_stmt->break ;                   // simple shrink
 36	: continue_stmt->continue ;             // simple shrink
 34	: expr_stmt->expr ;                     // simple shrink
 35	: stmt_list->stmt stmt_list
@@ -55,3 +55,78 @@
 47	: unmatched_if_stmt->if ( expr ) stmt
 49	: unmatched_if_stmt->if ( expr ) matched_stmt else unmatched_stmt
 50	: matched_if_stmt->if ( expr ) matched_stmt else matched_stmt
+
+
+-------------------------- 分类讨论 --------------------------
+In-suffix expression: 中缀表达式, 是处理形如 expr -> expr operator item 的产生式
+	expr.command();
+	term.command();
+	CommandFactory.st_operator(); // 两个出栈, 结果入栈
+
+35	: stmt_list->stmt stmt_list 语句产生式, 其实可以走 simple shrink 的
+    stmt.command();
+    stmt_list.command();
+
+37	: declaration_stmt->type id ; 声明语句, 但是没有复制, 好像没啥用, 不需要做声明
+    do nothing
+
+44	: declaration_stmt->type id = expr ; 声明语句, 但是有赋值了, 其实可以走直接赋值的路
+
+赋值语句, 涉及到"引用"和"值"之间的转化, 涉及到的产生式有:
+    44	: declaration_stmt->type id = expr ;
+        参考产生式 42
+    23	: lvalue->id
+        此时id保存的commend是reference, lvalue保留这个reference即可, 因此是 simple shrink
+    30	: primary->lvalue
+        此时id保存的commend是reference, primary是右值, 因此需要将引用转成值
+        lvalue.command(); // 获取到引用
+        CommandFactory.st_top_ref_to_val(); // 出栈又入栈, 引用转成值
+    42	: assignment_stmt->lvalue = expr ;
+        lvalue是reference, expr是value, 直接赋值即可
+        lvalue.command();
+        expr.command();
+        CommandFactory.assign_from_st_top_to_ref(); // 栈顶出栈, 作为值; 新的栈顶出栈, 作为引用. 值赋值到引用.
+        // 由于此产生式是语句, 因此需要栈为空
+    43	: lvalue->lvalue [ expr ]
+        lvalue.command();
+        expr.command();
+        CommandFactory.bias_from_st_top_to_ref(); // 栈顶出栈, 作为偏移量; 新的栈顶出栈, 作为引用. 偏移量加到引用.
+
+45	: unmatched_while_stmt->while ( expr ) unmatched_stmt
+46	: matched_while_stmt->while ( expr ) matched_stmt
+    while 循环语句
+    L1:
+    expr.command();
+    CommandFactory.ifn_goto(L2);
+    (matched_stmt|unmatched_stmt).command();
+    CommandFactory.goto(L1);
+    L2:
+
+48	: do_while_stmt->do stmt while ( expr ) ;
+    do-while 语句
+    L1
+    stmt.command();
+    expr.command();
+    CommandFactory.if_goto(L1);
+
+47	: unmatched_if_stmt->if ( expr ) stmt
+    一般的 if 语句
+    expr.command();
+    CommandFactory.ifn_goto(L1);
+    stmt.command();
+    L1:
+
+49	: unmatched_if_stmt->if ( expr ) matched_stmt else unmatched_stmt
+50	: matched_if_stmt->if ( expr ) matched_stmt else matched_stmt
+    if-else 语句
+    expr.command();
+    CommandFactory.ifn_goto(L1);
+    stmt.command();
+    CommandFactory.ifn_goto(L2);
+    L1:
+    (unmatched_stmt|matched_stmt).command();
+    L2:
+
+33	: break_stmt->break ;
+36	: continue_stmt->continue ;
+    注册自己的位置, 等到的循环规约的时候检查

@@ -15,11 +15,10 @@ import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
  */
 @AllArgsConstructor
 public class TokenCommandRegister implements  CommandContext.CommandNodeRegister {
-    private final SourceToken token;
     private final SemanticCommand command;
 
     @Override
     public void register(CommandNodeBuilder outer) {
-        outer.add(new CommandContext.TerminalNode(token, command));
+        outer.add(new CommandContext.TerminalNode(command));
     }
 }

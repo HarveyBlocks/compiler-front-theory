@@ -43,7 +43,8 @@ public class ProgramSyntaxDemo {
         String text = "int32 i = 3 + 4*6;" +
                       "int32 j = (1+i)*i;" +
                       "{ int32 x=i+j;  }" +
-                      "{ int32 x=i*j;  }";
+                      "{ int32 x=i*j;  } "+
+                      " if( 1 + 2){ int32 x=i*j;  }else while(3+4) j = i+1; ";
         SemanticResult result = demo(text, (iter, errCtx) -> {
             ProductionSetContext context = build();
             System.out.println(context);

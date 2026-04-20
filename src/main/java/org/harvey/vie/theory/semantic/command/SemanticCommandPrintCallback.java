@@ -30,7 +30,7 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         CommandContext commandContext = context.getCommandContext();
         if (commandContext.size() != 1) {
             // 由于增广语法 S' -> S, 右部只有一个
-            throw new CompilerException("不正确的状态: ");
+            throw new CompilerException("illegal statement before accept on production.");
         }
         return commandContext.peek();
     }
@@ -41,7 +41,7 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         CommandContext.CommandNode[] array = resultBuilder.toArray();
         if (array.length != 1) {
             // 由于增广语法 S' -> S, 右部只有一个
-            throw new CompilerException("不正确的状态: ");
+            throw new CompilerException("illegal statement before accept on production.");
         }
         // 右部
         CommandContext.CommandNode programNode = array[0];

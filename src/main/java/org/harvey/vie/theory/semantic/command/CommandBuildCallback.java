@@ -9,7 +9,9 @@ import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+import java.util.Arrays;
 import java.util.Stack;
+import java.util.function.Predicate;
 
 /**
  * TODO
@@ -55,7 +57,13 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandConte
                 CommandContext.CommandNodeRegister[] children) {
             int productionId = context.getSyntaxContext().getProductionId(production);
             CommandTranslator translator = reduceStrategies.get(productionId);
-            return translator.translate(context, production, children);
+            return translator.translate(context, production, filterPlaceholderChildren(children));
+        }
+
+        private CommandContext.CommandNodeRegister[] filterPlaceholderChildren(CommandContext.CommandNodeRegister[] children) {
+            return Arrays.stream(children)
+                    .filter(Predicate.not(c -> c instanceof PlaceholderNodeRegister))
+                    .toArray(CommandContext.CommandNodeRegister[]::new);
         }
 
         @Override
@@ -63,6 +71,13 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandConte
                 ShiftReduceSemanticContext context, SourceToken token) {
             TokenTranslator tokenTranslator = shiftStrategies.get(token.getType());
             return tokenTranslator.translate(context, token);
+        }
+    }
+
+    public static class PlaceholderNodeRegister implements CommandContext.CommandNodeRegister {
+        @Override
+        public void register(CommandNodeBuilder outer) {
+            // do nothing
         }
     }
 

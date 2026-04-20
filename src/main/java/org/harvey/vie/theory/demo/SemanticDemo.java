@@ -10,9 +10,7 @@ import org.harvey.vie.theory.semantic.callback.td.PredictiveCallbackRegisterImpl
 import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
 import org.harvey.vie.theory.semantic.command.CommandContext;
 import org.harvey.vie.theory.semantic.command.SemanticCommandPrintCallback;
-import org.harvey.vie.theory.semantic.command.translator.command.CommandTranslator;
-import org.harvey.vie.theory.semantic.command.translator.command.SimpleMapTranslator;
-import org.harvey.vie.theory.semantic.command.translator.command.SimpleShrinkTranslator;
+import org.harvey.vie.theory.semantic.command.translator.command.*;
 import org.harvey.vie.theory.semantic.command.translator.token.DoNothingTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.LoadIdentifierReferenceTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.SimpleStringTokenTranslator;
@@ -58,7 +56,7 @@ public class SemanticDemo {
 
 
     static TokenTranslator defaultTokenTranslator = new DoNothingTokenTranslator();
-    static CommandTranslator defaultCommandTranslator = new SimpleMapTranslator();
+    static CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
 
     private static ShiftReduceCallback instanceSyntaxDirectedTranslationCallback() {
         CommandContext.TokenTranslatorStrategy shiftStrategies = shiftStrategies();
@@ -109,7 +107,42 @@ public class SemanticDemo {
     private static CommandContext.CommandTranslatorStrategy reduceStrategies() {
         // TODO 每次文法改变->分析表改变->产生式的池/id改变->需要改变这里的id映射
         HashMap<Integer, CommandTranslator> map = new HashMap<>();
-        CommandTranslator translator = new SimpleShrinkTranslator();
+        // 37	: declaration_stmt->type id ; 声明语句, 但是没有复制, 好像没啥用, 不需要做声明
+        map.put(37, new DoNotingTranslator());
+        // 38	: term->term * factor                   // In-suffix expression
+        // 39	: expr->expr + term                     // In-suffix expression
+        map.put(38, new InSuffixExpressionTranslator(new OperatorFactor() {
+            @Override
+            public String toString() {
+                return "multiply";
+            }
+        }));
+        map.put(39, new InSuffixExpressionTranslator(new OperatorFactor() {
+            @Override
+            public String toString() {
+                return "plus";
+            }
+        }));
+        // 44	: declaration_stmt->type id = expr ; 可以走直接赋值的路
+        map.put(44, new AssignStatementTranslator());
+        // 30	: primary->lvalue
+        map.put(30, new PrimaryProduceLeftValueTranslator());
+        // 42	: assignment_stmt->lvalue = expr ;
+        map.put(42, new AssignStatementTranslator());
+        // 43	: lvalue->lvalue [ expr ]
+        map.put(43, new ArrayAtExpressionTranslator());
+        // 45	: unmatched_while_stmt->while ( expr ) unmatched_stmt
+        // 46	: matched_while_stmt->while ( expr ) matched_stmt
+        map.put(45, new WhileStatementTranslator());
+        map.put(46, new WhileStatementTranslator());
+        // 48	: do_while_stmt->do stmt while ( expr ) ;
+        map.put(48, new DoWhileStatementTranslator());
+        // 47	: unmatched_if_stmt->if ( expr ) stmt
+        map.put(47, new IfStatementTranslator());
+        // 49	: unmatched_if_stmt->if ( expr ) matched_stmt else unmatched_stmt
+        // 50	: matched_if_stmt->if ( expr ) matched_stmt else matched_stmt
+        map.put(49, new IfElseStatementTranslator());
+        map.put(50, new IfElseStatementTranslator());
         //  map.put(0, null);
         return i -> map.getOrDefault(i, defaultCommandTranslator);
     }

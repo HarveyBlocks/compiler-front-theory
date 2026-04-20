@@ -3,7 +3,6 @@ package org.harvey.vie.theory.semantic.command;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.translator.command.CommandTranslator;
@@ -11,6 +10,7 @@ import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.util.IRandomAccess;
 
+import java.util.List;
 import java.util.Stack;
 
 /**
@@ -22,22 +22,28 @@ import java.util.Stack;
  */
 public class CommandContext extends Stack<CommandContext.CommandNodeRegister> {
 
+    /**
+     * TODO 现在看来似乎不需要这个机制了. <br>
+     *  Register 本来是用来处理label 与 outer 的关系的. <br>
+     *  label如何注册, 可能要看 outer 的具体情况 <br>
+     */
     public interface CommandNodeRegister {
         void register(CommandNodeBuilder outer);
     }
 
     public interface Label {
         void setIndex(int index);
+
         int getIndex();
     }
 
     @Data
-    public static class DefaultLabel {
+    public static class DefaultLabel implements Label {
         private int index;
     }
 
     public interface CommandNode extends IRandomAccess<CommandNode> {
-        void flat(java.util.List<SemanticCommand> result);
+        void flat(List<SemanticCommand> result);
     }
 
     @Getter
@@ -50,7 +56,7 @@ public class CommandContext extends Stack<CommandContext.CommandNodeRegister> {
         }
 
         @Override
-        public void flat(java.util.List<SemanticCommand> result) {
+        public void flat(List<SemanticCommand> result) {
             // 递归
             for (CommandNode child : this) {
                 child.flat(result);
@@ -61,16 +67,14 @@ public class CommandContext extends Stack<CommandContext.CommandNodeRegister> {
 
     @Getter
     public static class TerminalNode extends IRandomAccess.EmptyImpl<CommandNode> implements CommandNode {
-        private final SourceToken token;
         private final SemanticCommand command;
 
-        public TerminalNode(SourceToken token, SemanticCommand command) {
-            this.token = token;
+        public TerminalNode(SemanticCommand command) {
             this.command = command;
         }
 
         @Override
-        public void flat(java.util.List<SemanticCommand> result) {
+        public void flat(List<SemanticCommand> result) {
             result.add(command);
         }
 
@@ -78,12 +82,15 @@ public class CommandContext extends Stack<CommandContext.CommandNodeRegister> {
 
     @Getter
     @Setter
-    public static class LabelNode  extends IRandomAccess.EmptyImpl<CommandNode> implements CommandNode {
+    public static class LabelNode extends IRandomAccess.EmptyImpl<CommandNode> implements CommandNode {
         private final Label label;
+
         public LabelNode(Label label) {this.label = label;}
+
         @Override
-        public void flat(java.util.List<SemanticCommand> result) {
+        public void flat(List<SemanticCommand> result) {
             label.setIndex(result.size());
+            System.out.println("?: " + label.getIndex());
         }
 
     }
@@ -95,4 +102,6 @@ public class CommandContext extends Stack<CommandContext.CommandNodeRegister> {
     public interface CommandTranslatorStrategy {
         CommandTranslator get(int productionId);
     }
+
+
 }
