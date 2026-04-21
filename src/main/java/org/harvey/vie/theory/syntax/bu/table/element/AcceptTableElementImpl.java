@@ -15,7 +15,6 @@ import lombok.Getter;
 public class AcceptTableElementImpl implements AcceptTableElement {
     private final int production;
 
-
     @Override
     public String toString() {
         return "accept " + production;

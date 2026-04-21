@@ -5,6 +5,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.command.node.CommandNode;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
@@ -40,9 +41,9 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
     }
 
     private static void printResult(CommandNodeRegister top) {
-        CommandNodeListBuilder resultBuilder = new CommandNodeListBuilder();
+        CommandNodeBuilder resultBuilder = new CommandNodeListBuilder();
         top.register(resultBuilder);
-        CommandNode[] array = resultBuilder.toArray();
+        CommandNode[] array = resultBuilder.build();
         if (array.length != 1) {
             // 由于增广语法 S' -> S, 右部只有一个
             throw new CompilerException("illegal statement before accept on production.");

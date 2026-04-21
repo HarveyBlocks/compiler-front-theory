@@ -51,14 +51,9 @@ public class TreeBuildCallback extends BuildStackContextCallback<ShiftReduceSynt
         };
     }
 
-    private static final Visitor<ShiftReduceSyntaxTreeNode> VISITOR;
 
-    static {
-        VISITOR = new Visitor<>() {
-        };
-    }
 
     public TreeBuildCallback() {
-        super(SUPPLIER, VISITOR);
+        super(SUPPLIER);
     }
 }

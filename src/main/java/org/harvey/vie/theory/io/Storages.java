@@ -2,6 +2,7 @@ package org.harvey.vie.theory.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.BitSet;
 
 /**
  * Utility class for persisting data structures to an {@link OutputStream}.
@@ -22,6 +23,12 @@ public class Storages {
     public static int store(OutputStream os, byte[] data) throws IOException {
         os.write(data);
         return data.length;
+    }
+
+    public static int storeBitSet(OutputStream os, BitSet bitSet) throws IOException {
+        byte[] data = bitSet.toByteArray();
+        int len = storeInteger(os, data.length);
+        return len + store(os, data);
     }
 
     public static class IntArray implements Storage {

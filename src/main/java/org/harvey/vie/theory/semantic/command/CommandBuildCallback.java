@@ -29,7 +29,7 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
     public CommandBuildCallback(
             TokenTranslatorStrategy shiftStrategies,
             CommandTranslatorStrategy reduceStrategies) {
-        super(new CommandSupplier(shiftStrategies, reduceStrategies), new CommandVisitor());
+        super(new CommandSupplier(shiftStrategies, reduceStrategies));
     }
 
     private static class CommandSupplier implements Supplier<CommandNodeRegister> {
@@ -61,14 +61,9 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
                 CommandNodeRegister[] children) {
             int productionId = context.getSyntaxContext().getProductionId(production);
             CommandTranslator translator = reduceStrategies.get(productionId);
-            return translator.translate(context, production, filterPlaceholderChildren(children));
+            return translator.translate(context, production, children);
         }
 
-        private CommandNodeRegister[] filterPlaceholderChildren(CommandNodeRegister[] children) {
-            return Arrays.stream(children)
-                    .filter(Predicate.not(c -> c instanceof PlaceholderNodeRegister))
-                    .toArray(CommandNodeRegister[]::new);
-        }
 
         @Override
         public CommandNodeRegister instanceNodeOnShift(
@@ -78,7 +73,4 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
         }
     }
 
-    @AllArgsConstructor
-    private static class CommandVisitor implements Visitor<CommandNodeRegister> {
-    }
 }

@@ -40,9 +40,8 @@ public class ProgramSyntaxDemo {
     );
 
     public static void main(String[] args) {
-        // TODO
-        //  由于ProductionPool的实现是依赖与hash的底层实现的, 而这个值是随着JVM变化的
-        //  比如调试和运行的结果不一样
+        // 由于ProductionPool的实现是依赖与hash的底层实现的, 而这个值是随着JVM变化的
+        // 比如调试和运行的结果不一样
         //  解决方法, 要不是持久化, 要不就是在一开始引入id
         //  持久化的坏处是文法改变id也随之改变
         //  一开始引入ID的坏处是难以处理 Epsilon
@@ -54,12 +53,19 @@ public class ProgramSyntaxDemo {
         String text = "int32 i = 3 + 4*6;" +
                       "int32 j = (1+i)*i;" +
                       "{ int32 x=i+j;  }" +
-                      "{ int32 x=i*j;  } "+
-                      " if( 1 + 2){ int32 x=i*j;  }else while(3+4) j = i+1; ";
+                      "{ int32 x=i*j;  } " +
+                      " if( 1 + 2){ int32 x=i*j;  }else while(3+4) {" +
+                      "j = i+1;" +
+                      "if(3+4+5) break;" +
+                      "} ";
         SemanticResult result = demo(text, (iter, errCtx) -> {
             ProductionSetContext context = build();
             System.out.println(context);
-            ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable("program", context);
+            ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
+                    "program",
+                    context,
+                    "syntax_table.data"
+            );
             ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                     shiftReduceParsingTable,
                     t -> !SHOULD_BE_FILTERED.contains(t.getType()),

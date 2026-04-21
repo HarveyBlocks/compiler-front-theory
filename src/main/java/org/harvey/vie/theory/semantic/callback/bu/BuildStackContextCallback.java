@@ -17,26 +17,29 @@ import java.util.Stack;
  */
 public class BuildStackContextCallback<T> implements ShiftReduceCallback {
     private final Supplier<T> supplier;
-    private final Visitor<T> visitor;
 
-    public BuildStackContextCallback(Supplier<T> supplier, Visitor<T> visitor) {
+    public BuildStackContextCallback(Supplier<T> supplier) {
         this.supplier = supplier;
-        this.visitor = visitor;
     }
 
     @Override
     public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        popContext(context, supplier.getStackContext(context), production.getBody());
+        reduceProduction(context, production);
         ShiftReduceCallback.super.beforeAccept(context, production);
     }
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
+        T item = reduceProduction(context, production);
+        Stack<T> stackContext = supplier.getStackContext(context);
+        stackContext.push(item);
+        ShiftReduceCallback.super.onReduce(context, production);
+    }
+
+    private T reduceProduction(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         Stack<T> stackContext = supplier.getStackContext(context);
         T[] children = popContext(context, stackContext, production.getBody());
-        T item = supplier.instanceNodeOnReduce(context, production, children);
-        visitor.onReducePush(context, stackContext, item);
-        ShiftReduceCallback.super.onReduce(context, production);
+        return supplier.instanceNodeOnReduce(context, production, children);
     }
 
     private T[] popContext(ShiftReduceSemanticContext context, Stack<T> stackContext, AlterableSymbol body) {
@@ -46,7 +49,7 @@ public class BuildStackContextCallback<T> implements ShiftReduceCallback {
             if (stackContext.isEmpty()) {
                 throw new CompilerException("no more status in stack to be pop while reducing");
             }
-            children[k] = visitor.onPop(context, stackContext);
+            children[k] = stackContext.pop();
         }
         return children;
     }
@@ -55,7 +58,7 @@ public class BuildStackContextCallback<T> implements ShiftReduceCallback {
     public void onShift(ShiftReduceSemanticContext context, int nextStatus, SourceToken token) {
         Stack<T> stackContext = supplier.getStackContext(context);
         T item = supplier.instanceNodeOnShift(context, token);
-        visitor.onShiftPush(context, stackContext, item);
+        stackContext.push(item);
         ShiftReduceCallback.super.onShift(context, nextStatus, token);
     }
 
@@ -67,19 +70,5 @@ public class BuildStackContextCallback<T> implements ShiftReduceCallback {
         T instanceNodeOnReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production, T[] children);
 
         T instanceNodeOnShift(ShiftReduceSemanticContext context, SourceToken token);
-    }
-
-    public interface Visitor<T> {
-        default void onReducePush(ShiftReduceSemanticContext context, Stack<T> stack, T item) {
-            stack.push(item);
-        }
-
-        default T onPop(ShiftReduceSemanticContext context, Stack<T> stack) {
-            return stack.pop();
-        }
-
-        default void onShiftPush(ShiftReduceSemanticContext context, Stack<T> stack, T item) {
-            stack.push(item);
-        }
     }
 }

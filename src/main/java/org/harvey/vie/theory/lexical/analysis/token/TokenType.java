@@ -17,7 +17,6 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
  */
 public interface TokenType extends Storage, TerminalFactor, StatusVertex {
 
-
     interface Loader<T extends TokenType> extends ILoader<T> {
     }
 

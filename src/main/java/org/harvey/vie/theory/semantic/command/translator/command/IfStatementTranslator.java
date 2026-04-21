@@ -4,6 +4,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.LabelNode;
@@ -26,20 +27,21 @@ public class IfStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        // if ( expr ) stmt
         // 一般的 if 语句
         //    expr.command();
         //    CommandFactory.ifn_goto(L1);
         //    stmt.command();
         //    L1:
-        if (children.length != 2) {
+        if (children.length != 5) {
             throw new CompilerException("illegal statement on if statement production.");
         }
-        CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
+        CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel ifEndLabel = new DefaultSemanticLabel();
-        children[0].register(thisBuilder); // expr
+        children[2].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(ifEndLabel))); // ifn_goto L1
-        children[1].register(thisBuilder); // stmt
+        children[4].register(thisBuilder); // stmt
         thisBuilder.add(new LabelNode(ifEndLabel));
-        return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production);
     }
 }

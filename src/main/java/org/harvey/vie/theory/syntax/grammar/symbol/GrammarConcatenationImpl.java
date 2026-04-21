@@ -15,6 +15,8 @@ public class GrammarConcatenationImpl implements GrammarConcatenation {
 
     public GrammarConcatenationImpl() {list = new ArrayList<>();}
 
+    public GrammarConcatenationImpl(GrammarUnitSymbol[] array) {this.list = List.copyOf(List.of(array));}
+
     @Override
     public void concatenate(ConcatenableSymbol concatenable) {
         Objects.requireNonNull(concatenable);

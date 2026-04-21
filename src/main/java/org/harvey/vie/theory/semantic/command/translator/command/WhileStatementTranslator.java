@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.LabelNode;
@@ -25,6 +26,7 @@ public class WhileStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        // while ( expr ) stmt
         // while 循环语句
         //    L1:
         //    expr.command();
@@ -32,18 +34,23 @@ public class WhileStatementTranslator implements CommandTranslator {
         //    (matched_stmt|unmatched_stmt).command();
         //    CommandFactory.goto(L1);
         //    L2:
-        if (children.length != 2) {
+        if (children.length != 5) {
             throw new CompilerException("illegal statement on while statement production.");
         }
-        CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
+        CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
         thisBuilder.add(new LabelNode(whileStartLabel));
-        children[0].register(thisBuilder); // expr
+        children[2].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(whileEndLabel))); // ifn_goto L2
-        children[1].register(thisBuilder); // matched_stmt|unmatched_stmt
+        children[4].register(thisBuilder); // matched_stmt|unmatched_stmt
         thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1
         thisBuilder.add(new LabelNode(whileEndLabel)); // L2
-        return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
+
+        // continue -> goto L1
+        // break -> goto L2
+        context.setLabelOnBreak(whileEndLabel);
+        context.setLabelOnContinue(whileStartLabel);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production);
     }
 }

@@ -2,6 +2,7 @@ package org.harvey.vie.theory.io;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.BitSet;
 
 /**
  * Utility class providing static methods and implementations for loading data
@@ -27,6 +28,12 @@ public class Loaders {
 
     public static byte[] loadBytes(InputStream is, int len) throws IOException {
         return is.readNBytes(len);
+    }
+
+    public static BitSet loadBitSet(InputStream is) throws IOException {
+        int len = Loaders.loadInteger(is);
+        byte[] data = Loaders.loadBytes(is, len);
+        return BitSet.valueOf(data);
     }
 
     private static class IntArrayLoader implements ILoader<int[]> {

@@ -1,17 +1,20 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.harvey.vie.theory.io.Loaders;
+import org.harvey.vie.theory.io.Storages;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
+import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableSerializer;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
-import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalMatcher;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalMatcherFactory;
-import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.util.CollectionUtil;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 /**
  * TODO
@@ -20,8 +23,11 @@ import java.util.stream.IntStream;
  * @version 1.0
  * @date 2026-04-06 23:07
  */
+@Getter
 public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     private final int start;
+    private final int accept;
+    // 第一个是end_mark
     private final TerminalSymbol[] terminalSymbols;
     private final HeadSymbol[] headSymbols;
     private final Map<HeadSymbol, Integer> headDict;
@@ -33,13 +39,14 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
 
     public ShiftReduceParsingTableImpl(
             int start,
-            TerminalSymbol[] terminalSymbols,
+            int accept, TerminalSymbol[] terminalSymbols,
             HeadSymbol[] headSymbols,
             ActiveTableElement[][] activeTable,
             int[][] gotoTable,
             SimpleGrammarProduction[] productionPool,
             TerminalMatcherFactory matcherFactory) {
         this.start = start;
+        this.accept = accept;
         this.terminalSymbols = terminalSymbols;
         this.headSymbols = headSymbols;
         this.activeTable = activeTable;
@@ -50,10 +57,6 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         this.terminalMatcher = matcherFactory.produce(terminalSymbols);
     }
 
-    @Override
-    public int getStart() {
-        return start;
-    }
 
     @Override
     public int gotoNext(int originStatus, HeadSymbol head) {
@@ -80,112 +83,127 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         return productionDict.get(production);
     }
 
-    // region show string
     @Override
     public String toString() {
-
-        int stateCount = activeTable.length;
-        int termCount = terminalSymbols.length;
-        int nonTermCount = headSymbols.length;
-        int padding = 2;
-
-        // ========== 1. 计算各列最大内容宽度 ==========
-        int stateWidth = Math.max("State".length(), String.valueOf(stateCount - 1).length());
-
-        // 终结符列宽度（内容 + 符号本身）
-        int[] termWidths = new int[termCount];
-        for (int j = 0; j < termCount; j++) {
-            termWidths[j] = terminalSymbols[j].toString().length();
-        }
-        for (int i = 0; i < stateCount; i++) {
-            for (int j = 0; j < termCount; j++) {
-                String cell = (activeTable[i][j] == null) ? "null" : activeTable[i][j].toString();
-                if (cell.length() > termWidths[j]) {
-                    termWidths[j] = cell.length();
-                }
-            }
-        }
-
-        // 非终结符列宽度（内容 + 符号本身）
-        int[] nonTermWidths = new int[nonTermCount];
-        for (int j = 0; j < nonTermCount; j++) {
-            nonTermWidths[j] = headSymbols[j].toString().length();
-        }
-        for (int i = 0; i < stateCount; i++) {
-            for (int j = 0; j < nonTermCount; j++) {
-                String cell = (gotoTable[i][j] == NONE) ? "NaN" : Integer.toString(gotoTable[i][j]);
-                if (cell.length() > nonTermWidths[j]) {
-                    nonTermWidths[j] = cell.length();
-                }
-            }
-        }
-
-        // 加上 padding 后的最终列宽
-        int finalStateWidth = stateWidth + padding;
-        int[] finalTermWidths = new int[termCount];
-        int[] finalNonTermWidths = new int[nonTermCount];
-        for (int j = 0; j < termCount; j++) {
-            finalTermWidths[j] = termWidths[j] + padding;
-        }
-        for (int j = 0; j < nonTermCount; j++) {
-            finalNonTermWidths[j] = nonTermWidths[j] + padding;
-        }
-
-        // ========== 2. 计算 ACTION / GOTO 区域总宽（用于标题居中） ==========
-        int actionTotalWidth = 0;
-        for (int w : finalTermWidths) {
-            actionTotalWidth += w;
-        }
-        int gotoTotalWidth = 0;
-        for (int w : finalNonTermWidths) {
-            gotoTotalWidth += w;
-        }
-
-        StringBuilder sb = new StringBuilder();
-        // 构建文法
-        sb.append("production pool: \n").append(IntStream.range(0, productionPool.length)
-                .mapToObj(i -> i + "\t: " + productionPool[i])
-                .collect(Collectors.joining("\n"))).append("\n");
-        // ========== 3. 构建表头第一行（State + ACTION + GOTO） ==========
-        sb.append(String.format("%-" + finalStateWidth + "s", "State"));
-        // ACTION 居中
-        String actionTitle = "ACTION";
-        int actionLeftPad = (actionTotalWidth - actionTitle.length()) / 2;
-        int actionRightPad = actionTotalWidth - actionTitle.length() - actionLeftPad;
-        sb.append(" ".repeat(actionLeftPad)).append(actionTitle).append(" ".repeat(actionRightPad));
-        // GOTO 居中
-        String gotoTitle = "GOTO";
-        int gotoLeftPad = (gotoTotalWidth - gotoTitle.length()) / 2;
-        int gotoRightPad = gotoTotalWidth - gotoTitle.length() - gotoLeftPad;
-        sb.append(" ".repeat(gotoLeftPad)).append(gotoTitle).append(" ".repeat(gotoRightPad));
-        sb.append('\n');
-
-        // ========== 4. 构建表头第二行（空 + 终结符符号 + 非终结符符号） ==========
-        sb.append(String.format("%-" + finalStateWidth + "s", ""));
-        for (int j = 0; j < termCount; j++) {
-            sb.append(String.format("%-" + finalTermWidths[j] + "s", terminalSymbols[j].toString()));
-        }
-        for (int j = 0; j < nonTermCount; j++) {
-            sb.append(String.format("%-" + finalNonTermWidths[j] + "s", headSymbols[j].toString()));
-        }
-        sb.append('\n');
-
-        // ========== 5. 构建数据行 ==========
-        for (int i = 0; i < stateCount; i++) {
-            sb.append(String.format("%-" + finalStateWidth + "s", i));
-            // ACTION 部分
-            for (int j = 0; j < termCount; j++) {
-                String cell = (activeTable[i][j] == null) ? "null" : activeTable[i][j].toString();
-                sb.append(String.format("%-" + finalTermWidths[j] + "s", cell));
-            }
-            // GOTO 部分
-            for (int j = 0; j < nonTermCount; j++) {
-                String cell = (gotoTable[i][j] == NONE) ? "NaN" : Integer.toString(gotoTable[i][j]);
-                sb.append(String.format("%-" + finalNonTermWidths[j] + "s", cell));
-            }
-            sb.append('\n');
-        }
-        return sb.toString();
+        return ShiftReduceParsingTableImplToString.toString(this);
     }
-    // endregion
+
+    @Override
+    public int store(OutputStream os) throws IOException {
+        // int start;
+        // 第一个是end_mark TerminalSymbol[] terminalSymbols;
+        // HeadSymbol[] headSymbols;
+        // SimpleGrammarProduction[] productionPool;
+        // ActiveTableElement[][] activeTable;
+        // int[][] gotoTable;
+        int start = this.start;
+        int accept = this.accept;
+        int statusCnt = activeTable.length;
+        int terminalCnt = terminalSymbols.length;
+        int headCnt = headSymbols.length;
+        int productionCnt = productionPool.length;
+        int len = 0;
+        len += Storages.storeInteger(os, start);
+        len += Storages.storeInteger(os, accept);
+        len += Storages.storeInteger(os, statusCnt);
+        len += Storages.storeInteger(os, terminalCnt);
+        len += Storages.storeInteger(os, headCnt);
+        len += Storages.storeInteger(os, productionCnt);
+        for (int i = 1; i < terminalCnt; i++) {
+            len += terminalSymbols[i].store(os);
+        }
+        for (HeadSymbol headSymbol : headSymbols) {
+            if (headSymbol.isDefine()) {
+                len += headSymbol.toDefine().store(os);
+            } else {
+                throw new IllegalStateException("It is not supported to store head of type: " + headSymbol.getClass());
+            }
+        }
+        for (SimpleGrammarProduction production : productionPool) {
+            len += production.store(os);
+        }
+        len += ActiveTableSerializer.store(activeTable, os);
+        for (int i = 0; i < statusCnt; i++) {
+            for (int j = 0; j < headCnt; j++) {
+                len += Storages.storeInteger(os, gotoTable[i][j]);
+            }
+        }
+        return len;
+    }
+
+    @AllArgsConstructor
+    public static class Loader implements ShiftReduceParsingTable.Loader<ShiftReduceParsingTableImpl> {
+        private final TerminalSymbol.Loader<?> terminalSymbolLoader;
+        private final HeadDefineSymbol.Loader<?> headSymbolLoader;
+        private final SimpleGrammarProduction.Loader<?> productionLoader;
+        private final TerminalMatcherFactory matcherFactory;
+
+        @Override
+        public ShiftReduceParsingTableImpl load(InputStream is) throws IOException {
+            int start = Loaders.loadInteger(is);
+            int accept = Loaders.loadInteger(is);
+            int statusCnt = Loaders.loadInteger(is);
+            int terminalCnt = Loaders.loadInteger(is);
+            int headCnt = Loaders.loadInteger(is);
+            int productionCnt = Loaders.loadInteger(is);
+            TerminalSymbol[] terminalSymbols = loadTerminalSymbols(is, terminalCnt);
+            HeadSymbol[] headSymbols = loadHeadSymbols(is, headCnt);
+            SimpleGrammarProduction[] productionPool = loadProductionPool(is, productionCnt);
+            ActiveTableElement[][] activeTable = loadActiveTable(is, accept, statusCnt, terminalCnt);
+            int[][] gotoTable = loadGotoTable(is, statusCnt, headCnt);
+            return new ShiftReduceParsingTableImpl(start,
+                    accept, terminalSymbols,
+                    headSymbols,
+                    activeTable,
+                    gotoTable,
+                    productionPool,
+                    matcherFactory
+            );
+        }
+
+        private static int[][] loadGotoTable(InputStream is, int statusCnt, int headCnt) throws IOException {
+            int[][] gotoTable = new int[statusCnt][headCnt];
+            for (int i = 0; i < statusCnt; i++) {
+                for (int j = 0; j < headCnt; j++) {
+                    gotoTable[i][j] = Loaders.loadInteger(is);
+                }
+            }
+            return gotoTable;
+        }
+
+        private static ActiveTableElement[][] loadActiveTable(
+                InputStream is, int accept, int statusCnt, int terminalCnt) throws IOException {
+            ActiveTableElement[][] activeTable = ActiveTableSerializer.load(accept,
+                    0,
+                    () -> new ActiveTableElement[statusCnt][terminalCnt],
+                    is
+            );
+            return activeTable;
+        }
+
+        private SimpleGrammarProduction[] loadProductionPool(InputStream is, int productionCnt) throws IOException {
+            SimpleGrammarProduction[] productionPool = new SimpleGrammarProduction[productionCnt];
+            for (int i = 0; i < productionCnt; i++) {
+                productionPool[i] = productionLoader.load(is);
+            }
+            return productionPool;
+        }
+
+        private HeadSymbol[] loadHeadSymbols(InputStream is, int headCnt) throws IOException {
+            HeadSymbol[] headSymbols = new HeadSymbol[headCnt];
+            for (int i = 0; i < headCnt; i++) {
+                headSymbols[i] = headSymbolLoader.load(is);
+            }
+            return headSymbols;
+        }
+
+        private TerminalSymbol[] loadTerminalSymbols(InputStream is, int terminalCnt) throws IOException {
+            TerminalSymbol[] terminalSymbols = new TerminalSymbol[terminalCnt];
+            terminalSymbols[0] = TerminalSymbol.END_MARK_SYMBOL;
+            for (int i = 1; i < terminalCnt; i++) {
+                terminalSymbols[i] = terminalSymbolLoader.load(is);
+            }
+            return terminalSymbols;
+        }
+    }
 }

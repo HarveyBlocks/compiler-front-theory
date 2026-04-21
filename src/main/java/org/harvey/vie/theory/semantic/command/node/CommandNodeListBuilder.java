@@ -18,7 +18,8 @@ public class CommandNodeListBuilder implements CommandNodeBuilder {
         list.add(node);
     }
 
-    public CommandNode[] toArray() {
+    @Override
+    public CommandNode[] build() {
         return list.toArray(CommandNode[]::new);
     }
 }

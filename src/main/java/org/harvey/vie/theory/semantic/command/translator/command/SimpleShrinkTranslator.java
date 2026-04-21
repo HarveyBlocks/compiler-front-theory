@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.semantic.command.node.CommandNode;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
@@ -34,9 +35,9 @@ public class SimpleShrinkTranslator implements CommandTranslator {
                         production
                 );
             }
-            CommandNodeListBuilder listBuilder = new CommandNodeListBuilder();
+            CommandNodeBuilder listBuilder = new CommandNodeListBuilder();
             Arrays.stream(children).forEach(c -> c.register(listBuilder));
-            CommandNode[] childrenNode = listBuilder.toArray();
+            CommandNode[] childrenNode = listBuilder.build();
             return new NormalCommandNodeRegister(childrenNode, production);
         }
     }

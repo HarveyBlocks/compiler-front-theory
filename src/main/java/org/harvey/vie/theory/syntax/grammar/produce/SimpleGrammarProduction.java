@@ -1,5 +1,7 @@
 package org.harvey.vie.theory.syntax.grammar.produce;
 
+import org.harvey.vie.theory.io.ILoader;
+import org.harvey.vie.theory.io.Storage;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
@@ -10,8 +12,11 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
  * @version 1.0
  * @date 2026-04-07 00:59
  */
-public interface SimpleGrammarProduction {
+public interface SimpleGrammarProduction extends Storage {
     HeadSymbol getHead();
 
     AlterableSymbol getBody();
+
+    interface Loader<T extends SimpleGrammarProduction> extends ILoader<T> {
+    }
 }

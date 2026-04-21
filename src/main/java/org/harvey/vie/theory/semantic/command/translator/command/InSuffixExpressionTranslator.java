@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -29,13 +30,13 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         // expr.command();
         // term.command();
         // CommandFactory.st_operator();
-        if (children.length != 2) {
+        if (children.length != 3) {
             throw new CompilerException("illegal statement on in-suffix expression production.");
         }
-        CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
+        CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        children[1].register(thisBuilder);
+        children[2].register(thisBuilder);
         thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor)));
-        return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production);
     }
 }

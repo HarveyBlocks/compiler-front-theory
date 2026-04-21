@@ -57,4 +57,7 @@ public class CommandFactory {
     }
 
 
+    public static UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token) {
+        return new StringUncertainLabelGotoCommand(token);
+    }
 }

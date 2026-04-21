@@ -1,7 +1,12 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
+import org.harvey.vie.theory.io.ILoader;
+import org.harvey.vie.theory.io.Storage;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * TODO
@@ -10,7 +15,7 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
  * @version 1.0
  * @date 2026-03-28 00:45
  */
-public interface TerminalSymbol extends GrammarUnitSymbol {
+public interface TerminalSymbol extends GrammarUnitSymbol, Storage {
     TerminalSymbol END_MARK_SYMBOL = new EndMarkTerminal();
 
     TerminalFactor getFactor();
@@ -28,6 +33,9 @@ public interface TerminalSymbol extends GrammarUnitSymbol {
     boolean match(SourceToken token);
 
     String hint();
+
+    interface Loader<T extends TerminalSymbol> extends ILoader<T> {
+    }
 }
 
 
@@ -52,6 +60,13 @@ class EndMarkTerminal implements TerminalSymbol {
     @Override
     public String toString() {
         return hint();
+    }
+
+    @Override
+    public int store(OutputStream os) throws IOException {
+        throw new UnsupportedOperationException("Do not store end mark terminal. " +
+                                                "Leave it to the outside world to decide " +
+                                                "how to persist and better deal with special situations");
     }
 
     static class Factor implements TerminalFactor {

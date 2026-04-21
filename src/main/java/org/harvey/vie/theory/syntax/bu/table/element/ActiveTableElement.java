@@ -1,5 +1,10 @@
 package org.harvey.vie.theory.syntax.bu.table.element;
 
+import org.harvey.vie.theory.io.Storage;
+
+import java.io.IOException;
+import java.io.OutputStream;
+
 /**
  * TODO
  *
@@ -28,4 +33,5 @@ public interface ActiveTableElement {
     default void dealConflict(ActiveTableElement element) {
         throw new UnsupportedOperationException("Can not deal conflict!");
     }
+
 }

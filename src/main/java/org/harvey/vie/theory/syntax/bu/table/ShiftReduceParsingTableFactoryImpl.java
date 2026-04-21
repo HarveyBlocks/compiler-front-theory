@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.syntax.bu.table;
 
+import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
 import org.harvey.vie.theory.syntax.bu.item.ItemSetFamily;
 import org.harvey.vie.theory.syntax.bu.item.ProductionItem;
@@ -46,17 +47,18 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             ItemSetFamily family,
             LookaheadMap[] lookaheadMaps) {
         ParsingContext pc = new ParsingContext(startHead, context, firstMap, family, lookaheadMaps);
-        ActiveTableElement[][] activeTable = active(pc);
+        ActiveTable activeTable = active(pc);
         int[][] gotoTable = gotoTable(pc);
-        return pc.build(activeTable, gotoTable, terminalMatcherFactory);
+        return pc.build(activeTable.table, gotoTable, activeTable.accept, terminalMatcherFactory);
     }
 
 
-    private static ActiveTableElement[][] active(ParsingContext pc) {
+    private static ActiveTable active(ParsingContext pc) {
         // ACTION 表: 行 = 状态, 列 = 终结符(包括 $)
         ActiveTableElement[][] activeTable = pc.initActive();
         Map<TerminalSymbol, Integer> terminalDict = CollectionUtil.dict(pc.terminalSymbols);
         // 2. 填充 ACTION 表, 对每个状态 I，检查其中的每个项目:
+        int acceptStatus = -1;
         for (int i = 0; i < activeTable.length; i++) {
             ItemSet set = pc.itemSet(i);
             ActiveTableElement[] raw = activeTable[i];
@@ -82,6 +84,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                         //  若项目为 [S' -> S·](增广开始符), 则
                         //  ACTION[I, $] = accept
                         setWithoutConflict(raw, 0, pc.accept(production));
+                        acceptStatus = i;
                     } else {
                         // 2.2 reduce
                         //  若项目为 [A -> γ·], 且 A 不是增广开始符，
@@ -95,7 +98,13 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                 }
             }
         }
-        return activeTable;
+        return new ActiveTable(activeTable, acceptStatus);
+    }
+
+    @AllArgsConstructor
+    private static class ActiveTable {
+        private final ActiveTableElement[][] table;
+        private final int accept;
     }
 
     private static void setWithoutConflict(ActiveTableElement[] raw, int col, ActiveTableElement element) {
@@ -171,9 +180,10 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         }
 
         public ShiftReduceParsingTable build(
-                ActiveTableElement[][] activeTable, int[][] gotoTable, TerminalMatcherFactory terminalMatcherFactory) {
+                ActiveTableElement[][] activeTable, int[][] gotoTable, int accept, TerminalMatcherFactory terminalMatcherFactory) {
             return new ShiftReduceParsingTableImpl(
                     family.startIndex(),
+                    accept,
                     terminalSymbols,
                     headSymbols,
                     activeTable,

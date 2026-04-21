@@ -1,5 +1,8 @@
 package org.harvey.vie.theory.syntax.grammar.symbol;
 
+import org.harvey.vie.theory.io.ILoader;
+import org.harvey.vie.theory.io.Storage;
+
 /**
  * TODO 左部/Non-terminal
  *
@@ -7,7 +10,7 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @version 1.0
  * @date 2026-03-28 00:39
  */
-public interface HeadDefineSymbol extends HeadSymbol {
+public interface HeadDefineSymbol extends HeadSymbol, Storage {
     String getName();
 
     @Override
@@ -18,5 +21,8 @@ public interface HeadDefineSymbol extends HeadSymbol {
     @Override
     default HeadDefineSymbol toDefine() {
         return this;
+    }
+
+    interface Loader<T extends HeadDefineSymbol> extends ILoader<T> {
     }
 }

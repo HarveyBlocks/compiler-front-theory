@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -29,9 +30,9 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
         if (children.length != 1) {
             throw new CompilerException("illegal statement on primary to left value production.");
         }
-        CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
+        CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal()));
-        return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production);
     }
 }

@@ -4,6 +4,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.LabelNode;
@@ -26,6 +27,7 @@ public class IfElseStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        // if ( expr ) stmt else stmt
         // if-else 语句
         //    expr.command();
         //    CommandFactory.ifn_goto(L1);
@@ -34,18 +36,18 @@ public class IfElseStatementTranslator implements CommandTranslator {
         //    L1:
         //    (unmatched_stmt|matched_stmt).command();
         //    L2:
-        if (children.length != 3) {
+        if (children.length != 7) {
             throw new CompilerException("illegal statement on if-else statement production.");
         }
-        CommandNodeListBuilder thisBuilder = new CommandNodeListBuilder();
+        CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel elseStartLabel = new DefaultSemanticLabel();
         SemanticLabel elseEndLabel = new DefaultSemanticLabel();
-        children[0].register(thisBuilder); // expr
+        children[2].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(elseStartLabel))); // ifn_goto L1
-        children[1].register(thisBuilder); // stmt
+        children[4].register(thisBuilder); // stmt
         thisBuilder.add(new LabelNode(elseStartLabel));
-        children[2].register(thisBuilder); // (unmatched_stmt|matched_stmt)
+        children[6].register(thisBuilder); // (unmatched_stmt|matched_stmt)
         thisBuilder.add(new LabelNode(elseEndLabel));
-        return new NormalCommandNodeRegister(thisBuilder.toArray(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production);
     }
 }

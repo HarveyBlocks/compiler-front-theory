@@ -2,6 +2,7 @@ package org.harvey.vie.theory.demo;
 
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.demo.grammar.ProductionSetContextBuilds;
+import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompileException;
@@ -29,6 +30,7 @@ import org.harvey.vie.theory.syntax.bu.la.LookaheadMapFactoryImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactory;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableFactoryImpl;
+import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTableImpl;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.first.FirstMapFactory;
 import org.harvey.vie.theory.syntax.grammar.first.IterativeFixedPointFirstMapFactory;
@@ -40,6 +42,7 @@ import org.harvey.vie.theory.syntax.grammar.normalize.LeftFactoringEliminator;
 import org.harvey.vie.theory.syntax.grammar.normalize.LeftFactoringEliminatorImpl;
 import org.harvey.vie.theory.syntax.grammar.normalize.LeftRecursionEliminator;
 import org.harvey.vie.theory.syntax.grammar.normalize.LeftRecursionEliminatorImpl;
+import org.harvey.vie.theory.syntax.grammar.produce.DefineSimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
@@ -47,6 +50,7 @@ import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTable
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTableFactory;
 
+import java.io.*;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -84,7 +88,7 @@ public class SyntaxDemo {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
                 System.out.println(context);
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S", context);
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S", context,"syntax_simple.data");
                 ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                         shiftReduceParsingTable,
                         t -> true,
@@ -109,8 +113,7 @@ public class SyntaxDemo {
     };
 
     public static SemanticResult demo(
-            String text,
-            BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
+            String text, BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
         LexicalAnalyzer analyzer = lexicalAnalyzer();
         // resource
         Resource resource = new AsciiStringResource(text);
@@ -137,7 +140,52 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    public static ShiftReduceParsingTable buildShiftReduceParsingTable(String startHead, ProductionSetContext context) {
+    private static final boolean FLUSH_TABLE = false;
+
+    public static ShiftReduceParsingTable buildShiftReduceParsingTable(
+            String startHead,
+            ProductionSetContext context,
+            String filename) {
+        ShiftReduceParsingTable table;
+        try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
+            if (FLUSH_TABLE) {
+                table = buildShiftReduceParsingTable0(startHead, context);
+                storeTable(table,filename);
+            }
+            ShiftReduceParsingTableImpl.Loader loader = getLoader();
+            table = loader.load(is);
+            log.info("loaded = {}", table);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return table;
+    }
+
+    private static void storeTable(ShiftReduceParsingTable table, String filename) throws IOException {
+        try (OutputStream os = new FileOutputStream("src/main/resources/serial/"+filename)) {
+            int store = table.store(os);
+            os.flush();
+            log.info("store = {}", store);
+        }
+    }
+
+    private static ShiftReduceParsingTableImpl.Loader getLoader() {
+        TokenTypeTerminalSymbol.Loader terminalSymbolLoader = new TokenTypeTerminalSymbol.Loader(new ProgramTokenType.Loader());
+        HeadDefineSymbolImpl.Loader headSymbolLoader = new HeadDefineSymbolImpl.Loader();
+        DefineSimpleGrammarProduction.Loader productionLoader = new DefineSimpleGrammarProduction.Loader(
+                headSymbolLoader,
+                terminalSymbolLoader
+        );
+        return new ShiftReduceParsingTableImpl.Loader(
+                terminalSymbolLoader,
+                headSymbolLoader,
+                productionLoader,
+                MATCHER_FACTORY
+        );
+    }
+
+    private static ShiftReduceParsingTable buildShiftReduceParsingTable0(
+            String startHead, ProductionSetContext context) {
         System.out.println("----------first map-------------");
         FirstMapFactory firstMapFactory = new IterativeFixedPointFirstMapFactory();
         FirstMap firstMap = firstMapFactory.first(context);

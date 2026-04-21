@@ -12,10 +12,7 @@ import org.harvey.vie.theory.semantic.command.SemanticCommandPrintCallback;
 import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.TokenTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
-import org.harvey.vie.theory.semantic.command.translator.token.DoNothingTokenTranslator;
-import org.harvey.vie.theory.semantic.command.translator.token.LoadIdentifierReferenceTokenTranslator;
-import org.harvey.vie.theory.semantic.command.translator.token.SimpleStringTokenTranslator;
-import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
+import org.harvey.vie.theory.semantic.command.translator.token.*;
 import org.harvey.vie.theory.semantic.error.PassiveErrorCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierScopeCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
@@ -100,8 +97,8 @@ public class SemanticDemo {
         // shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_ELSE, null);
         // shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_WHILE, null);
         // shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_DO, null);
-        // shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_BREAK, null);
-        // shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE, null);
+        shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_BREAK, new BreakTokenTranslator());
+        shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE, new ContinueTokenTranslator());
         return t -> shiftStrategies.getOrDefault(t, defaultTokenTranslator);
     }
 
@@ -110,8 +107,6 @@ public class SemanticDemo {
         HashMap<Integer, CommandTranslator> map = new HashMap<>();
         // 35 stmt_list->stmt stmt_list
         map.put(35, new StatementListTranslator());
-        // 37	: declaration_stmt->type id ; 声明语句, 但是没有复制, 好像没啥用, 不需要做声明
-        map.put(37, new DoNotingTranslator());
         // 38	: term->term * factor                   // In-suffix expression
         // 39	: expr->expr + term                     // In-suffix expression
         map.put(38, new InSuffixExpressionTranslator(new OperatorFactor() {
@@ -126,8 +121,10 @@ public class SemanticDemo {
                 return "plus";
             }
         }));
+        // 44	: declaration_stmt->type id ; 什么都不做
+        map.put(37, new DeclarationWithInitializationTranslator());
         // 44	: declaration_stmt->type id = expr ; 可以走直接赋值的路
-        map.put(44, new AssignStatementTranslator());
+        map.put(44, new DeclarationWithInitializationTranslator());
         // 30	: primary->lvalue
         map.put(30, new PrimaryProduceLeftValueTranslator());
         // 42	: assignment_stmt->lvalue = expr ;
@@ -146,7 +143,8 @@ public class SemanticDemo {
         // 50	: matched_if_stmt->if ( expr ) matched_stmt else matched_stmt
         map.put(49, new IfElseStatementTranslator());
         map.put(50, new IfElseStatementTranslator());
-        //  map.put(0, null);
+        // 14	: program->stmt_list
+        map.put(14, new ProgramCommandTranslator());
         return i -> map.getOrDefault(i, defaultCommandTranslator);
     }
 

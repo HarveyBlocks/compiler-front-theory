@@ -130,3 +130,22 @@ In-suffix expression: 中缀表达式, 是处理形如 expr -> expr operator ite
 33	: break_stmt->break ;
 36	: continue_stmt->continue ;
     注册自己的位置, 等到的循环规约的时候检查
+    do stmt while(expr);
+        L1:
+        stmt
+        L2:
+        expr
+        if_goto L1;
+        L3:
+    break->goto L3
+    continue->goto L2
+
+    while(expr) stmt
+        L1:
+        expr
+        ifn_goto L2
+        stmt
+        goto L1
+        L2:
+    continue->goto L1
+    break->goto L2

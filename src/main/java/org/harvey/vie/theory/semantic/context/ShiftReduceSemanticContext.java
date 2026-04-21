@@ -8,6 +8,8 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
+import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
@@ -17,7 +19,9 @@ import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
 
 /**
@@ -115,7 +119,7 @@ public class ShiftReduceSemanticContext {
 
     // region error context
     public void addError(int offset, String message) {
-        syntaxContext.getErrorContext().addError(new SemanticErrorMessage(offset,message));
+        syntaxContext.getErrorContext().addError(new SemanticErrorMessage(offset, message));
     }
     // endregion
 
@@ -141,5 +145,56 @@ public class ShiftReduceSemanticContext {
         return identifierTableBuilder.scopeExist();
     }
 
+
+    // endregion
+    // region break&continue
+    private final List<UncertainLabelGotoCommand> breakPool = new ArrayList<>();
+    private final List<UncertainLabelGotoCommand> continuePool = new ArrayList<>();
+
+    public void registerUncertainLabelBreak(UncertainLabelGotoCommand gotoCommand) {
+        breakPool.add(gotoCommand);
+    }
+
+    public void registerUncertainLabelContinue(UncertainLabelGotoCommand gotoCommand) {
+        continuePool.add(gotoCommand);
+    }
+
+    public void setLabelOnBreak(SemanticLabel label) {
+        for (UncertainLabelGotoCommand uncertainLabelGotoCommand : breakPool) {
+            uncertainLabelGotoCommand.setLabel(label);
+        }
+        breakPool.clear();
+    }
+
+    public void setLabelOnContinue(SemanticLabel label) {
+        for (UncertainLabelGotoCommand uncertainLabelGotoCommand : continuePool) {
+            uncertainLabelGotoCommand.setLabel(label);
+        }
+        continuePool.clear();
+    }
+
+    public int forEachBreakToken(Consumer<? super SourceToken> action) {
+        breakPool.stream().map(UncertainLabelGotoCommand::getToken).forEach(action);
+        return breakPool.size();
+    }
+
+    public int forEachContinueToken(Consumer<? super SourceToken> action) {
+        continuePool.stream().map(UncertainLabelGotoCommand::getToken).forEach(action);
+        return continuePool.size();
+    }
+
+    public void checkNoBreakOrContinue() {
+        int breakRelease = forEachBreakToken(t -> addError(
+                t.getOffset(),
+                "break is not allowed here."
+        ));
+        int continueRelease = forEachContinueToken(t -> addError(
+                t.getOffset(),
+                "continue is not allowed here."
+        ));
+        if (breakRelease != 0 || continueRelease != 0) {
+            throw new CompilerException("interrupt for illegal continue or break position.");
+        }
+    }
     // endregion
 }

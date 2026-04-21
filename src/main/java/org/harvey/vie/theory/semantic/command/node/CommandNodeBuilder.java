@@ -9,4 +9,6 @@ package org.harvey.vie.theory.semantic.command.node;
  */
 public interface CommandNodeBuilder {
     void add(CommandNode node);
+
+    CommandNode[] build();
 }
