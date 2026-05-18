@@ -1,0 +1,17 @@
+package org.harvey.vie.theory.semantic.command.node;
+
+import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.util.IRandomAccess;
+
+import java.util.List;
+
+/**
+ * TODO
+ *
+ * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
+ * @version 1.0
+ * @date 2026-04-21 01:30
+ */
+public interface CommandNode extends IRandomAccess<CommandNode> {
+    void flat(List<SemanticCommand> result);
+}

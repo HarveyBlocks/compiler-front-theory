@@ -1,0 +1,35 @@
+package org.harvey.vie.theory.syntax.bu.table;
+
+import org.harvey.vie.theory.io.ILoader;
+import org.harvey.vie.theory.io.Storage;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.syntax.bu.item.ItemSet;
+import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
+import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+
+/**
+ * TODO
+ *
+ * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
+ * @version 1.0
+ * @date 2026-04-06 21:39
+ */
+public interface ShiftReduceParsingTable extends Storage {
+    int NONE = ItemSet.NONE;
+
+    int getStart();
+
+    int gotoNext(int originStatus, HeadSymbol head);
+
+    ActiveTableElement activeNext(int originStatus, int terminal);
+
+    SimpleGrammarProduction getProduction(int i);
+
+    int matchTerminal(SourceToken token);
+
+    Integer getProductionId(SimpleGrammarProduction production);
+
+    interface Loader<T extends ShiftReduceParsingTable> extends ILoader<T> {
+    }
+}

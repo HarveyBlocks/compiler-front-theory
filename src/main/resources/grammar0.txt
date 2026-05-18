@@ -1,0 +1,74 @@
+program          ::= block
+
+block            ::= { decls stmts }
+
+decls            ::= decls decl
+                   | ε
+
+decl             ::= type id ;
+
+type             ::= type [ num ]
+                   | basic
+
+stmts            ::= stmts stmt
+                   | ε
+
+stmt             ::= matched_stmt
+                   | unmatched_stmt
+
+matched_stmt     ::= loc = bool ;
+                   | matched_while_stmt
+                   | do stmt while ( bool ) ;
+                   | break ;
+                   | block
+                   | matched_if_stmt
+
+unmatched_stmt   ::= unmatched_if_stmt
+                   | unmatched_while_stmt
+
+matched_if_stmt  ::= if ( bool ) matched_stmt else matched_stmt
+
+unmatched_if_stmt ::= if ( bool ) stmt
+                    | if ( bool ) matched_stmt else unmatched_stmt
+
+matched_while_stmt   ::= while ( bool ) matched_stmt
+
+unmatched_while_stmt ::= while ( bool ) unmatched_stmt
+
+loc              ::= loc [ bool ]
+                   | id
+
+bool             ::= bool || join
+                   | join
+
+join             ::= join && equality
+                   | equality
+
+equality         ::= equality == rel
+                   | equality != rel
+                   | rel
+
+rel              ::= expr < expr
+                   | expr <= expr
+                   | expr >= expr
+                   | expr > expr
+                   | expr
+
+expr             ::= expr + term
+                   | expr - term
+                   | term
+
+term             ::= term * unary
+                   | term / unary
+                   | unary
+
+unary            ::= ! unary
+                   | - unary
+                   | factor
+
+factor           ::= ( bool )
+                   | loc
+                   | num
+                   | real
+                   | true
+                   | false

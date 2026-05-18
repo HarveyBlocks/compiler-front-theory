@@ -1,0 +1,28 @@
+package org.harvey.vie.theory.syntax.grammar.symbol;
+
+import org.harvey.vie.theory.io.ILoader;
+import org.harvey.vie.theory.io.Storage;
+
+/**
+ * TODO 左部/Non-terminal
+ *
+ * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
+ * @version 1.0
+ * @date 2026-03-28 00:39
+ */
+public interface HeadDefineSymbol extends HeadSymbol, Storage {
+    String getName();
+
+    @Override
+    default boolean isDefine() {
+        return true;
+    }
+
+    @Override
+    default HeadDefineSymbol toDefine() {
+        return this;
+    }
+
+    interface Loader<T extends HeadDefineSymbol> extends ILoader<T> {
+    }
+}
