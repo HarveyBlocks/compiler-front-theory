@@ -153,9 +153,9 @@ public class SemanticDemo {
         CommandTranslator doNothing = new DoNotingTranslator();
         CommandTranslator simpleShrink = defaultCommandTranslator;
 
-        map.put("decls->蔚", doNothing);
+        map.put("decls->ε", doNothing);
         map.put("program->block", new ProgramCommandTranslator());
-        map.put("stmts->蔚", doNothing);
+        map.put("stmts->ε", doNothing);
         map.put("decls->decls decl", doNothing);
         map.put("stmts->stmts stmt", new StatementListTranslator());
         map.put("decl->type IDENTIFIER OPERATOR_SEMICOLON", new DeclarationWithoutInitializationTranslator());
