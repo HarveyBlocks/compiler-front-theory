@@ -14,6 +14,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
 import java.util.Objects;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * TODO
@@ -99,5 +100,11 @@ public class ShiftReducePhaseContext implements SyntaxParsingContext<Integer> {
         Integer id = table.getProductionId(production);
         Objects.requireNonNull(id, ()-> "can not found id in table by the production: " + production);
         return id;
+    }
+
+    public String statusStackString() {
+        return statusStack.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(" ", "[", "]"));
     }
 }

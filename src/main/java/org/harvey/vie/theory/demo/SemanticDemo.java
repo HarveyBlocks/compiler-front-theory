@@ -19,6 +19,7 @@ import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
 import org.harvey.vie.theory.semantic.log.TreeLogCallback;
 import org.harvey.vie.theory.semantic.tree.TreeBuildCallback;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 
 import java.util.HashMap;
@@ -145,71 +146,53 @@ public class SemanticDemo {
         map.put(50, new IfElseStatementTranslator());
         // 14	: program->stmt_list
         map.put(14, new ProgramCommandTranslator());
-        return i -> map.getOrDefault(i, defaultCommandTranslator);
+        return production -> map.getOrDefault(null, defaultCommandTranslator);
     }
     private static CommandTranslatorStrategy reduceStrategies0() {
-        HashMap<Integer, CommandTranslator> map = new HashMap<>();
+        HashMap<String, CommandTranslator> map = new HashMap<>();
         CommandTranslator doNothing = new DoNotingTranslator();
         CommandTranslator simpleShrink = defaultCommandTranslator;
 
-        map.put(0, doNothing);
-        map.put(1, new ProgramCommandTranslator());
-        map.put(2, doNothing);
-        map.put(3, doNothing);
-        map.put(4, doNothing);
-        map.put(5, doNothing);
-        map.put(6, simpleShrink);
-        map.put(7, doNothing);
-        map.put(8, doNothing);
-        map.put(9, simpleShrink);
-        map.put(10, simpleShrink);
-        map.put(11, simpleShrink);
-        map.put(12, simpleShrink);
-        map.put(13, simpleShrink);
-        map.put(14, new StatementListTranslator());
-        map.put(15, simpleShrink);
-        map.put(16, simpleShrink);
-        map.put(17, simpleShrink);
-        map.put(18, simpleShrink);
-        map.put(19, new DeclarationWithoutInitializationTranslator());
-        map.put(20, simpleShrink);
-        map.put(21, doNothing);
-        map.put(22, simpleShrink);
-        map.put(23, simpleShrink);
-        map.put(24, simpleShrink);
-        map.put(25, simpleShrink);
-        map.put(26, simpleShrink);
-        map.put(27, simpleShrink);
-        map.put(28, simpleShrink);
-        map.put(29, simpleShrink);
-        map.put(30, new PrimaryProduceLeftValueTranslator());
-        map.put(31, simpleShrink);
-        map.put(32, simpleShrink);
-        map.put(33, simpleShrink);
-        map.put(34, simpleShrink);
-        map.put(35, simpleShrink);
-        map.put(36, new AssignStatementTranslator());
-        map.put(37, new ArrayAtExpressionTranslator());
-        map.put(38, new InSuffixExpressionTranslator(operator("logical_or")));
-        map.put(39, new IfStatementTranslator());
-        map.put(40, new InSuffixExpressionTranslator(operator("multiply")));
-        map.put(41, new InSuffixExpressionTranslator(operator("divide")));
-        map.put(42, new InSuffixExpressionTranslator(operator("equal")));
-        map.put(43, new InSuffixExpressionTranslator(operator("not_equal")));
-        map.put(44, new InSuffixExpressionTranslator(operator("logical_and")));
-        map.put(45, simpleShrink);
-        map.put(46, new InSuffixExpressionTranslator(operator("plus")));
-        map.put(47, new InSuffixExpressionTranslator(operator("minus")));
-        map.put(48, new InSuffixExpressionTranslator(operator("less_equal")));
-        map.put(49, new InSuffixExpressionTranslator(operator("greater")));
-        map.put(50, new InSuffixExpressionTranslator(operator("greater_equal")));
-        map.put(51, new InSuffixExpressionTranslator(operator("less")));
-        map.put(52, new WhileStatementTranslator());
-        map.put(53, new WhileStatementTranslator());
-        map.put(54, new IfElseStatementTranslator());
-        map.put(55, new IfElseStatementTranslator());
-        map.put(56, new DoWhileStatementTranslator());
-        return i -> map.getOrDefault(i, defaultCommandTranslator);
+        map.put("decls->蔚", doNothing);
+        map.put("program->block", new ProgramCommandTranslator());
+        map.put("stmts->蔚", doNothing);
+        map.put("decls->decls decl", doNothing);
+        map.put("stmts->stmts stmt", new StatementListTranslator());
+        map.put("decl->type IDENTIFIER OPERATOR_SEMICOLON", new DeclarationWithoutInitializationTranslator());
+        map.put("matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON", simpleShrink);
+        map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", doNothing);
+        map.put("factor->loc", new PrimaryProduceLeftValueTranslator());
+        map.put("matched_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON", new AssignStatementTranslator());
+        map.put("loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE", new ArrayAtExpressionTranslator());
+        map.put("bool->bool OPERATOR_LOGICAL_OR join", new InSuffixExpressionTranslator(operator("logical_or")));
+        map.put("unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt",
+                new IfStatementTranslator());
+        map.put("term->term OPERATOR_DIVIDE unary", new InSuffixExpressionTranslator(operator("divide")));
+        map.put("term->term OPERATOR_MULTIPLY unary", new InSuffixExpressionTranslator(operator("multiply")));
+        map.put("equality->equality OPERATOR_NOT_EQUAL rel", new InSuffixExpressionTranslator(operator("not_equal")));
+        map.put("equality->equality OPERATOR_EQUAL rel", new InSuffixExpressionTranslator(operator("equal")));
+        map.put("join->join OPERATOR_LOGICAL_AND equality", new InSuffixExpressionTranslator(operator("logical_and")));
+        map.put("rel->expr OPERATOR_LESS_EQUAL expr", new InSuffixExpressionTranslator(operator("less_equal")));
+        map.put("rel->expr OPERATOR_LESS expr", new InSuffixExpressionTranslator(operator("less")));
+        map.put("expr->expr OPERATOR_MINUS term", new InSuffixExpressionTranslator(operator("minus")));
+        map.put("rel->expr OPERATOR_GREATER_EQUAL expr", new InSuffixExpressionTranslator(operator("greater_equal")));
+        map.put("rel->expr OPERATOR_GREATER expr", new InSuffixExpressionTranslator(operator("greater")));
+        map.put("expr->expr OPERATOR_PLUS term", new InSuffixExpressionTranslator(operator("plus")));
+        map.put("unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt",
+                new WhileStatementTranslator());
+        map.put("matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt",
+                new WhileStatementTranslator());
+        map.put("matched_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON",
+                new DoWhileStatementTranslator());
+        map.put("unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt",
+                new IfElseStatementTranslator());
+        map.put("matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt",
+                new IfElseStatementTranslator());
+        return production -> map.getOrDefault(productionKey(production), defaultCommandTranslator);
+    }
+
+    private static String productionKey(SimpleGrammarProduction production) {
+        return production.toString().trim();
     }
 
     private static OperatorFactor operator(String name) {

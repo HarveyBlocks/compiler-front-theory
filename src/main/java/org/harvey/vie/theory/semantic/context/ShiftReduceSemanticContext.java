@@ -43,6 +43,7 @@ public class ShiftReduceSemanticContext {
     @Getter
     private final CommandContext commandContext = new CommandContext();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
+    private final List<IdentifierRecord> identifierRecords = new ArrayList<>();
 
     public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register, ShiftReducePhaseContext syntaxContext) {
         this.register = register;
@@ -133,7 +134,7 @@ public class ShiftReduceSemanticContext {
     }
 
     public void registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
-        identifierTableBuilder.registerIdentifier(typeHeadNode, identifierToken, initialized);
+        identifierRecords.add(identifierTableBuilder.registerIdentifier(typeHeadNode, identifierToken, initialized));
     }
 
 
@@ -143,6 +144,10 @@ public class ShiftReduceSemanticContext {
 
     public IdentifierRecord[] scopeExist() {
         return identifierTableBuilder.scopeExist();
+    }
+
+    public IdentifierRecord[] identifierRecords() {
+        return identifierRecords.toArray(IdentifierRecord[]::new);
     }
 
 

@@ -1,0 +1,13 @@
+{
+int32 a;
+int32 b;
+boolean ok;
+a = 1;
+b = 2;
+if (a < b)
+if (b < 10)
+a = a + b;
+else
+b = b - a;
+ok = a != b;
+}
