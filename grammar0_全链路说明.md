@@ -18,7 +18,7 @@
 
 它主要做四件事：
 
-1. 准备测试输入文本。当前已经准备了 `text1`、`text2`、`text3` 三个测试用例，可以通过修改 `String text = text1;` 切换不同输入。
+1. 准备测试输入文本。当前测试用例放在 `src/main/resources/program-tests` 目录下，默认入口会批量读取其中的 `text1.txt`、`text2.txt`、`text3.txt` 并逐个运行。
 2. 调用程序语言专用的词法分析器，把字符串包装成字符资源，再变成 token 迭代器。
 3. 构造 `grammar0` 文法，并生成或加载移进归约分析表。
 4. 创建移进归约分析器，并把语义回调注册进去，让语法分析过程中同步触发语义处理。
@@ -28,15 +28,16 @@
 当前主流程可以用下面的概要表示：
 
 ```text
-选择 text
+读取 program-tests 目录下的测试用例
 创建词法分析器
-把 text 包装成 Resource
+把当前用例文本包装成 Resource
 从 Resource 创建 SourceTokenIterator
 构造 grammar0 的 ProductionSetContext
 构造或读取 ShiftReduceParsingTable
 创建 ShiftReducePhaserImpl
 注册语义 callback
 执行 phase
+生成控制台摘要和 Markdown 报告
 ```
 
 这里最关键的设计点是：语法分析不是单独运行的。移进和归约发生时，会不断通知语义层，所以语义分析和语法分析是事件驱动式地交织在一起完成的。
@@ -80,6 +81,17 @@ if (a < b)
 - `do { ... } while (...)` 形式
 
 这三个测试并不是随意拼接的字符串，而是有意识覆盖了 `grammar0` 中的重要结构。
+
+### 2.1 批量测试与报告输出
+
+当前默认运行方式不是手动切换某一个字符串，而是由 `ProgramSyntaxTestRunner` 批量读取 `src/main/resources/program-tests` 目录下的 `.txt` 文件。每个测试用例都会独立走完词法分析、语法分析和语义分析全链路。
+
+运行后会产生两类输出：
+
+- 控制台只打印简洁结果，例如每个用例的 `PASS` 或 `FAIL`，便于人直接确认整体状态。
+- `run-reports/program-syntax` 目录下会生成 Markdown 报告。每个用例有一份详细报告，包含源程序、完整运行输出和失败信息；同一次运行还会生成一份 `summary` 报告，集中列出本轮所有用例的结果和对应报告路径。
+
+这种组织方式把“适合快速阅读的摘要”和“适合排查问题的完整日志”分开了。平时先看控制台或 summary，出现问题时再进入单个报告查看完整链路输出。
 
 ## 3. 词法分析阶段
 
@@ -587,9 +599,9 @@ GOTO 表负责非终结符：
 这带来两个效果：
 
 1. 构造表的过程可以持久化，避免每次都从头计算。
-2. 表中的产生式池会形成稳定的 production id，语义阶段可以根据 id 找到对应语义处理器。
+2. 表中仍然保存产生式池，语法分析阶段可以通过表里的产生式编号执行 reduce 动作。
 
-当前 `grammar0_pool.txt` 记录的就是语法分析阶段产生式 id 与产生式之间的对应关系。语义分析中的 `reduceStrategies0()` 正是按照这个池来配置的。
+需要注意的是，产生式池编号不应被当成长期稳定的语义绑定依据。当前语义分析已经改为根据完整产生式文本选择 translator，而不是依赖 `grammar0_pool.txt` 中的数字编号。这样即使重新生成语法表导致产生式编号变化，只要产生式本身没有变，对应语义动作仍然可以匹配。
 
 ## 6. 移进归约运行阶段
 
@@ -774,7 +786,7 @@ type id ;
 
 ### 10.2 reduce 时的产生式翻译
 
-当发生 reduce 时，语义层根据 production id 找到对应的 translator。
+当发生 reduce 时，语义层会拿到本次归约使用的完整产生式，然后根据产生式文本找到对应的 translator。
 
 例如：
 
@@ -786,7 +798,7 @@ type id ;
 - `while` 使用 while translator。
 - `do ... while` 使用 do-while translator。
 
-这就是 `reduceStrategies0()` 的作用：它把 `grammar0_pool.txt` 中的产生式编号和具体语义处理器一一绑定。
+这就是 `reduceStrategies0()` 的作用：它把 grammar0 中需要特殊语义动作的产生式文本和具体语义处理器一一绑定。
 
 如果一个产生式不需要特殊语义动作，就使用简单收缩 translator 或空操作 translator。
 
@@ -1000,7 +1012,15 @@ L_end:
 
 `SemanticCommandPrintCallback` 在接受完成前检查命令栈顶部的程序节点，并把命令节点展开成线性命令序列打印。
 
-打印出来的命令不是机器码，而是 demo 用的中间语义命令。它们用于展示语义翻译结果，例如：
+当前输出分为三类。
+
+第一类是 `command result`。它按生成顺序给每条语义命令编号，便于观察语义翻译最终得到的线性命令序列。
+
+第二类是 `semantic command view`。它仍然展示同一批 demo 语义命令，只是把命令按行整理成更容易阅读的视图。这里需要特别说明：它不是严格意义上的完整三地址码或四元式生成结果，也不是机器码。
+
+第三类是 `symbol table result`。它把语义阶段登记过的标识符记录打印出来，包括编号、类型、标识符名称以及是否已经初始化。
+
+打印出来的命令用于展示语义翻译结果，例如：
 
 ```text
 load_st_identifier_reference i
@@ -1021,7 +1041,9 @@ goto L
 - 无条件跳转
 - 标签位置
 
-## 13. grammar0_pool 与 reduceStrategies0 的对应关系
+因此，本文把这部分称为“语义命令输出”或“语义命令视图”，而不是完整的三地址码生成器。这样描述更符合当前代码的实际能力。
+
+## 13. grammar0_pool 与 reduceStrategies0 的关系
 
 `grammar0_pool.txt` 是语法分析阶段的产生式池。每一行都有一个编号，例如：
 
@@ -1032,22 +1054,25 @@ goto L
 ...
 ```
 
-语义阶段不能只看产生式文本，而是通过产生式 id 找 translator。
+这个文件适合用来观察语法分析表里“编号和产生式”的对应关系，也方便排查某次 reduce 动作到底归约了哪一条产生式。但是在当前实现中，语义阶段不再把这些编号作为长期绑定依据。
 
-因此 `reduceStrategies0()` 做的事情是：
+当前 `reduceStrategies0()` 做的事情是按产生式文本匹配 translator，例如：
 
 ```text
-产生式 id 0  -> 某个处理器
-产生式 id 1  -> 某个处理器
-产生式 id 36 -> AssignStatementTranslator
-产生式 id 37 -> ArrayAtExpressionTranslator
-产生式 id 38 -> InSuffixExpressionTranslator(logical_or)
+matched_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON
+  -> AssignStatementTranslator
+
+loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE
+  -> ArrayAtExpressionTranslator
+
+bool->bool OPERATOR_LOGICAL_OR join
+  -> InSuffixExpressionTranslator(logical_or)
 ...
 ```
 
-这个映射必须和 `grammar0_pool.txt` 保持一致。如果文法变化导致产生式池 id 变化，语义映射也必须同步调整。
+这样设计的原因是：产生式池编号会受到语法表生成顺序影响，不适合作为语义动作的稳定键。改成按产生式文本匹配后，如果重新生成 `syntax_table.data` 只改变编号、不改变产生式内容，语义处理器仍然可以正确对应。
 
-这也是当前设计中最需要维护者注意的地方之一：语义动作和产生式编号存在显式绑定。
+维护者仍然需要注意：如果 grammar0 的产生式内容本身发生变化，例如非终结符名称、右部符号顺序或 token 名称发生变化，`reduceStrategies0()` 中对应的文本键也需要同步调整。
 
 ## 14. 全链路运行示例说明
 
@@ -1188,7 +1213,9 @@ program -> block
 
 第四，`if-else` translator 当前创建了 else 相关标签，但没有看到显式生成“then 分支结束后跳过 else 分支”的命令。因此不能把它描述成已经完整实现了所有控制流细节。
 
-第五，语义动作依赖 `grammar0_pool.txt` 的产生式 id。如果重新生成语法表导致产生式 id 变化，`reduceStrategies0()` 必须同步维护。
+第五，语义动作当前依赖产生式文本进行匹配，不再依赖 `grammar0_pool.txt` 的产生式 id。这样可以避免语法表重建后 id 漂移造成语义处理器错配；但如果文法产生式的文本结构本身改变，`reduceStrategies0()` 仍然需要同步维护。
+
+第六，项目代码大量使用 Lombok 生成构造器、getter 和日志字段。当前 `pom.xml` 已经显式配置 Maven 编译插件和 Lombok annotation processor，因此通过 Maven 编译时可以正确触发注解处理。
 
 ## 17. 总结
 

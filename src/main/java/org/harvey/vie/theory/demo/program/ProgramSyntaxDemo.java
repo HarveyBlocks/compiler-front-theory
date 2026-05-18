@@ -40,6 +40,10 @@ public class ProgramSyntaxDemo {
     );
 
     public static void main(String[] args) {
+        if (args.length == 0) {
+            ProgramSyntaxTestRunner.run();
+            return;
+        }
         // 由于ProductionPool的实现是依赖与hash的底层实现的, 而这个值是随着JVM变化的
         // 比如调试和运行的结果不一样
         //  解决方法, 要不是持久化, 要不就是在一开始引入id

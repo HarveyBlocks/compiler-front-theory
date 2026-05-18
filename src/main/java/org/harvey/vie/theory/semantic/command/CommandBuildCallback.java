@@ -59,8 +59,7 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
                 ShiftReduceSemanticContext context,
                 SimpleGrammarProduction production,
                 CommandNodeRegister[] children) {
-            int productionId = context.getSyntaxContext().getProductionId(production);
-            CommandTranslator translator = reduceStrategies.get(productionId);
+            CommandTranslator translator = reduceStrategies.get(production);
             return translator.translate(context, production, children);
         }
 

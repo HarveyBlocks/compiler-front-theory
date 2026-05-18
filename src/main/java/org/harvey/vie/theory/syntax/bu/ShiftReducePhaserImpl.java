@@ -74,12 +74,15 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         context.onStart();
         while (true) {
             SourceToken current = ctx.currentToken();
+            System.out.println("syntax stack: " + ctx.statusStackString());
+            System.out.println("current token: " + current.hintString() + " -> " + new String(current.getLexeme()));
             if (ctx.isStackEmpty()) {
                 context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;
             }
             int top = ctx.peek();
             ActiveTableElement element = table.activeNext(top, table.matchTerminal(current));
+            System.out.println("action: " + (element == null ? "error" : element));
             if (element == null) {
                 // error
                 context.onError(ShiftReduceErrorType.UNDEFINED_ACTION);

@@ -42,7 +42,7 @@ public class IdentifierTableBuilder {
         return null;
     }
 
-    public void registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
+    public IdentifierRecord registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
         ScopeBuilder last = getLast();
         int no = last.nextNo();
         IdentifierRecord identifierRecord = new IdentifierRecord(
@@ -55,6 +55,7 @@ public class IdentifierTableBuilder {
         log.trace("register identifier: " + identifierRecord);
         log.trace("now identifier table: \n" +
                   identifierTable.stream().map(r -> "\t" + r).collect(Collectors.joining("\n")));
+        return identifierRecord;
     }
 
 

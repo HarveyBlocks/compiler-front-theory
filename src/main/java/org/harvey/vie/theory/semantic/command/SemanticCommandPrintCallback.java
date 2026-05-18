@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.command.node.CommandNode;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -28,7 +29,7 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
     public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         CommandNodeRegister top = topCommandNodeRegister(context);
         ShiftReduceCallback.super.beforeAccept(context, production);
-        printResult(top);
+        printResult(context, top);
     }
 
     private static CommandNodeRegister topCommandNodeRegister(ShiftReduceSemanticContext context) {
@@ -40,7 +41,7 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         return commandContext.peek();
     }
 
-    private static void printResult(CommandNodeRegister top) {
+    private static void printResult(ShiftReduceSemanticContext context, CommandNodeRegister top) {
         CommandNodeBuilder resultBuilder = new CommandNodeListBuilder();
         top.register(resultBuilder);
         CommandNode[] array = resultBuilder.build();
@@ -56,6 +57,25 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         IdGenerator rawGenerator = new IdGenerator();
         for (SemanticCommand semanticCommand : result) {
             System.out.printf("[%03d] %s\n", rawGenerator.next(), semanticCommand);
+        }
+        printSemanticCommandView(result);
+        printSymbolTable(context);
+    }
+
+    private static void printSemanticCommandView(List<SemanticCommand> result) {
+        System.out.println("semantic command view:");
+        ThreeAddressCodePrinter printer = new ThreeAddressCodePrinter();
+        List<String> lines = printer.print(result);
+        for (String line : lines) {
+            System.out.println(line);
+        }
+    }
+
+    private static void printSymbolTable(ShiftReduceSemanticContext context) {
+        System.out.println("symbol table result:");
+        IdentifierRecord[] records = context.identifierRecords();
+        for (IdentifierRecord record : records) {
+            System.out.println(record);
         }
     }
 
