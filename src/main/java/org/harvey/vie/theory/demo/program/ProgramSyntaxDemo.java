@@ -50,16 +50,54 @@ public class ProgramSyntaxDemo {
         //      这样需要考虑到消除左递归等操作, 会创建新的产生式
         //      说实话, 很烦, 因为只有这里需要id, 而引入id主要的困难会发生在predicate
         //      所以持久化才是比较好的方案?
-        String text = "int32 i = 3 + 4*6;" +
-                      "int32 j = (1+i)*i;" +
-                      "{ int32 x=i+j;  }" +
-                      "{ int32 x=i*j;  } " +
-                      " if( 1 + 2){ int32 x=i*j;  }else while(3+4) {" +
-                      "j = i+1;" +
-                      "if(3+4+5) break;" +
-                      "} ";
+        String text1 = "{ " +
+                "int32 i; " +
+                "int32[10] arr; " +
+                "boolean flag; " +
+                "i = 3 + 4 * 6; " +
+                "arr[1] = i - 2; " +
+                "if (i < arr[1] || false) { " +
+                "arr[2] = arr[1] / 2; " +
+                "} else while (i != 0) { " +
+                "i = i - 1; " +
+                "if (i == 2) break; " +
+                "} " +
+                "do i = i + 1; while (i <= 10); " +
+                "flag = !(i >= 10) && true; " +
+                "}";
+        String text2 = "{ " +
+                "int32 a; " +
+                "int32 b; " +
+                "boolean ok; " +
+                "a = 1; " +
+                "b = 2; " +
+                "if (a < b) " +
+                "if (b < 10) " +
+                "a = a + b; " +
+                "else " +
+                "b = b - a; " +
+                "ok = a != b; " +
+                "}";
+        String text3 = "{ " +
+                "int32[2][3] matrix; " +
+                "int32 row; " +
+                "int32 col; " +
+                "float64 value; " +
+                "row = 0; " +
+                "col = 1; " +
+                "matrix[row][col] = 8; " +
+                "while (row < 2 && col <= 2) { " +
+                "matrix[row][col] = matrix[row][col] / 2; " +
+                "if (matrix[row][col] == 1) break; else col = col + 1; " +
+                "} " +
+                "do { " +
+                "row = row + 1; " +
+                "value = 3.14; " +
+                "} while (!(row >= 2)); " +
+                "}";
+        String text = text3;
         SemanticResult result = demo(text, (iter, errCtx) -> {
-            ProductionSetContext context = build();
+            ProductionSetContext context = buildGrammar0();
             System.out.println(context);
             ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
                     "program",
@@ -274,4 +312,188 @@ public class ProgramSyntaxDemo {
 
         return contextBuilder.build();
     }
+
+    public static ProductionSetContext buildGrammar0() {
+        TerminalFactory terminalFactory = terminal -> new TokenTypeTerminalSymbol((TokenType) terminal);
+        ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
+
+        contextBuilder.define("program")
+                .alternateDefinition("block");
+
+        contextBuilder.define("block")
+                .alternateTerminal(ProgramTokenType.OPERATOR_BRACE_OPEN)
+                .concatenateDefinitionLast("decls")
+                .concatenateDefinitionLast("stmts")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_BRACE_CLOSE);
+
+        contextBuilder.define("decls")
+                .alternateSelf()
+                .concatenateDefinitionLast("decl")
+                .alternateEpsilon();
+
+        contextBuilder.define("decl")
+                .alternateDefinition("type")
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("type")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_OPEN)
+                .concatenateTerminalLast(ProgramTokenType.CONSTANT_INTEGER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
+                .alternateTerminal(ProgramTokenType.TYPE_BOOLEAN)
+                .alternateTerminal(ProgramTokenType.TYPE_CHARACTER)
+                .alternateTerminal(ProgramTokenType.TYPE_INT32)
+                .alternateTerminal(ProgramTokenType.TYPE_FLOAT64)
+                .alternateTerminal(ProgramTokenType.TYPE_STRING);
+
+        contextBuilder.define("stmts")
+                .alternateSelf()
+                .concatenateDefinitionLast("stmt")
+                .alternateEpsilon();
+
+        contextBuilder.define("stmt")
+                .alternateDefinition("matched_stmt")
+                .alternateDefinition("unmatched_stmt");
+
+        contextBuilder.define("matched_stmt")
+                .alternateDefinition("loc")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_ASSIGN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .alternateDefinition("matched_while_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_DO)
+                .concatenateDefinitionLast("stmt")
+                .concatenateTerminalLast(ProgramTokenType.CONTROL_STRUCTURES_WHILE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_BREAK)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .alternateDefinition("block")
+                .alternateDefinition("matched_if_stmt");
+
+        contextBuilder.define("unmatched_stmt")
+                .alternateDefinition("unmatched_if_stmt")
+                .alternateDefinition("unmatched_while_stmt");
+
+        contextBuilder.define("matched_if_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_IF)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateDefinitionLast("matched_stmt")
+                .concatenateTerminalLast(ProgramTokenType.CONTROL_STRUCTURES_ELSE)
+                .concatenateDefinitionLast("matched_stmt");
+
+        contextBuilder.define("unmatched_if_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_IF)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateDefinitionLast("stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_IF)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateDefinitionLast("matched_stmt")
+                .concatenateTerminalLast(ProgramTokenType.CONTROL_STRUCTURES_ELSE)
+                .concatenateDefinitionLast("unmatched_stmt");
+
+        contextBuilder.define("matched_while_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_WHILE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateDefinitionLast("matched_stmt");
+
+        contextBuilder.define("unmatched_while_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_WHILE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .concatenateDefinitionLast("unmatched_stmt");
+
+        contextBuilder.define("loc")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
+                .alternateTerminal(ProgramTokenType.IDENTIFIER);
+
+        contextBuilder.define("bool")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_LOGICAL_OR)
+                .concatenateDefinitionLast("join")
+                .alternateDefinition("join");
+
+        contextBuilder.define("join")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_LOGICAL_AND)
+                .concatenateDefinitionLast("equality")
+                .alternateDefinition("equality");
+
+        contextBuilder.define("equality")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_EQUAL)
+                .concatenateDefinitionLast("rel")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_NOT_EQUAL)
+                .concatenateDefinitionLast("rel")
+                .alternateDefinition("rel");
+
+        contextBuilder.define("rel")
+                .alternateDefinition("expr")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_LESS)
+                .concatenateDefinitionLast("expr")
+                .alternateDefinition("expr")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_LESS_EQUAL)
+                .concatenateDefinitionLast("expr")
+                .alternateDefinition("expr")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_GREATER_EQUAL)
+                .concatenateDefinitionLast("expr")
+                .alternateDefinition("expr")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_GREATER)
+                .concatenateDefinitionLast("expr")
+                .alternateDefinition("expr");
+
+        contextBuilder.define("expr")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PLUS)
+                .concatenateDefinitionLast("term")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_MINUS)
+                .concatenateDefinitionLast("term")
+                .alternateDefinition("term");
+
+        contextBuilder.define("term")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_MULTIPLY)
+                .concatenateDefinitionLast("unary")
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_DIVIDE)
+                .concatenateDefinitionLast("unary")
+                .alternateDefinition("unary");
+
+        contextBuilder.define("unary")
+                .alternateTerminal(ProgramTokenType.OPERATOR_LOGICAL_NOT)
+                .concatenateDefinitionLast("unary")
+                .alternateTerminal(ProgramTokenType.OPERATOR_MINUS)
+                .concatenateDefinitionLast("unary")
+                .alternateDefinition("factor");
+
+        contextBuilder.define("factor")
+                .alternateTerminal(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .alternateDefinition("loc")
+                .alternateTerminal(ProgramTokenType.CONSTANT_INTEGER)
+                .alternateTerminal(ProgramTokenType.CONSTANT_FLOAT)
+                .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_TRUE)
+                .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_FALSE);
+
+        return contextBuilder.build();
+    }
+
 }

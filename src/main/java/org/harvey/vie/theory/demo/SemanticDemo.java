@@ -58,7 +58,7 @@ public class SemanticDemo {
 
     private static ShiftReduceCallback instanceSyntaxDirectedTranslationCallback() {
         TokenTranslatorStrategy shiftStrategies = shiftStrategies();
-        CommandTranslatorStrategy reduceStrategies = reduceStrategies();
+        CommandTranslatorStrategy reduceStrategies = reduceStrategies0();
         // 需要涉及符号表的具体构建
         return new CommandBuildCallback(shiftStrategies, reduceStrategies);
     }
@@ -147,7 +147,79 @@ public class SemanticDemo {
         map.put(14, new ProgramCommandTranslator());
         return i -> map.getOrDefault(i, defaultCommandTranslator);
     }
+    private static CommandTranslatorStrategy reduceStrategies0() {
+        HashMap<Integer, CommandTranslator> map = new HashMap<>();
+        CommandTranslator doNothing = new DoNotingTranslator();
+        CommandTranslator simpleShrink = defaultCommandTranslator;
 
+        map.put(0, doNothing);
+        map.put(1, new ProgramCommandTranslator());
+        map.put(2, doNothing);
+        map.put(3, doNothing);
+        map.put(4, doNothing);
+        map.put(5, doNothing);
+        map.put(6, simpleShrink);
+        map.put(7, doNothing);
+        map.put(8, doNothing);
+        map.put(9, simpleShrink);
+        map.put(10, simpleShrink);
+        map.put(11, simpleShrink);
+        map.put(12, simpleShrink);
+        map.put(13, simpleShrink);
+        map.put(14, new StatementListTranslator());
+        map.put(15, simpleShrink);
+        map.put(16, simpleShrink);
+        map.put(17, simpleShrink);
+        map.put(18, simpleShrink);
+        map.put(19, new DeclarationWithoutInitializationTranslator());
+        map.put(20, simpleShrink);
+        map.put(21, doNothing);
+        map.put(22, simpleShrink);
+        map.put(23, simpleShrink);
+        map.put(24, simpleShrink);
+        map.put(25, simpleShrink);
+        map.put(26, simpleShrink);
+        map.put(27, simpleShrink);
+        map.put(28, simpleShrink);
+        map.put(29, simpleShrink);
+        map.put(30, new PrimaryProduceLeftValueTranslator());
+        map.put(31, simpleShrink);
+        map.put(32, simpleShrink);
+        map.put(33, simpleShrink);
+        map.put(34, simpleShrink);
+        map.put(35, simpleShrink);
+        map.put(36, new AssignStatementTranslator());
+        map.put(37, new ArrayAtExpressionTranslator());
+        map.put(38, new InSuffixExpressionTranslator(operator("logical_or")));
+        map.put(39, new IfStatementTranslator());
+        map.put(40, new InSuffixExpressionTranslator(operator("multiply")));
+        map.put(41, new InSuffixExpressionTranslator(operator("divide")));
+        map.put(42, new InSuffixExpressionTranslator(operator("equal")));
+        map.put(43, new InSuffixExpressionTranslator(operator("not_equal")));
+        map.put(44, new InSuffixExpressionTranslator(operator("logical_and")));
+        map.put(45, simpleShrink);
+        map.put(46, new InSuffixExpressionTranslator(operator("plus")));
+        map.put(47, new InSuffixExpressionTranslator(operator("minus")));
+        map.put(48, new InSuffixExpressionTranslator(operator("less_equal")));
+        map.put(49, new InSuffixExpressionTranslator(operator("greater")));
+        map.put(50, new InSuffixExpressionTranslator(operator("greater_equal")));
+        map.put(51, new InSuffixExpressionTranslator(operator("less")));
+        map.put(52, new WhileStatementTranslator());
+        map.put(53, new WhileStatementTranslator());
+        map.put(54, new IfElseStatementTranslator());
+        map.put(55, new IfElseStatementTranslator());
+        map.put(56, new DoWhileStatementTranslator());
+        return i -> map.getOrDefault(i, defaultCommandTranslator);
+    }
+
+    private static OperatorFactor operator(String name) {
+        return new OperatorFactor() {
+            @Override
+            public String toString() {
+                return name;
+            }
+        };
+    }
     private static ShiftReduceCallback instanceSemanticCommandPrintCallback() {
         return new SemanticCommandPrintCallback();
     }

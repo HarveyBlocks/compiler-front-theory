@@ -140,7 +140,7 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    private static final boolean FLUSH_TABLE = false;
+    private static final boolean FLUSH_TABLE = true;
 
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(
             String startHead,
