@@ -8,6 +8,8 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
+import org.harvey.vie.theory.semantic.tree.node.TokenNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -59,7 +61,7 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
             throw new CompileException("TODO");
         }
         int no = record.getNo();
-        headNode.set(0, n -> n.toToken().instanceIdentifier(no));
+        replaceLeftMostIdentifier(headNode, no);
     }
 
     private void registerIdentifier(ShiftReduceSemanticContext context, HeadNode headNode)
@@ -87,5 +89,34 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         boolean initialized(HeadNode declarationReducedNode);
 
         HeadNode typeHeadNode(HeadNode declarationReducedNode);
+    }
+
+    public static SourceToken leftMostToken(ShiftReduceSyntaxTreeNode node) {
+        if (node.isToken()) {
+            TokenNode tokenNode = node.toToken();
+            return tokenNode.getSource();
+        }
+        HeadNode headNode = node.toHead();
+        for (ShiftReduceSyntaxTreeNode child : headNode) {
+            SourceToken token = leftMostToken(child);
+            if (token != null) {
+                return token;
+            }
+        }
+        return null;
+    }
+
+    private static boolean replaceLeftMostIdentifier(HeadNode headNode, int no) {
+        for (int i = 0; i < headNode.size(); i++) {
+            ShiftReduceSyntaxTreeNode child = headNode.get(i);
+            if (child.isToken()) {
+                headNode.set(i, n -> n.toToken().instanceIdentifier(no));
+                return true;
+            }
+            if (replaceLeftMostIdentifier(child.toHead(), no)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

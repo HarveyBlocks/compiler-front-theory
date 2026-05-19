@@ -162,6 +162,10 @@ public class SemanticDemo {
         map.put("matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON", simpleShrink);
         map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", doNothing);
         map.put("factor->loc", new PrimaryProduceLeftValueTranslator());
+        map.put("unary->OPERATOR_LOGICAL_NOT unary",
+                new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT));
+        map.put("unary->OPERATOR_MINUS unary",
+                new UnaryExpressionTranslator(operator("negate"), ProgramTokenType.OPERATOR_MINUS));
         map.put("matched_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON", new AssignStatementTranslator());
         map.put("loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE", new ArrayAtExpressionTranslator());
         map.put("bool->bool OPERATOR_LOGICAL_OR join", new InSuffixExpressionTranslator(operator("logical_or")));
@@ -216,15 +220,14 @@ public class SemanticDemo {
 
     private static ShiftReduceCallback instanceIdentifierTableBuildCallback() {
         final ReducePredicate usingPredicate = p -> p.getHead().isDefine() &&
-                                                    "lvalue".equals(p.getHead().toDefine().getName());
+                                                    "loc".equals(p.getHead().toDefine().getName());
         final ReducePredicate declaringPredicate = p -> p.getHead().isDefine() &&
-                                                        "declaration_stmt".equals(p.getHead().toDefine().getName());
-        // 和文法有关 lvalue -> id lvalue_suffix
-        final IdentifierTableBuildCallback.UsingIdentifierSupplier usingIdentifierSupplier = n -> n.get(0)
-                .toToken()
-                .getSource();
+                                                        "decl".equals(p.getHead().toDefine().getName());
+        // 和文法有关 loc -> IDENTIFIER | loc [ bool ]
+        final IdentifierTableBuildCallback.UsingIdentifierSupplier usingIdentifierSupplier =
+                IdentifierTableBuildCallback::leftMostToken;
 
-        // 和文法有关 declaration -> type id = expr;
+        // 和文法有关 decl -> type IDENTIFIER ;
         final IdentifierTableBuildCallback.DeclarationRecordSupplier declarationRecordSupplier = new IdentifierTableBuildCallback.DeclarationRecordSupplier() {
             @Override
             public SourceToken identifier(HeadNode declarationReducedNode) {
@@ -233,7 +236,7 @@ public class SemanticDemo {
 
             @Override
             public boolean initialized(HeadNode declarationReducedNode) {
-                return declarationReducedNode.size() > 2;
+                return false;
             }
 
             @Override

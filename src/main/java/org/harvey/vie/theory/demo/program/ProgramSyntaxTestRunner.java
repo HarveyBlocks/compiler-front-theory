@@ -77,25 +77,27 @@ public final class ProgramSyntaxTestRunner {
 
     private static TestCaseResult runOneTestCase(Path testCase, String runId) throws IOException {
         String caseName = testCase.getFileName().toString().replaceFirst("\\.txt$", "");
+        boolean expectedFailure = caseName.contains("invalid");
         String text = Files.readString(testCase, StandardCharsets.UTF_8);
         ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
         PrintStream originalOut = System.out;
         Throwable failure = null;
-        boolean success = false;
+        boolean executedSuccessfully = false;
         try (PrintStream capture = new PrintStream(outputBuffer, true, StandardCharsets.UTF_8)) {
             System.setOut(capture);
             ProgramSyntaxDemo.demo(text, ProgramSyntaxTestRunner::phaseGrammar0);
-            success = true;
+            executedSuccessfully = true;
         } catch (Throwable throwable) {
             failure = throwable;
         } finally {
             System.setOut(originalOut);
         }
+        boolean success = expectedFailure ? failure != null : executedSuccessfully;
         String output = outputBuffer.toString(StandardCharsets.UTF_8);
         Path report = REPORT_DIR.resolve(runId + "-" + caseName + ".md");
-        writeReport(report, caseName, text, output, success, failure);
+        writeReport(report, caseName, text, output, success, failure, expectedFailure);
         System.out.println((success ? "[PASS] " : "[FAIL] ") + caseName + " -> " + report.toAbsolutePath());
-        if (failure != null) {
+        if (failure != null && !expectedFailure) {
             failure.printStackTrace(System.out);
         }
         return new TestCaseResult(caseName, report, success);
@@ -123,10 +125,12 @@ public final class ProgramSyntaxTestRunner {
             String source,
             String output,
             boolean success,
-            Throwable failure) throws IOException {
+            Throwable failure,
+            boolean expectedFailure) throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append("# Program Syntax Test: ").append(caseName).append("\n\n");
         builder.append("- Result: ").append(success ? "PASS" : "FAIL").append("\n");
+        builder.append("- Expected: ").append(expectedFailure ? "FAIL" : "PASS").append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
         builder.append("## Output\n\n```text\n").append(output).append("\n```\n");

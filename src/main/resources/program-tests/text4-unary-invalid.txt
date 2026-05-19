@@ -1,0 +1,6 @@
+{
+boolean flag;
+int32 value;
+flag = !1;
+value = -true;
+}
