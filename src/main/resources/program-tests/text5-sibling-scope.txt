@@ -1,0 +1,11 @@
+{
+int32 outer;
+{
+    int32 left;
+    outer = left;
+}
+{
+    int32 right;
+    outer = right;
+}
+}
