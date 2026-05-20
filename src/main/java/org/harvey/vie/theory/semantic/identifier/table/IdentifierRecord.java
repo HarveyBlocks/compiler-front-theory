@@ -18,12 +18,19 @@ import java.util.stream.Collectors;
 @Getter
 public class IdentifierRecord {
     private final int no;
+    private final int offset;
     private final HeadNode type;
     private final byte[] lexeme;
     private final boolean initialized;
 
     @Override
     public String toString() {
-        return "[" + no + "] " + type.stream().map(Objects::toString).collect(Collectors.joining()) + " " + new String(lexeme) + " " + (initialized ? "" : "non-") + "initialized";
+        return "[" + no + "@offset=" + offset + "] " +
+               type.stream().map(Objects::toString).collect(Collectors.joining()) +
+               " " +
+               new String(lexeme) +
+               " " +
+               (initialized ? "" : "non-") +
+               "initialized";
     }
 }

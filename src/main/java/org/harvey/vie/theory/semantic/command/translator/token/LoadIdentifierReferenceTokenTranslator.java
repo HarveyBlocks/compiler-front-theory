@@ -5,6 +5,7 @@ import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.TokenCommandRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 
 /**
  * TODO
@@ -16,6 +17,10 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 public class LoadIdentifierReferenceTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        return new TokenCommandRegister(CommandFactory.loadIdentifierReference(token));
+        IdentifierRecord record = context.getIdentifier(token);
+        if (record == null) {
+            return new TokenCommandRegister(CommandFactory.loadIdentifierReference(token));
+        }
+        return new TokenCommandRegister(CommandFactory.loadIdentifierReference(record));
     }
 }

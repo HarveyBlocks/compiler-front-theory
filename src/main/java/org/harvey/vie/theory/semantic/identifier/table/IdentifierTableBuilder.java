@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 public class IdentifierTableBuilder {
 
     private final List<ScopeBuilder> identifierTable = new ArrayList<>();
+    private final IdGenerator recordIdGenerator = new IdGenerator();
 
     public IdentifierTableBuilder() {
         identifierTable.add(new ScopeBuilder(0));
@@ -44,9 +45,11 @@ public class IdentifierTableBuilder {
 
     public IdentifierRecord registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
         ScopeBuilder last = getLast();
-        int no = last.nextNo();
+        int no = recordIdGenerator.next();
+        int offset = last.nextNo();
         IdentifierRecord identifierRecord = new IdentifierRecord(
                 no,
+                offset,
                 typeHeadNode,
                 identifierToken.getLexeme(),
                 initialized

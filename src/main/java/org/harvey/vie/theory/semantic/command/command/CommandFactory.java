@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.command;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 
 /**
@@ -11,6 +12,12 @@ import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
  * @date 2026-04-20 22:24
  */
 public class CommandFactory {
+    private static final String TYPE_BOOLEAN = "boolean";
+    private static final String TYPE_CHARACTER = "character";
+    private static final String TYPE_INT32 = "int32";
+    private static final String TYPE_FLOAT64 = "float64";
+    private static final String TYPE_STRING = "string";
+
     /**
      * 仅用作测试和demo
      */
@@ -22,6 +29,45 @@ public class CommandFactory {
     public static SemanticCommand loadIdentifierReference(SourceToken token) {
         // 把变量的引用加载到栈顶
         return new StringCommand("load_st_identifier_reference " + new String(token.getLexeme()));
+    }
+
+    public static SemanticCommand loadIdentifierReference(IdentifierRecord record) {
+        // 操作码中的类型后缀表示“把该偏移量处的局部变量视为什么类型”
+        // 参数 1: 局部变量表偏移量 offset
+        return new StringCommand("load_st_" + typeMnemonic(record) + "_reference " + record.getOffset());
+    }
+
+    private static String typeMnemonic(IdentifierRecord record) {
+        SourceToken typeToken = leftMostTypeToken(record);
+        if (typeToken == null) {
+            return "unknown";
+        }
+        Object type = typeToken.getType();
+        if (type == org.harvey.vie.theory.demo.program.ProgramTokenType.TYPE_BOOLEAN) {
+            return TYPE_BOOLEAN;
+        }
+        if (type == org.harvey.vie.theory.demo.program.ProgramTokenType.TYPE_CHARACTER) {
+            return TYPE_CHARACTER;
+        }
+        if (type == org.harvey.vie.theory.demo.program.ProgramTokenType.TYPE_INT32) {
+            return TYPE_INT32;
+        }
+        if (type == org.harvey.vie.theory.demo.program.ProgramTokenType.TYPE_FLOAT64) {
+            return TYPE_FLOAT64;
+        }
+        if (type == org.harvey.vie.theory.demo.program.ProgramTokenType.TYPE_STRING) {
+            return TYPE_STRING;
+        }
+        return "unknown";
+    }
+
+    private static SourceToken leftMostTypeToken(IdentifierRecord record) {
+        return record.getType()
+                .stream()
+                .filter(node -> node.isToken())
+                .map(node -> node.toToken().getSource())
+                .findFirst()
+                .orElse(null);
     }
 
     public static SemanticCommand stOperator(OperatorFactor operatorFactor) {

@@ -133,6 +133,15 @@ public class ShiftReduceSemanticContext {
         return identifierTableBuilder.getIdentifier(identifierToken);
     }
 
+    public IdentifierRecord getIdentifierByNo(int no) {
+        for (IdentifierRecord identifierRecord : identifierRecords) {
+            if (identifierRecord.getNo() == no) {
+                return identifierRecord;
+            }
+        }
+        return null;
+    }
+
     public void registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
         identifierRecords.add(identifierTableBuilder.registerIdentifier(typeHeadNode, identifierToken, initialized));
     }

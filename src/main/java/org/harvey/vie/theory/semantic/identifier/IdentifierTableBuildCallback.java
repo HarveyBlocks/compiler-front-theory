@@ -61,7 +61,8 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
             throw new CompileException("TODO");
         }
         int no = record.getNo();
-        replaceLeftMostIdentifier(headNode, no);
+        int offset = record.getOffset();
+        replaceLeftMostIdentifier(headNode, no, offset);
     }
 
     private void registerIdentifier(ShiftReduceSemanticContext context, HeadNode headNode)
@@ -106,14 +107,14 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         return null;
     }
 
-    private static boolean replaceLeftMostIdentifier(HeadNode headNode, int no) {
+    private static boolean replaceLeftMostIdentifier(HeadNode headNode, int no, int offset) {
         for (int i = 0; i < headNode.size(); i++) {
             ShiftReduceSyntaxTreeNode child = headNode.get(i);
             if (child.isToken()) {
-                headNode.set(i, n -> n.toToken().instanceIdentifier(no));
+                headNode.set(i, n -> n.toToken().instanceIdentifier(no, offset));
                 return true;
             }
-            if (replaceLeftMostIdentifier(child.toHead(), no)) {
+            if (replaceLeftMostIdentifier(child.toHead(), no, offset)) {
                 return true;
             }
         }

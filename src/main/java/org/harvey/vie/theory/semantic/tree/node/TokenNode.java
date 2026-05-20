@@ -26,8 +26,8 @@ public class TokenNode implements ShiftReduceSyntaxTreeNode {
         return source.hintString();
     }
 
-    public ShiftReduceSyntaxTreeNode instanceIdentifier(int no) {
-        return new IdentifierTokenNode(source, no);
+    public ShiftReduceSyntaxTreeNode instanceIdentifier(int no, int offset) {
+        return new IdentifierTokenNode(source, no, offset);
     }
 
     public boolean isIdentifier() {

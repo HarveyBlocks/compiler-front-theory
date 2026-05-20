@@ -13,10 +13,12 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 @Getter
 public class IdentifierTokenNode extends TokenNode implements ShiftReduceSyntaxTreeNode {
     private final int no;
+    private final int offset;
 
-    public IdentifierTokenNode(SourceToken source, int no) {
+    public IdentifierTokenNode(SourceToken source, int no, int offset) {
         super(source);
         this.no = no;
+        this.offset = offset;
     }
 
     @Override
