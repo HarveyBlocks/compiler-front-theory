@@ -161,6 +161,15 @@ public class SyntaxDemo {
         return table;
     }
 
+    public static ShiftReduceParsingTable loadShiftReduceParsingTable(String filename) {
+        try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
+            ShiftReduceParsingTableImpl.Loader loader = getLoader();
+            return loader.load(is);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static void storeTable(ShiftReduceParsingTable table, String filename) throws IOException {
         try (OutputStream os = new FileOutputStream("src/main/resources/serial/"+filename)) {
             int store = table.store(os);

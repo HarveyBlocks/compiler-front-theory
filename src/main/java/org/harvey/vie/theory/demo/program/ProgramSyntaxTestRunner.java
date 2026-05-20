@@ -2,25 +2,33 @@ package org.harvey.vie.theory.demo.program;
 
 import org.harvey.vie.theory.demo.SemanticDemo;
 import org.harvey.vie.theory.demo.SyntaxDemo;
+import org.harvey.vie.theory.error.CompileErrorMessage;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
+import org.harvey.vie.theory.io.resource.AsciiStringResource;
+import org.harvey.vie.theory.io.resource.Resource;
+import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
-import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,11 +36,12 @@ public final class ProgramSyntaxTestRunner {
     private static final Path TEST_CASE_DIR = Path.of("src/main/resources/program-tests");
     private static final Path REPORT_DIR = Path.of("run-reports/program-syntax");
     private static final DateTimeFormatter RUN_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
+    private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
 
     private ProgramSyntaxTestRunner() {
     }
 
-    public static void run() {
+    public static SemanticRunReport run() {
         try {
             Files.createDirectories(REPORT_DIR);
             List<Path> cases = listTestCases();
@@ -40,28 +49,16 @@ public final class ProgramSyntaxTestRunner {
                 throw new IllegalStateException("no test cases found in " + TEST_CASE_DIR);
             }
             String runId = LocalDateTime.now().format(RUN_ID_FORMATTER);
-            StringBuilder summary = new StringBuilder();
-            summary.append("# Program Syntax Test Summary\n\n");
-            summary.append("- Run Id: ").append(runId).append("\n");
-            summary.append("- Generated At: ").append(LocalDateTime.now()).append("\n");
-            summary.append("- Cases: ").append(cases.size()).append("\n\n");
-            summary.append("| Case | Result | Report |\n");
-            summary.append("| --- | --- | --- |\n");
-            System.out.println("program syntax test cases: " + cases.size());
-            for (Path testCase : cases) {
-                TestCaseResult result = runOneTestCase(testCase, runId);
-                summary.append("| ")
-                        .append(result.caseName)
-                        .append(" | ")
-                        .append(result.success ? "PASS" : "FAIL")
-                        .append(" | ")
-                        .append(result.report.toAbsolutePath())
-                        .append(" |\n");
-            }
+            List<TestCaseResult> results = cases.stream().map(testCase -> {
+                try {
+                    return runOneTestCase(testCase, runId);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).collect(Collectors.toList());
             Path summaryReport = REPORT_DIR.resolve(runId + "-summary.md");
-            Files.writeString(summaryReport, summary.toString(), StandardCharsets.UTF_8);
-            System.out.println("reports: " + REPORT_DIR.toAbsolutePath());
-            System.out.println("summary: " + summaryReport.toAbsolutePath());
+            writeSummary(summaryReport, runId, results);
+            return new SemanticRunReport(runId, summaryReport, results);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -79,76 +76,272 @@ public final class ProgramSyntaxTestRunner {
         String caseName = testCase.getFileName().toString().replaceFirst("\\.txt$", "");
         boolean expectedFailure = caseName.contains("invalid");
         String text = Files.readString(testCase, StandardCharsets.UTF_8);
-        ByteArrayOutputStream outputBuffer = new ByteArrayOutputStream();
-        PrintStream originalOut = System.out;
+        DefaultErrorContext errorContext = new DefaultErrorContext();
+        SemanticAnalysisResult semanticResult = null;
         Throwable failure = null;
         boolean executedSuccessfully = false;
-        try (PrintStream capture = new PrintStream(outputBuffer, true, StandardCharsets.UTF_8)) {
-            System.setOut(capture);
-            ProgramSyntaxDemo.demo(text, ProgramSyntaxTestRunner::phaseGrammar0);
+        try {
+            semanticResult = executeSemanticTest(text, errorContext);
             executedSuccessfully = true;
         } catch (Throwable throwable) {
             failure = throwable;
-        } finally {
-            System.setOut(originalOut);
         }
-        boolean success = expectedFailure ? failure != null : executedSuccessfully;
-        String output = outputBuffer.toString(StandardCharsets.UTF_8);
+        boolean hasErrors = !errorContext.isEmpty();
+        boolean success = expectedFailure ? failure != null || hasErrors : executedSuccessfully && !hasErrors;
         Path report = REPORT_DIR.resolve(runId + "-" + caseName + ".md");
-        writeReport(report, caseName, text, output, success, failure, expectedFailure);
-        System.out.println((success ? "[PASS] " : "[FAIL] ") + caseName + " -> " + report.toAbsolutePath());
-        if (failure != null && !expectedFailure) {
-            failure.printStackTrace(System.out);
-        }
-        return new TestCaseResult(caseName, report, success);
+        writeReport(report, caseName, text, semanticResult, errorContext, success, failure, expectedFailure);
+        int commandCount = semanticResult == null ? 0 : semanticResult.getCommands().size();
+        int symbolCount = semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length;
+        return new TestCaseResult(
+                caseName,
+                report,
+                success,
+                expectedFailure,
+                errorContext.size(),
+                commandCount,
+                symbolCount,
+                semanticResult,
+                List.copyOf(errorContext.getErrors()),
+                failure
+        );
     }
 
-    private static SemanticResult phaseGrammar0(SourceTokenIterator iter, ErrorContext errCtx) {
-        ProductionSetContext context = ProgramSyntaxDemo.buildGrammar0();
-        System.out.println(context);
-        ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
-                "program",
-                context,
-                "syntax_table.data"
-        );
+    public static SemanticAnalysisResult executeSemanticTest(String text, DefaultErrorContext errorContext) {
+        LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
+        Resource resource = new AsciiStringResource(text);
+        ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.loadShiftReduceParsingTable(SERIAL_SYNTAX_TABLE);
         ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                 shiftReduceParsingTable,
                 t -> !ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(t.getType()),
-                SemanticDemo.buildShiftReduceRegister()
+                SemanticDemo.buildShiftReduceTestRegister(),
+                false
         );
-        return phaser.phase(iter, errCtx);
+        try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
+            SemanticResult result = phaser.phase(iterator, errorContext);
+            if (result == null) {
+                return null;
+            }
+            if (!(result instanceof SemanticAnalysisResult)) {
+                throw new IllegalStateException("unexpected semantic result type: " + result.getClass());
+            }
+            return (SemanticAnalysisResult) result;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static void writeSummary(Path summaryReport, String runId, List<TestCaseResult> results) throws IOException {
+        long passCount = results.stream().filter(TestCaseResult::isSuccess).count();
+        long failCount = results.size() - passCount;
+        StringBuilder summary = new StringBuilder();
+        summary.append("# Program Semantic Test Summary\n\n");
+        summary.append("- Run Id: ").append(runId).append("\n");
+        summary.append("- Generated At: ").append(LocalDateTime.now()).append("\n");
+        summary.append("- Cases: ").append(results.size()).append("\n");
+        summary.append("- Passed: ").append(passCount).append("\n");
+        summary.append("- Failed: ").append(failCount).append("\n\n");
+        summary.append("| Case | Expected | Result | Errors | Commands | Symbols | Report |\n");
+        summary.append("| --- | --- | --- | --- | --- | --- | --- |\n");
+        for (TestCaseResult result : results) {
+            summary.append("| ")
+                    .append(result.caseName)
+                    .append(" | ")
+                    .append(result.expectedFailure ? "FAIL" : "PASS")
+                    .append(" | ")
+                    .append(result.success ? "PASS" : "FAIL")
+                    .append(" | ")
+                    .append(result.errorCount)
+                    .append(" | ")
+                    .append(result.commandCount)
+                    .append(" | ")
+                    .append(result.symbolCount)
+                    .append(" | ")
+                    .append(result.report.toAbsolutePath())
+                    .append(" |\n");
+        }
+        Files.writeString(summaryReport, summary.toString(), StandardCharsets.UTF_8);
     }
 
     private static void writeReport(
             Path report,
             String caseName,
             String source,
-            String output,
+            SemanticAnalysisResult semanticResult,
+            ErrorContext errorContext,
             boolean success,
             Throwable failure,
             boolean expectedFailure) throws IOException {
         StringBuilder builder = new StringBuilder();
-        builder.append("# Program Syntax Test: ").append(caseName).append("\n\n");
+        builder.append("# Program Semantic Test: ").append(caseName).append("\n\n");
         builder.append("- Result: ").append(success ? "PASS" : "FAIL").append("\n");
         builder.append("- Expected: ").append(expectedFailure ? "FAIL" : "PASS").append("\n");
+        builder.append("- Errors: ").append(errorContext.size()).append("\n");
+        builder.append("- Commands: ").append(semanticResult == null ? 0 : semanticResult.getCommands().size()).append("\n");
+        builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
-        builder.append("## Output\n\n```text\n").append(output).append("\n```\n");
+        builder.append("## Semantic Commands\n\n");
+        if (semanticResult == null || semanticResult.getCommands().isEmpty()) {
+            builder.append("_None_\n");
+        } else {
+            builder.append("```text\n");
+            int index = 0;
+            for (String command : semanticResult.getCommands()) {
+                builder.append(String.format("[%03d] %s%n", index++, command));
+            }
+            builder.append("```\n");
+        }
+        builder.append("\n## Symbol Table\n\n");
+        if (semanticResult == null || semanticResult.getIdentifierRecords().length == 0) {
+            builder.append("_None_\n");
+        } else {
+            builder.append("```text\n");
+            Arrays.stream(semanticResult.getIdentifierRecords())
+                    .forEach(record -> builder.append(formatRecord(record)).append('\n'));
+            builder.append("```\n");
+        }
+        builder.append("\n## Errors\n\n");
+        if (errorContext.isEmpty()) {
+            builder.append("_None_\n");
+        } else {
+            builder.append("```text\n");
+            for (CompileErrorMessage error : errorContext) {
+                builder.append(error).append('\n');
+            }
+            builder.append("```\n");
+        }
         if (failure != null) {
             builder.append("\n## Failure\n\n```text\n").append(failure).append("\n```\n");
         }
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
     }
 
-    private static class TestCaseResult {
+    private static String formatRecord(IdentifierRecord record) {
+        return String.format(
+                "record=%d offset=%d type=%s name=%s initialized=%s",
+                record.getNo(),
+                record.getOffset(),
+                formatType(record.getType()),
+                new String(record.getLexeme(), StandardCharsets.UTF_8),
+                record.isInitialized()
+        );
+    }
+
+    private static String formatType(HeadNode typeNode) {
+        StringJoiner joiner = new StringJoiner(" ");
+        appendTypeLexemes(typeNode, joiner);
+        String value = joiner.toString().trim();
+        return value.isEmpty() ? typeNode.toString() : value;
+    }
+
+    private static void appendTypeLexemes(ShiftReduceSyntaxTreeNode node, StringJoiner joiner) {
+        if (node.isToken()) {
+            SourceToken token = node.toToken().getSource();
+            joiner.add(new String(token.getLexeme(), StandardCharsets.UTF_8));
+            return;
+        }
+        for (ShiftReduceSyntaxTreeNode child : node.toHead()) {
+            appendTypeLexemes(child, joiner);
+        }
+    }
+
+    public static final class SemanticRunReport {
+        private final String runId;
+        private final Path summaryReport;
+        private final List<TestCaseResult> results;
+
+        public SemanticRunReport(String runId, Path summaryReport, List<TestCaseResult> results) {
+            this.runId = runId;
+            this.summaryReport = summaryReport;
+            this.results = List.copyOf(results);
+        }
+
+        public String getRunId() {
+            return runId;
+        }
+
+        public Path getSummaryReport() {
+            return summaryReport;
+        }
+
+        public List<TestCaseResult> getResults() {
+            return results;
+        }
+    }
+
+    public static final class TestCaseResult {
         private final String caseName;
         private final Path report;
         private final boolean success;
+        private final boolean expectedFailure;
+        private final int errorCount;
+        private final int commandCount;
+        private final int symbolCount;
+        private final SemanticAnalysisResult semanticResult;
+        private final List<CompileErrorMessage> errors;
+        private final Throwable failure;
 
-        private TestCaseResult(String caseName, Path report, boolean success) {
+        private TestCaseResult(
+                String caseName,
+                Path report,
+                boolean success,
+                boolean expectedFailure,
+                int errorCount,
+                int commandCount,
+                int symbolCount,
+                SemanticAnalysisResult semanticResult,
+                List<CompileErrorMessage> errors,
+                Throwable failure) {
             this.caseName = caseName;
             this.report = report;
             this.success = success;
+            this.expectedFailure = expectedFailure;
+            this.errorCount = errorCount;
+            this.commandCount = commandCount;
+            this.symbolCount = symbolCount;
+            this.semanticResult = semanticResult;
+            this.errors = errors;
+            this.failure = failure;
+        }
+
+        public String getCaseName() {
+            return caseName;
+        }
+
+        public Path getReport() {
+            return report;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public boolean isExpectedFailure() {
+            return expectedFailure;
+        }
+
+        public int getErrorCount() {
+            return errorCount;
+        }
+
+        public int getCommandCount() {
+            return commandCount;
+        }
+
+        public int getSymbolCount() {
+            return symbolCount;
+        }
+
+        public SemanticAnalysisResult getSemanticResult() {
+            return semanticResult;
+        }
+
+        public List<CompileErrorMessage> getErrors() {
+            return errors;
+        }
+
+        public Throwable getFailure() {
+            return failure;
         }
     }
 }

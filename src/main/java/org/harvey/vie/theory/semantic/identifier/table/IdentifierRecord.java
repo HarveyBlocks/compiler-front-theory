@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -25,12 +26,10 @@ public class IdentifierRecord {
 
     @Override
     public String toString() {
-        return "[" + no + "@offset=" + offset + "] " +
-               type.stream().map(Objects::toString).collect(Collectors.joining()) +
-               " " +
-               new String(lexeme) +
-               " " +
-               (initialized ? "" : "non-") +
-               "initialized";
+        return "record=" + no +
+               " offset=" + offset +
+               " type=" + type.stream().map(Objects::toString).collect(Collectors.joining()) +
+               " name=" + new String(lexeme, StandardCharsets.UTF_8) +
+               " initialized=" + initialized;
     }
 }

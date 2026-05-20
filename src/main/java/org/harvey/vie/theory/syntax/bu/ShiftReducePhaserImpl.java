@@ -26,14 +26,24 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
 
     private final ShiftReduceCallbackRegister register;
     private final TokenFilterPredict tokenFilterPredict;
+    private final boolean traceSteps;
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
             TokenFilterPredict tokenFilterPredict,
             ShiftReduceCallbackRegister register) {
+        this(table, tokenFilterPredict, register, false);
+    }
+
+    public ShiftReducePhaserImpl(
+            ShiftReduceParsingTable table,
+            TokenFilterPredict tokenFilterPredict,
+            ShiftReduceCallbackRegister register,
+            boolean traceSteps) {
         this.tokenFilterPredict = tokenFilterPredict;
         this.table = table;
         this.register = register;
+        this.traceSteps = traceSteps;
     }
 
     /**
@@ -74,15 +84,15 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         context.onStart();
         while (true) {
             SourceToken current = ctx.currentToken();
-            System.out.println("syntax stack: " + ctx.statusStackString());
-            System.out.println("current token: " + current.hintString() + " -> " + new String(current.getLexeme()));
+            trace("syntax stack: " + ctx.statusStackString());
+            trace("current token: " + current.hintString() + " -> " + new String(current.getLexeme()));
             if (ctx.isStackEmpty()) {
                 context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;
             }
             int top = ctx.peek();
             ActiveTableElement element = table.activeNext(top, table.matchTerminal(current));
-            System.out.println("action: " + (element == null ? "error" : element));
+            trace("action: " + (element == null ? "error" : element));
             if (element == null) {
                 // error
                 context.onError(ShiftReduceErrorType.UNDEFINED_ACTION);
@@ -98,6 +108,12 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
             }
         }
         return context.getResult();
+    }
+
+    private void trace(String message) {
+        if (traceSteps) {
+            System.out.println(message);
+        }
     }
 
     private void onReduce(ShiftReduceSemanticContext context, ActiveTableElement element) {

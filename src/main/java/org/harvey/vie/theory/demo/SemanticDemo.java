@@ -9,6 +9,7 @@ import org.harvey.vie.theory.semantic.callback.td.PredictiveCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.td.PredictiveCallbackRegisterImpl;
 import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
 import org.harvey.vie.theory.semantic.command.SemanticCommandPrintCallback;
+import org.harvey.vie.theory.semantic.command.SemanticResultCallback;
 import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.TokenTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
@@ -49,6 +50,17 @@ public class SemanticDemo {
         register.add(instanceIdentifierTableBuildCallback());
         register.add(new PassiveErrorCallback());
         register.add(instanceSemanticCommandPrintCallback());
+        register.add(instanceSyntaxDirectedTranslationCallback());
+        return register;
+    }
+
+    public static ShiftReduceCallbackRegister buildShiftReduceTestRegister() {
+        ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
+        register.add(new TreeBuildCallback());
+        register.add(instanceIdentifierScopeCallback());
+        register.add(instanceIdentifierTableBuildCallback());
+        register.add(new PassiveErrorCallback());
+        register.add(new SemanticResultCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
         return register;
     }
