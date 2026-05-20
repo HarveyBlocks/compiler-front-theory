@@ -3,13 +3,12 @@ package org.harvey.vie.theory.semantic.identifier;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ReducePredicate;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
-import org.harvey.vie.theory.semantic.tree.node.TokenNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -57,12 +56,9 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         SourceToken identifierToken = usingIdentifierSupplier.identifier(headNode);
         IdentifierRecord record = context.getIdentifier(identifierToken);
         if (record == null) {
-            context.addError(identifierToken.getOffset(), "TODO");
-            throw new CompileException("TODO");
+            context.addError(identifierToken.getOffset(), "identifier is not declared in current visible scopes.");
+            throw new CompileException("identifier is not declared in current visible scopes.");
         }
-        int no = record.getNo();
-        int offset = record.getOffset();
-        replaceLeftMostIdentifier(headNode, no, offset);
     }
 
     private void registerIdentifier(ShiftReduceSemanticContext context, HeadNode headNode)
@@ -71,12 +67,13 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         SourceToken identifierToken = declarationRecordSupplier.identifier(headNode);
         boolean existedIdentifier = context.existIdentifier(identifierToken);
         if (existedIdentifier) {
-            context.addError(identifierToken.getOffset(), "TODO");
-            throw new CompileException("TODO");
+            context.addError(identifierToken.getOffset(), "duplicate identifier declaration is not allowed.");
+            throw new CompileException("duplicate identifier declaration is not allowed.");
         }
         HeadNode typeHeadNode = declarationRecordSupplier.typeHeadNode(headNode);
+        SemanticType declaredType = context.getCommandContext().peek().getType();
         boolean initialized = declarationRecordSupplier.initialized(headNode);
-        context.registerIdentifier(typeHeadNode, identifierToken, initialized);
+        context.registerIdentifier(typeHeadNode, declaredType, identifierToken, initialized);
     }
 
     @FunctionalInterface
@@ -92,32 +89,4 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         HeadNode typeHeadNode(HeadNode declarationReducedNode);
     }
 
-    public static SourceToken leftMostToken(ShiftReduceSyntaxTreeNode node) {
-        if (node.isToken()) {
-            TokenNode tokenNode = node.toToken();
-            return tokenNode.getSource();
-        }
-        HeadNode headNode = node.toHead();
-        for (ShiftReduceSyntaxTreeNode child : headNode) {
-            SourceToken token = leftMostToken(child);
-            if (token != null) {
-                return token;
-            }
-        }
-        return null;
-    }
-
-    private static boolean replaceLeftMostIdentifier(HeadNode headNode, int no, int offset) {
-        for (int i = 0; i < headNode.size(); i++) {
-            ShiftReduceSyntaxTreeNode child = headNode.get(i);
-            if (child.isToken()) {
-                headNode.set(i, n -> n.toToken().instanceIdentifier(no, offset));
-                return true;
-            }
-            if (replaceLeftMostIdentifier(child.toHead(), no, offset)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

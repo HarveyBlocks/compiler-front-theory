@@ -1,12 +1,12 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
-import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
@@ -35,58 +35,101 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         if (children.length != 3) {
             throw new CompilerException("illegal statement on in-suffix expression production.");
         }
-        validateOperandTypes(context);
+        SemanticType leftType = children[0].getType();
+        SemanticType rightType = children[2].getType();
+        SourceToken operatorToken = children[1].getAnchorToken();
+        SemanticType instructionType = inferInstructionType(context, leftType, rightType, operatorToken);
+        SemanticType resultType = inferResultType(instructionType);
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
+        if (context.getTypeSystem().requiresImplicitCast(leftType, instructionType)) {
+            // TODO 你的意思是, 现在直接把类型转换耦合放到Translator里面了吗?
+            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(leftType, instructionType)));
+        }
         children[2].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor)));
-        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+        if (context.getTypeSystem().requiresImplicitCast(rightType, instructionType)) {
+            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(rightType, instructionType)));
+        }
+        thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor, instructionType)));
+        return new NormalCommandNodeRegister(
+                thisBuilder.build(),
+                production,
+                children,
+                resultType,
+                instructionType,
+                operatorToken
+        );
     }
 
-    private void validateOperandTypes(ShiftReduceSemanticContext context) {
-        org.harvey.vie.theory.semantic.tree.node.HeadNode top = SemanticTypeResolver.topReducedNode(context);
-        if (top == null || top.size() != 3) {
-            return;
+    private SemanticType inferInstructionType(
+            ShiftReduceSemanticContext context,
+            SemanticType leftType,
+            SemanticType rightType,
+            SourceToken token) {
+        String operator = operatorFactor.toString();
+        // TODO 为什么有解析字符串?
+        if ("logical_or".equals(operator) || "logical_and".equals(operator)) {
+            requireBoolean(context, leftType, token, "logical operator requires boolean operands.");
+            requireBoolean(context, rightType, token, "logical operator requires boolean operands.");
+            return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         }
-        SemanticType left = SemanticTypeResolver.resolve(context, top.get(0));
-        SemanticType right = SemanticTypeResolver.resolve(context, top.get(2));
-        SourceToken operatorToken = top.get(1).toToken().getSource();
-        ProgramTokenType operatorType = (ProgramTokenType) operatorToken.getType();
-        if (operatorType == ProgramTokenType.OPERATOR_LOGICAL_AND ||
-            operatorType == ProgramTokenType.OPERATOR_LOGICAL_OR) {
-            if (!left.isUnknown() && !left.isBooleanScalar() || !right.isUnknown() && !right.isBooleanScalar()) {
-                reject(context, operatorToken, "logical operator requires boolean operands.");
+        // TODO 为什么有解析字符串?
+        if ("equal".equals(operator) || "not_equal".equals(operator)) {
+            boolean sameType = !leftType.isUnknown() && leftType.equals(rightType);
+            boolean numericComparable = leftType.isNumericScalar() && rightType.isNumericScalar();
+            if (!leftType.isUnknown() && !rightType.isUnknown() && !sameType && !numericComparable) {
+                reject(context, token, "equality operator requires identical types or comparable numeric types.");
             }
-            return;
+            return numericComparable ? context.getTypeSystem().commonBinaryType(leftType, rightType) : leftType;
         }
-        if (operatorType == ProgramTokenType.OPERATOR_PLUS ||
-            operatorType == ProgramTokenType.OPERATOR_MINUS ||
-            operatorType == ProgramTokenType.OPERATOR_MULTIPLY ||
-            operatorType == ProgramTokenType.OPERATOR_DIVIDE) {
-            if (!left.isUnknown() && !left.isNumericScalar() || !right.isUnknown() && !right.isNumericScalar()) {
-                reject(context, operatorToken, "arithmetic operator requires numeric operands.");
-            }
-            return;
+        // TODO 为什么有解析字符串?
+        if ("less".equals(operator) || "less_equal".equals(operator) ||
+            "greater".equals(operator) || "greater_equal".equals(operator)) {
+            requireNumeric(context, leftType, token, "relational operator requires numeric operands.");
+            requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
+            return context.getTypeSystem().commonBinaryType(leftType, rightType);
         }
-        if (operatorType == ProgramTokenType.OPERATOR_LESS ||
-            operatorType == ProgramTokenType.OPERATOR_LESS_EQUAL ||
-            operatorType == ProgramTokenType.OPERATOR_GREATER ||
-            operatorType == ProgramTokenType.OPERATOR_GREATER_EQUAL) {
-            if (!left.isUnknown() && !left.isNumericScalar() || !right.isUnknown() && !right.isNumericScalar()) {
-                reject(context, operatorToken, "relational operator requires numeric operands.");
-            }
-            return;
+        requireNumeric(context, leftType, token, "arithmetic operator requires numeric operands.");
+        requireNumeric(context, rightType, token, "arithmetic operator requires numeric operands.");
+        return context.getTypeSystem().commonBinaryType(leftType, rightType);
+    }
+
+    private SemanticType inferResultType(SemanticType instructionType) {
+        String operator = operatorFactor.toString();
+        // TODO 为什么有解析字符串?
+        if ("logical_or".equals(operator) || "logical_and".equals(operator) ||
+            "equal".equals(operator) || "not_equal".equals(operator) ||
+            "less".equals(operator) || "less_equal".equals(operator) ||
+            "greater".equals(operator) || "greater_equal".equals(operator)) {
+            return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         }
-        if (operatorType == ProgramTokenType.OPERATOR_EQUAL ||
-            operatorType == ProgramTokenType.OPERATOR_NOT_EQUAL) {
-            if (!left.isUnknown() && !right.isUnknown() && !left.equals(right)) {
-                reject(context, operatorToken, "equality operator requires operands of the same type.");
-            }
+        return instructionType;
+    }
+
+    private void requireBoolean(
+            ShiftReduceSemanticContext context,
+            SemanticType type,
+            SourceToken token,
+            String message) {
+        if (!type.isUnknown() && !type.isBooleanScalar()) {
+            reject(context, token, message);
         }
     }
 
-    private void reject(ShiftReduceSemanticContext context, SourceToken operatorToken, String message) {
-        context.addError(operatorToken.getOffset(), message);
+    private void requireNumeric(
+            ShiftReduceSemanticContext context,
+            SemanticType type,
+            SourceToken token,
+            String message) {
+        if (!type.isUnknown() && !type.isNumericScalar()) {
+            reject(context, token, message);
+        }
+    }
+
+    private void reject(ShiftReduceSemanticContext context, SourceToken token, String message) {
+        if (token != null) { // TODO 依旧是不负责任的补丁思想
+            context.addError(token.getOffset(), message);
+        }
         throw new CompilerException(message);
     }
 }

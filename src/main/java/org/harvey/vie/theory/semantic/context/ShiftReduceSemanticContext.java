@@ -5,6 +5,8 @@ import lombok.Setter;
 import org.harvey.vie.theory.error.SemanticErrorMessage;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeSystem;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
@@ -42,6 +44,8 @@ public class ShiftReduceSemanticContext {
     private final TreeContext treeContext = new TreeContext();
     @Getter
     private final CommandContext commandContext = new CommandContext();
+    @Getter
+    private final SemanticTypeSystem typeSystem = new SemanticTypeSystem();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
     private final List<IdentifierRecord> identifierRecords = new ArrayList<>();
 
@@ -142,8 +146,17 @@ public class ShiftReduceSemanticContext {
         return null;
     }
 
-    public void registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
-        identifierRecords.add(identifierTableBuilder.registerIdentifier(typeHeadNode, identifierToken, initialized));
+    public void registerIdentifier(
+            HeadNode typeHeadNode,
+            SemanticType declaredType,
+            SourceToken identifierToken,
+            boolean initialized) {
+        identifierRecords.add(identifierTableBuilder.registerIdentifier(
+                typeHeadNode,
+                declaredType,
+                identifierToken,
+                initialized
+        ));
     }
 
 
@@ -162,6 +175,7 @@ public class ShiftReduceSemanticContext {
 
     // endregion
     // region break&continue
+    // TODO 删除?BreakPool和ContinuePool是合适的吗?
     private final List<UncertainLabelGotoCommand> breakPool = new ArrayList<>();
     private final List<UncertainLabelGotoCommand> continuePool = new ArrayList<>();
 

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.util.IdGenerator;
 
@@ -43,7 +44,11 @@ public class IdentifierTableBuilder {
         return null;
     }
 
-    public IdentifierRecord registerIdentifier(HeadNode typeHeadNode, SourceToken identifierToken, boolean initialized) {
+    public IdentifierRecord registerIdentifier(
+            HeadNode typeHeadNode,
+            SemanticType declaredType,
+            SourceToken identifierToken,
+            boolean initialized) {
         ScopeBuilder last = getLast();
         int no = recordIdGenerator.next();
         int offset = last.nextNo();
@@ -51,6 +56,7 @@ public class IdentifierTableBuilder {
                 no,
                 offset,
                 typeHeadNode,
+                declaredType,
                 identifierToken.getLexeme(),
                 initialized
         );

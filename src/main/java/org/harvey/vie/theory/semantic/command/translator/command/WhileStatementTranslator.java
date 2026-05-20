@@ -1,11 +1,12 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.LabelNode;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
@@ -34,21 +35,35 @@ public class WhileStatementTranslator implements CommandTranslator {
         //    (matched_stmt|unmatched_stmt).command();
         //    CommandFactory.goto(L1);
         //    L2:
+
         if (children.length != 5) {
             throw new CompilerException("illegal statement on while statement production.");
         }
-        IfStatementTranslator.requireBooleanCondition(context, "while condition must be boolean.");
+        validateBooleanCondition(context, children[2].getType(), children[0].getAnchorToken());
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
         thisBuilder.add(new LabelNode(whileStartLabel));
-        children[2].register(thisBuilder); // expr
+        children[2].register(thisBuilder); // exor
         thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(whileEndLabel))); // ifn_goto L2
         children[4].register(thisBuilder); // matched_stmt|unmatched_stmt
         thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1
         thisBuilder.add(new LabelNode(whileEndLabel)); // L2
         bindLoopLabels(children[4], whileStartLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
+
+    private void validateBooleanCondition(
+            ShiftReduceSemanticContext context,
+            SemanticType type,
+            org.harvey.vie.theory.lexical.analysis.token.SourceToken token) {
+        if (!type.isUnknown() && !type.isBooleanScalar()) {
+            String message = "condition must be boolean.";
+            if (token != null) {
+                context.addError(token.getOffset(), message);
+            }
+            throw new CompilerException(message);
+        }
     }
 
     static void bindLoopLabels(CommandNodeRegister body, SemanticLabel continueLabel, SemanticLabel breakLabel) {

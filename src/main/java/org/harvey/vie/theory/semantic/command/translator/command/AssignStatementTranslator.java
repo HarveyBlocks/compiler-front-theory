@@ -2,10 +2,11 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
@@ -33,27 +34,26 @@ public class AssignStatementTranslator implements CommandTranslator {
         if (children.length != 4) {
             throw new CompilerException("illegal statement on assign statement production.");
         }
-        validateAssignmentTypes(context);
+        SemanticType targetType = children[0].getType();
+        SemanticType sourceType = children[2].getType();
+        if (!targetType.isUnknown() && !sourceType.isUnknown() &&
+            !context.getTypeSystem().canImplicitlyConvert(sourceType, targetType)) {
+            reject(context, children[1].getAnchorToken(), "assignment requires assignable types.");
+        }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
-        children[0].register(thisBuilder); // lvalue
-        children[2].register(thisBuilder); // expr
-        thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef()));
+        children[0].register(thisBuilder);
+        children[2].register(thisBuilder);
+        if (context.getTypeSystem().requiresImplicitCast(sourceType, targetType)) {
+            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(sourceType, targetType)));
+        }
+        thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef(targetType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 
-    static void validateAssignmentTypes(ShiftReduceSemanticContext context) {
-        org.harvey.vie.theory.semantic.tree.node.HeadNode top = SemanticTypeResolver.topReducedNode(context);
-        if (top == null) {
-            return;
+    private void reject(ShiftReduceSemanticContext context, SourceToken token, String message) {
+        if (token != null) {
+            context.addError(token.getOffset(), message);
         }
-        int lvalueIndex = top.size() == 5 ? 1 : 0;
-        int exprIndex = top.size() == 5 ? 3 : 2;
-        SemanticType left = SemanticTypeResolver.resolve(context, top.get(lvalueIndex));
-        SemanticType right = SemanticTypeResolver.resolve(context, top.get(exprIndex));
-        if (!left.isUnknown() && !right.isUnknown() && !left.equals(right)) {
-            SourceToken assignToken = top.get(lvalueIndex + 1).toToken().getSource();
-            context.addError(assignToken.getOffset(), "assignment requires both sides to have the same type.");
-            throw new CompilerException("assignment requires both sides to have the same type.");
-        }
+        throw new CompilerException(message);
     }
 }

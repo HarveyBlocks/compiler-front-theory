@@ -1,12 +1,12 @@
-
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.LabelNode;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
@@ -39,17 +39,31 @@ public class IfElseStatementTranslator implements CommandTranslator {
         if (children.length != 7) {
             throw new CompilerException("illegal statement on if-else statement production.");
         }
-        IfStatementTranslator.requireBooleanCondition(context, "if condition must be boolean.");
+        validateBooleanCondition(context, children[2].getType(), children[0].getAnchorToken());
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel elseStartLabel = new DefaultSemanticLabel();
         SemanticLabel elseEndLabel = new DefaultSemanticLabel();
-        children[2].register(thisBuilder); // expr
-        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(elseStartLabel))); // ifn_goto L1
-        children[4].register(thisBuilder); // stmt
+        children[2].register(thisBuilder);
+        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(elseStartLabel)));
+        children[4].register(thisBuilder);
         thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(elseEndLabel)));
         thisBuilder.add(new LabelNode(elseStartLabel));
-        children[6].register(thisBuilder); // (unmatched_stmt|matched_stmt)
+        children[6].register(thisBuilder);
         thisBuilder.add(new LabelNode(elseEndLabel));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
+
+    private void validateBooleanCondition(
+            ShiftReduceSemanticContext context,
+            SemanticType type,
+            org.harvey.vie.theory.lexical.analysis.token.SourceToken token) {
+        // TODO 为什么和之前的代码一样? 有一样的代码说明就不是同一级的逻辑!
+        if (!type.isUnknown() && !type.isBooleanScalar()) {
+            String message = "condition must be boolean.";
+            if (token != null) {
+                context.addError(token.getOffset(), message);
+            }
+            throw new CompilerException(message);
+        }
     }
 }

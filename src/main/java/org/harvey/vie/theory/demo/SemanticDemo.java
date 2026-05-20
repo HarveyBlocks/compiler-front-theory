@@ -47,10 +47,10 @@ public class SemanticDemo {
         register.add(new TreeBuildCallback());
         register.add(new TreeLogCallback());
         register.add(instanceIdentifierScopeCallback());
-        register.add(instanceIdentifierTableBuildCallback());
-        register.add(new PassiveErrorCallback());
         register.add(instanceSemanticCommandPrintCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
+        register.add(instanceIdentifierTableBuildCallback());
+        register.add(new PassiveErrorCallback());
         return register;
     }
 
@@ -58,10 +58,10 @@ public class SemanticDemo {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
         register.add(new TreeBuildCallback());
         register.add(instanceIdentifierScopeCallback());
-        register.add(instanceIdentifierTableBuildCallback());
-        register.add(new PassiveErrorCallback());
         register.add(new SemanticResultCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
+        register.add(instanceIdentifierTableBuildCallback());
+        register.add(new PassiveErrorCallback());
         return register;
     }
 
@@ -91,11 +91,12 @@ public class SemanticDemo {
         shiftStrategies.put(ProgramTokenType.CONSTANT_FLOAT, simpleStringTokenTranslator);
         shiftStrategies.put(ProgramTokenType.CONSTANT_BOOLEAN_TRUE, simpleStringTokenTranslator);
         shiftStrategies.put(ProgramTokenType.CONSTANT_BOOLEAN_FALSE, simpleStringTokenTranslator);
-        // shiftStrategies.put(ProgramTokenType.TYPE_BOOLEAN, null);
-        // shiftStrategies.put(ProgramTokenType.TYPE_CHARACTER, null);
-        // shiftStrategies.put(ProgramTokenType.TYPE_INT32, null);
-        // shiftStrategies.put(ProgramTokenType.TYPE_FLOAT64, null);
-        // shiftStrategies.put(ProgramTokenType.TYPE_STRING, null);
+        TokenTranslator typeTokenTranslator = new TypeTokenTranslator();
+        shiftStrategies.put(ProgramTokenType.TYPE_BOOLEAN, typeTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.TYPE_CHARACTER, typeTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.TYPE_INT32, typeTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.TYPE_FLOAT64, typeTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.TYPE_STRING, typeTokenTranslator);
         // shiftStrategies.put(ProgramTokenType.OPERATOR_PLUS, null);
         // shiftStrategies.put(ProgramTokenType.OPERATOR_MULTIPLY, null);
         // shiftStrategies.put(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN, null);
@@ -172,7 +173,8 @@ public class SemanticDemo {
         map.put("stmts->stmts stmt", new StatementListTranslator());
         map.put("decl->type IDENTIFIER OPERATOR_SEMICOLON", new DeclarationWithoutInitializationTranslator());
         map.put("matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON", simpleShrink);
-        map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", doNothing);
+        map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", new ArrayTypeTranslator());
+        map.put("factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE", new ParenthesizedExpressionTranslator());
         map.put("factor->loc", new PrimaryProduceLeftValueTranslator());
         map.put("unary->OPERATOR_LOGICAL_NOT unary",
                 new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT));
@@ -231,13 +233,11 @@ public class SemanticDemo {
     }
 
     private static ShiftReduceCallback instanceIdentifierTableBuildCallback() {
-        final ReducePredicate usingPredicate = p -> p.getHead().isDefine() &&
-                                                    "loc".equals(p.getHead().toDefine().getName());
+        final ReducePredicate usingPredicate = p -> "loc->IDENTIFIER".equals(productionKey(p));
         final ReducePredicate declaringPredicate = p -> p.getHead().isDefine() &&
                                                         "decl".equals(p.getHead().toDefine().getName());
-        // 和文法有关 loc -> IDENTIFIER | loc [ bool ]
         final IdentifierTableBuildCallback.UsingIdentifierSupplier usingIdentifierSupplier =
-                IdentifierTableBuildCallback::leftMostToken;
+                usingIdentifierReducedNode -> usingIdentifierReducedNode.get(0).toToken().getSource();
 
         // 和文法有关 decl -> type IDENTIFIER ;
         final IdentifierTableBuildCallback.DeclarationRecordSupplier declarationRecordSupplier = new IdentifierTableBuildCallback.DeclarationRecordSupplier() {

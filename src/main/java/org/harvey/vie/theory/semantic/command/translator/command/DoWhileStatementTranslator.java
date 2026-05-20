@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
@@ -11,7 +12,6 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -38,26 +38,31 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         if (children.length != 7) {
             throw new CompilerException("illegal statement on do while statement production.");
         }
-        HeadNode top = SemanticTypeResolver.topReducedNode(context);
-        if (top != null && top.size() >= 5) {
-            SemanticType conditionType = SemanticTypeResolver.resolve(context, top.get(4));
-            if (!conditionType.isUnknown() && !conditionType.isBooleanScalar()) {
-                context.addError(top.get(0).toToken().getSource().getOffset(), "do-while condition must be boolean.");
-                throw new CompilerException("do-while condition must be boolean.");
-            }
-        }
+        validateBooleanCondition(context, children[4].getType(), children[2].getAnchorToken());
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel beforeTestLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
-
         thisBuilder.add(new LabelNode(whileStartLabel));
         children[1].register(thisBuilder); // stmt
         thisBuilder.add(new LabelNode(beforeTestLabel));
         children[4].register(thisBuilder); // expr
-        thisBuilder.add(new TerminalNode(CommandFactory.ifGoto(whileStartLabel))); // if_goto L1
+        thisBuilder.add(new TerminalNode(CommandFactory.ifGoto(whileStartLabel)));
         thisBuilder.add(new LabelNode(whileEndLabel));
         WhileStatementTranslator.bindLoopLabels(children[1], beforeTestLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
+
+    private void validateBooleanCondition(
+            ShiftReduceSemanticContext context,
+            SemanticType type,
+            org.harvey.vie.theory.lexical.analysis.token.SourceToken token) {
+        if (!type.isUnknown() && !type.isBooleanScalar()) {
+            String message = "do-while condition must be boolean.";
+            if (token != null) {
+                context.addError(token.getOffset(), message);
+            }
+            throw new CompilerException(message);
+        } // TODO 否则呢? 不做了吗? 跳过了吗? 健壮性等于没有!
     }
 }

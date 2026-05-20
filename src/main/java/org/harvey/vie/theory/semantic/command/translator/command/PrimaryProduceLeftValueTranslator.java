@@ -32,7 +32,14 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
         }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal()));
-        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+        thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal(children[0].getType())));
+        return new NormalCommandNodeRegister(
+                thisBuilder.build(),
+                production,
+                children,
+                children[0].getType(),
+                children[0].getType(),
+                children[0].getAnchorToken()
+        );
     }
 }

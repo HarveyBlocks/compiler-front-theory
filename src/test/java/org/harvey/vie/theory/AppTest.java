@@ -63,11 +63,11 @@ public class AppTest extends TestCase {
         assertNotNull("missing dangling if case", danglingIfCase);
         SemanticAnalysisResult danglingIfResult = danglingIfCase.getSemanticResult();
         assertNotNull("semantic result missing for dangling if case", danglingIfResult);
-        int thenAddIndex = danglingIfResult.getCommands().indexOf("st_plus");
+        int thenAddIndex = danglingIfResult.getCommands().indexOf("st_plus_int32");
         assertTrue("then branch arithmetic should exist", thenAddIndex >= 0);
         int thenAssignIndex = thenAddIndex + 1;
         assertEquals("then branch should end with assignment",
-                "assign_from_st_top_to_ref",
+                "assign_from_st_top_to_ref_int32",
                 danglingIfResult.getCommands().get(thenAssignIndex));
         int skipElseGotoIndex = thenAssignIndex + 1;
         assertTrue("then branch should be followed by a goto that skips else branch",

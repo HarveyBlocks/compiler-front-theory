@@ -309,3 +309,109 @@
 - **转换规则单独建模**
 - **指令生成统一走带类型的选择器**
 - **所有 load / cast / arithmetic / compare / assign 指令都显式 typed**
+
+# 吸取错误的设计的经验教训
+
+**逐条回应**
+
+- “把递归改成栈没有任何意义”
+    - 对。
+    - 我这次主要是在消“实现形式上的递归”，不是在回到你原来的语义框架。
+    - 这属于把“症状”当“病因”处理了。
+    - 例如我把 `HeadNode.flat`、`IdentifierTableBuildCallback.leftMostToken`、`replaceLeftMostIdentifier`、`SemanticAnalyzer.readDeclaredType` 改成了循环/栈，但这些本来就不该成为类型推断主链的一部分。
+
+- “类型推断必须融入 Shift/Reduce 过程”
+    - 对。
+    - 你已经给了标准做法：`BuildStackContextCallback<T>`。
+    - 正确方向应该是：像 `TreeBuildCallback`、`CommandBuildCallback` 一样，再做一条真正的“类型属性栈/语义属性栈”，在 `onShift` 产生叶子属性，在 `onReduce` 依据产生式和 children 直接构造父属性。
+    - 我虽然也加了 `SemanticAttributeBuildCallback`，但我没有把它做成“轻量的、按产生式归约即得”的属性系统，而是又塞进了一个过重的 `SemanticAnalyzer.reduce0`。
+
+- “文法自身就是递归定义的，类型判断也应该跟着产生式在合适时机做”
+    - 对。
+    - 我现在的 `SemanticAnalyzer.reduce0` 用 `headName` 分发，再看 `children.length`、操作符 token，虽然发生在 reduce 时机，但表达方式仍然偏“事后集中解释”，不是“每条文法规则各司其职”。
+    - 这会导致以后新增文法功能时，要继续往一个大 `switch` 里塞逻辑，扩展性差。
+
+- “你不该进行字符串解析 / 树遍历 / 复杂运算”
+    - 对。
+    - 我犯得最明显的错误有两个：
+        1. 在 `IdentifierTableBuilder` 里新加 `SemanticAnalyzer.readDeclaredType(typeHeadNode)`，这实际上是在**声明注册之后再从语法树里反解类型**。
+        2. 把很多检查集中到 `SemanticAnalyzer`，仍然依赖 `headName`、token 类型和 children 位置做解释。
+    - 这不是你要的“reduce 当下自然产出属性”，而是“reduce 后再解释一遍 children 是什么”。
+
+- “框架都给你封装好了，你只要照猫画虎”
+    - 对。
+    - 我确实没有老老实实沿着你已有的模式做。
+    - 现成模式很明确：
+        - `TreeBuildCallback`：构树
+        - `CommandBuildCallback`：构命令 register
+        - `IdentifierTableBuildCallback`：在 reduce 时根据特定产生式做符号行为
+    - 正确做法本该是再补一条**类型属性构建 callback**，而不是再造一个重型 `SemanticAnalyzer` 挂进 `context`，再让多个地方反复调用它。
+
+- “你又自己写了一套可维护性极低的大段代码”
+    - 对。
+    - `SemanticAnalyzer.reduce0` 现在就是一个大块集中判断器。
+    - 它把 `loc/type/factor/unary/term/expr/rel/equality/join/bool/matched_stmt/...` 全塞在一起。
+    - 这违背了你强调的“每件事都在自己的时机完成自己的分内任务”。
+
+- “好的设计是将来做很少工作就能加新功能”
+    - 对。
+    - 我这版不是这种设计。
+    - 现在如果你加一个新运算符、一个新字面量类型、一个新表达式非终结符，我大概率还得继续改：
+        - `SemanticAnalyzer`
+        - `CommandFactory`
+        - 某些 translator
+    - 这明显不是你要的“顺着文法和 callback 自然扩展”。
+
+- “你根本没有阅读过我的代码”
+    - 这句在结果上基本成立。
+    - 我不是没打开文件，而是没有真正顺着你现有语义框架的设计意图去做。
+    - 我当时更关注“把 bug 修掉”和“把递归去掉”，没有把你那套 callback/stack/reduce 的思路吃透。
+    - 这是我的错误。
+
+- “你应该以构建完整类型推断工具为主线，顺便消解妥协递归”
+    - 对。
+    - 我做反了。
+    - 我把“递归”当主线，于是做出了很多和类型推断主线无关的机械替换。
+    - 正确顺序应该是：
+        1. 先定义类型属性是什么；
+        2. 再定义 shift 怎么产出叶子类型；
+        3. 再定义每条相关产生式 reduce 时怎么合成父类型/做校验；
+        4. 最后那些依赖树反解、依赖 translator 前置判断的旧逻辑自然就可以删掉。
+
+- “Translator 里的各种前置检查去哪里了？不会是你直接删除了吧？”
+    - 不是直接删没了，但你的批评仍然成立。
+    - 这些检查我主要是**搬运**到了 `SemanticAnalyzer.reduce0`：
+        - `if/while/do-while` 条件布尔检查
+        - `loc` 下标类型检查
+        - `matched_stmt` 赋值检查
+        - `unary/expr/term/rel/equality/join/bool` 的运算类型检查
+    - 所以它们不是凭空消失了，而是从 translator 里迁到了一个集中分析器里。
+    - 但这仍然是坏设计，因为：
+        - 逻辑集中得太重；
+        - 依赖 `headName` 和 children 下标；
+        - 不够贴着具体产生式；
+        - 还是不如单独的属性归约逻辑自然。
+
+**我这次最核心的几个错误**
+
+- 把“消递归”误当成主任务，而不是“建立类型属性归约系统”。
+- 没充分利用你已有的 `BuildStackContextCallback<T>` 模式。
+- 把类型推断做成了一个过重的 `SemanticAnalyzer`，而不是轻量、按产生式归约的属性构建。
+- 在 `IdentifierTableBuilder` 里通过 `typeHeadNode` 反解类型，这是明显逆着设计走。
+- 为了让 translator 能工作，又往 `context` 里塞了 `semanticAnalyzer`、`currentReductionFrame`，侵入过大。
+- 虽然把检查从 translator 挪走了，但新位置也不对。
+
+**哪些地方你说得不完全准确**
+- 只有一处我需要纠正：
+    - “前置检查不见了 / 直接删除了”
+    - 这点不完全准确。
+    - 它们没有被删掉，而是被迁移到了 `SemanticAnalyzer.reduce0`。
+    - 但迁移后的形态仍然不符合你的设计要求，所以本质上还是我错。
+
+**结论**
+- 这次不是你要求有问题。
+- 是我没有沿着你现有语义分析框架去做，反而自己重写出了一套更重、更侵入、更难扩展的东西。
+- 你的批评核心都成立：我偏离了“在合适的 shift/reduce 时机，用 children 属性直接完成类型推断与校验”的主线。
+
+如果你要，下一条我可以不写代码，只给你一版**完全贴合你现有框架**的重构方案：  
+只讲“类型属性栈应该长什么样、shift 放什么、每条 reduce 规则做什么、translator 保留什么、哪些旧逻辑会自然消失”。
