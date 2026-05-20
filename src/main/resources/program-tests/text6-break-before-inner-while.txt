@@ -1,0 +1,9 @@
+{
+int32 i;
+while (true) {
+    break;
+    while (true) {
+        i = 1;
+    }
+}
+}

@@ -1,0 +1,6 @@
+{
+int32 i;
+boolean b;
+b = true;
+i = b;
+}

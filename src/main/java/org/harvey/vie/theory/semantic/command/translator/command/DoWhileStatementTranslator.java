@@ -11,6 +11,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -37,6 +38,14 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         if (children.length != 7) {
             throw new CompilerException("illegal statement on do while statement production.");
         }
+        HeadNode top = SemanticTypeResolver.topReducedNode(context);
+        if (top != null && top.size() >= 5) {
+            SemanticType conditionType = SemanticTypeResolver.resolve(context, top.get(4));
+            if (!conditionType.isUnknown() && !conditionType.isBooleanScalar()) {
+                context.addError(top.get(0).toToken().getSource().getOffset(), "do-while condition must be boolean.");
+                throw new CompilerException("do-while condition must be boolean.");
+            }
+        }
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel beforeTestLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
@@ -48,10 +57,7 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         children[4].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.ifGoto(whileStartLabel))); // if_goto L1
         thisBuilder.add(new LabelNode(whileEndLabel));
-        // continue->goto L2
-        // break->goto L3
-        context.setLabelOnBreak(whileEndLabel);
-        context.setLabelOnContinue(beforeTestLabel);
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+        WhileStatementTranslator.bindLoopLabels(children[1], beforeTestLabel, whileEndLabel);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

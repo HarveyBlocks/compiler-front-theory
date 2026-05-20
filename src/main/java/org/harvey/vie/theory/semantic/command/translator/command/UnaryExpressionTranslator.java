@@ -41,7 +41,7 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[1].register(thisBuilder);
         thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor)));
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 
     private void checkOperandType(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {

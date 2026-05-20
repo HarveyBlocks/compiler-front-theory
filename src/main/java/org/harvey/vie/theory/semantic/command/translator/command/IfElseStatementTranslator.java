@@ -39,6 +39,7 @@ public class IfElseStatementTranslator implements CommandTranslator {
         if (children.length != 7) {
             throw new CompilerException("illegal statement on if-else statement production.");
         }
+        IfStatementTranslator.requireBooleanCondition(context, "if condition must be boolean.");
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel elseStartLabel = new DefaultSemanticLabel();
         SemanticLabel elseEndLabel = new DefaultSemanticLabel();
@@ -49,6 +50,6 @@ public class IfElseStatementTranslator implements CommandTranslator {
         thisBuilder.add(new LabelNode(elseStartLabel));
         children[6].register(thisBuilder); // (unmatched_stmt|matched_stmt)
         thisBuilder.add(new LabelNode(elseEndLabel));
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

@@ -28,6 +28,6 @@ public class StatementListTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[1].register(thisBuilder);
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

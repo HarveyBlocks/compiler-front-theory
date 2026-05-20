@@ -12,5 +12,10 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
  */
 public interface UncertainLabelGotoCommand extends SemanticCommand{
     void setLabel(SemanticLabel label);
+    SemanticLabel getLabel();
     SourceToken getToken();
+
+    default boolean isResolved() {
+        return getLabel() != null;
+    }
 }

@@ -37,6 +37,7 @@ public class WhileStatementTranslator implements CommandTranslator {
         if (children.length != 5) {
             throw new CompilerException("illegal statement on while statement production.");
         }
+        IfStatementTranslator.requireBooleanCondition(context, "while condition must be boolean.");
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
@@ -46,11 +47,20 @@ public class WhileStatementTranslator implements CommandTranslator {
         children[4].register(thisBuilder); // matched_stmt|unmatched_stmt
         thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1
         thisBuilder.add(new LabelNode(whileEndLabel)); // L2
+        bindLoopLabels(children[4], whileStartLabel, whileEndLabel);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
 
-        // continue -> goto L1
-        // break -> goto L2
-        context.setLabelOnBreak(whileEndLabel);
-        context.setLabelOnContinue(whileStartLabel);
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+    static void bindLoopLabels(CommandNodeRegister body, SemanticLabel continueLabel, SemanticLabel breakLabel) {
+        for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainBreaks()) {
+            if (!gotoCommand.isResolved()) {
+                gotoCommand.setLabel(breakLabel);
+            }
+        }
+        for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainContinues()) {
+            if (!gotoCommand.isResolved()) {
+                gotoCommand.setLabel(continueLabel);
+            }
+        }
     }
 }

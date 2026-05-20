@@ -1,0 +1,6 @@
+{
+int32[10] arr;
+boolean b;
+b = false;
+arr[b] = 1;
+}

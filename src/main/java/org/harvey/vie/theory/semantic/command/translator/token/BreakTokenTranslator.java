@@ -22,7 +22,6 @@ public class BreakTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
         UncertainLabelGotoCommand gotoCommand = CommandFactory.gotoCommandUncertainLabel(token);
-        context.registerUncertainLabelBreak(gotoCommand);
-        return new TokenCommandRegister(gotoCommand);
+        return new TokenCommandRegister(gotoCommand, java.util.List.of(gotoCommand), java.util.List.of());
     }
 }

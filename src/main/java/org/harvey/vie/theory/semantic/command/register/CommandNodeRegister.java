@@ -1,6 +1,9 @@
 package org.harvey.vie.theory.semantic.command.register;
 
+import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
+
+import java.util.List;
 
 /**
  * TODO 现在看来似乎不需要这个机制了. <br>
@@ -9,4 +12,12 @@ import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
  */
 public interface CommandNodeRegister {
     void register(CommandNodeBuilder outer);
+
+    default List<UncertainLabelGotoCommand> getUncertainBreaks() {
+        return List.of();
+    }
+
+    default List<UncertainLabelGotoCommand> getUncertainContinues() {
+        return List.of();
+    }
 }

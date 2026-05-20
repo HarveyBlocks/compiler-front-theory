@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
@@ -32,10 +33,27 @@ public class AssignStatementTranslator implements CommandTranslator {
         if (children.length != 4) {
             throw new CompilerException("illegal statement on assign statement production.");
         }
+        validateAssignmentTypes(context);
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder); // lvalue
         children[2].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef()));
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
+
+    static void validateAssignmentTypes(ShiftReduceSemanticContext context) {
+        org.harvey.vie.theory.semantic.tree.node.HeadNode top = SemanticTypeResolver.topReducedNode(context);
+        if (top == null) {
+            return;
+        }
+        int lvalueIndex = top.size() == 5 ? 1 : 0;
+        int exprIndex = top.size() == 5 ? 3 : 2;
+        SemanticType left = SemanticTypeResolver.resolve(context, top.get(lvalueIndex));
+        SemanticType right = SemanticTypeResolver.resolve(context, top.get(exprIndex));
+        if (!left.isUnknown() && !right.isUnknown() && !left.equals(right)) {
+            SourceToken assignToken = top.get(lvalueIndex + 1).toToken().getSource();
+            context.addError(assignToken.getOffset(), "assignment requires both sides to have the same type.");
+            throw new CompilerException("assignment requires both sides to have the same type.");
+        }
     }
 }

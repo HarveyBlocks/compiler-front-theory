@@ -21,7 +21,6 @@ public class ContinueTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
         UncertainLabelGotoCommand gotoCommand = CommandFactory.gotoCommandUncertainLabel(token);
-        context.registerUncertainLabelContinue(gotoCommand);
-        return new TokenCommandRegister(gotoCommand);
+        return new TokenCommandRegister(gotoCommand, java.util.List.of(), java.util.List.of(gotoCommand));
     }
 }

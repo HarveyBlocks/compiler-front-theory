@@ -29,10 +29,11 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
         if (children.length != 5) {
             throw new CompilerException("illegal statement on declaration with initialization production.");
         }
+        AssignStatementTranslator.validateAssignmentTypes(context);
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[1].register(thisBuilder); // lvalue
         children[3].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef()));
-        return new NormalCommandNodeRegister(thisBuilder.build(), production);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

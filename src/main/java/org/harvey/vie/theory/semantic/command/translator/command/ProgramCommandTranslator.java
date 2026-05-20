@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -23,7 +24,27 @@ public class ProgramCommandTranslator implements CommandTranslator {
         if (children.length != 1) {
             throw new CompilerException("illegal statement on program production.");
         }
-        context.checkNoBreakOrContinue();
-        return delegate.translate(context, production, children);
+        CommandNodeRegister result = delegate.translate(context, production, children);
+        rejectUnresolved(context, result);
+        return result;
+    }
+
+    private void rejectUnresolved(ShiftReduceSemanticContext context, CommandNodeRegister result) {
+        boolean failed = false;
+        for (UncertainLabelGotoCommand gotoCommand : result.getUncertainBreaks()) {
+            if (!gotoCommand.isResolved()) {
+                context.addError(gotoCommand.getToken().getOffset(), "break is not allowed here.");
+                failed = true;
+            }
+        }
+        for (UncertainLabelGotoCommand gotoCommand : result.getUncertainContinues()) {
+            if (!gotoCommand.isResolved()) {
+                context.addError(gotoCommand.getToken().getOffset(), "continue is not allowed here.");
+                failed = true;
+            }
+        }
+        if (failed) {
+            throw new CompilerException("break/continue is not allowed here.");
+        }
     }
 }

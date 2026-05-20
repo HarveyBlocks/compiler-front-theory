@@ -38,7 +38,7 @@ public class SimpleShrinkTranslator implements CommandTranslator {
             CommandNodeBuilder listBuilder = new CommandNodeListBuilder();
             Arrays.stream(children).forEach(c -> c.register(listBuilder));
             CommandNode[] childrenNode = listBuilder.build();
-            return new NormalCommandNodeRegister(childrenNode, production);
+            return new NormalCommandNodeRegister(childrenNode, production, children);
         }
     }
 

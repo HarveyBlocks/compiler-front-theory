@@ -55,6 +55,9 @@ public class AppTest extends TestCase {
         boolean hasUnknownReference = arrayResult.getCommands().stream()
                 .anyMatch(command -> command.contains("load_st_unknown_reference"));
         assertFalse("array references should not degrade to unknown typed loads", hasUnknownReference);
+        assertEquals("do-while back edge should jump to the start of the do body",
+                "if_goto 63",
+                arrayResult.getCommands().get(77));
 
         TestCaseResult danglingIfCase = findCase(runReport, "text2");
         assertNotNull("missing dangling if case", danglingIfCase);

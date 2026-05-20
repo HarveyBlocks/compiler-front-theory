@@ -102,7 +102,7 @@ public class CommandFactory {
     }
 
     public static SemanticCommand ifGoto(SemanticLabel label) {
-        return new StringCommand("if_goto " + label.getIndex());
+        return new StringSupplierCommand(() -> "if_goto " + label.getIndex());
     }
 
     public static SemanticCommand ifnGoto(SemanticLabel label) {
