@@ -45,6 +45,7 @@ public class IfElseStatementTranslator implements CommandTranslator {
         children[2].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(elseStartLabel))); // ifn_goto L1
         children[4].register(thisBuilder); // stmt
+        thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(elseEndLabel)));
         thisBuilder.add(new LabelNode(elseStartLabel));
         children[6].register(thisBuilder); // (unmatched_stmt|matched_stmt)
         thisBuilder.add(new LabelNode(elseEndLabel));

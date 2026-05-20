@@ -3,6 +3,8 @@ package org.harvey.vie.theory.semantic.command.command;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
+import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
 /**
  * TODO 静态工厂是不解耦的
@@ -62,12 +64,21 @@ public class CommandFactory {
     }
 
     private static SourceToken leftMostTypeToken(IdentifierRecord record) {
-        return record.getType()
-                .stream()
-                .filter(node -> node.isToken())
-                .map(node -> node.toToken().getSource())
-                .findFirst()
-                .orElse(null);
+        return leftMostTypeToken(record.getType());
+    }
+
+    private static SourceToken leftMostTypeToken(HeadNode typeNode) {
+        // TODO To be fix. 递归是极其错误的, 而且这里也不应该做递归的工作!
+        for (ShiftReduceSyntaxTreeNode child : typeNode) {
+            if (child.isToken()) {
+                return child.toToken().getSource();
+            }
+            SourceToken token = leftMostTypeToken(child.toHead());
+            if (token != null) {
+                return token;
+            }
+        }
+        return null;
     }
 
     public static SemanticCommand stOperator(OperatorFactor operatorFactor) {

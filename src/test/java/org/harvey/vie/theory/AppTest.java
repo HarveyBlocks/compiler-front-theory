@@ -48,6 +48,31 @@ public class AppTest extends TestCase {
         assertTrue("invalid unary case should report semantic error or failure",
                 invalidUnary.getErrorCount() > 0 || invalidUnary.getFailure() != null);
 
+        TestCaseResult arrayCase = findCase(runReport, "text3");
+        assertNotNull("missing array case", arrayCase);
+        SemanticAnalysisResult arrayResult = arrayCase.getSemanticResult();
+        assertNotNull("semantic result missing for array case", arrayResult);
+        boolean hasUnknownReference = arrayResult.getCommands().stream()
+                .anyMatch(command -> command.contains("load_st_unknown_reference"));
+        assertFalse("array references should not degrade to unknown typed loads", hasUnknownReference);
+
+        TestCaseResult danglingIfCase = findCase(runReport, "text2");
+        assertNotNull("missing dangling if case", danglingIfCase);
+        SemanticAnalysisResult danglingIfResult = danglingIfCase.getSemanticResult();
+        assertNotNull("semantic result missing for dangling if case", danglingIfResult);
+        int thenAddIndex = danglingIfResult.getCommands().indexOf("st_plus");
+        assertTrue("then branch arithmetic should exist", thenAddIndex >= 0);
+        int thenAssignIndex = thenAddIndex + 1;
+        assertEquals("then branch should end with assignment",
+                "assign_from_st_top_to_ref",
+                danglingIfResult.getCommands().get(thenAssignIndex));
+        int skipElseGotoIndex = thenAssignIndex + 1;
+        assertTrue("then branch should be followed by a goto that skips else branch",
+                danglingIfResult.getCommands().get(skipElseGotoIndex).startsWith("goto "));
+        assertEquals("outer if should jump to the same join point after then branch and when condition is false",
+                danglingIfResult.getCommands().get(11).replace("ifn_goto ", ""),
+                danglingIfResult.getCommands().get(skipElseGotoIndex).replace("goto ", ""));
+
         assertTrue("summary report should exist: " + runReport.getSummaryReport(), Files.exists(runReport.getSummaryReport()));
     }
 
