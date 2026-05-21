@@ -375,6 +375,8 @@ public class ProgramSyntaxDemo {
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_BREAK)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
                 .alternateDefinition("block")
                 .alternateDefinition("matched_if_stmt");
 

@@ -176,6 +176,7 @@ public class SemanticDemo {
         map.put("stmts->stmts stmt", new StatementListTranslator());
         map.put("decl->type IDENTIFIER OPERATOR_SEMICOLON", new DeclarationWithoutInitializationTranslator());
         map.put("matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON", simpleShrink);
+        map.put("matched_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON", simpleShrink);
         map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", new ArrayTypeTranslator());
         map.put("factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE", new ParenthesizedExpressionTranslator());
         map.put("factor->loc", new PrimaryProduceLeftValueTranslator());

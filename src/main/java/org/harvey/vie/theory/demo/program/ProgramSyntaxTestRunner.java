@@ -124,7 +124,11 @@ public final class ProgramSyntaxTestRunner {
     public static SemanticAnalysisResult executeSemanticTest(String text, DefaultErrorContext errorContext) {
         LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
         Resource resource = new AsciiStringResource(text);
-        ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.loadShiftReduceParsingTable(SERIAL_SYNTAX_TABLE);
+        ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
+                "program",
+                ProgramSyntaxDemo.buildGrammar0(),
+                SERIAL_SYNTAX_TABLE
+        );
         ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                 shiftReduceParsingTable,
                 t -> !ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(t.getType()),

@@ -39,6 +39,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             case "stmts->stmts stmt":
             case "block->OPERATOR_BRACE_OPEN decls stmts OPERATOR_BRACE_CLOSE":
             case "matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
+            case "matched_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON":
             case "matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt":
             case "unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt":
             case "matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt":

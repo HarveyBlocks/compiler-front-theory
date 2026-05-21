@@ -28,7 +28,6 @@ public class AppTest extends TestCase {
         SemanticRunReport runReport = ProgramSyntaxTestRunner.run();
         List<TestCaseResult> failures = runReport.getResults().stream()
                 .filter(result -> !result.isExpectationMatched())
-                .filter(result -> !isKnownUnsupportedContinueCase(result))
                 .collect(Collectors.toList());
         assertTrue(buildFailureMessage(runReport, failures), failures.isEmpty());
 
@@ -41,6 +40,9 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text6-break-before-inner-while");
         assertExpectedAcceptance(runReport, "text12-int32-to-float64-implicit-cast");
         assertExpectedAcceptance(runReport, "text14-mixed-relational-int-float");
+        assertExpectedAcceptance(runReport, "text15-continue-in-while");
+        assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
+        assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
         assertExpectedAcceptance(runReport, "text20-double-break-binding");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
@@ -52,9 +54,6 @@ public class AppTest extends TestCase {
         assertExpectedRejection(runReport, "text13-float64-to-int32-invalid");
         assertExpectedRejection(runReport, "text17-continue-outside-loop-invalid");
         assertExpectedRejection(runReport, "text18-break-outside-loop-invalid");
-        assertKnownUnsupportedContinueCase(runReport, "text15-continue-in-while");
-        assertKnownUnsupportedContinueCase(runReport, "text16-continue-in-do-while");
-        assertKnownUnsupportedContinueCase(runReport, "text19-nested-break-continue-binding");
 
         assertSiblingScopeOffsets(runReport);
         assertNoUnknownTypedReference(runReport, "text3");
@@ -62,6 +61,9 @@ public class AppTest extends TestCase {
         assertDoWhileBackEdgeTargetsBody(runReport);
         assertWideningCastPlacement(runReport);
         assertMixedRelationalCastPlacement(runReport);
+        assertWhileContinueTargetsCondition(runReport);
+        assertDoWhileContinueTargetsCondition(runReport);
+        assertNestedLoopBinding(runReport);
         assertDoubleBreakBinding(runReport);
         assertErrorContextCoverage(runReport);
     }
@@ -151,6 +153,47 @@ public class AppTest extends TestCase {
         assertTrue("one break should exit the outer loop", gotoTargets.contains(commands.size()));
     }
 
+    private static void assertWhileContinueTargetsCondition(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text15-continue-in-while");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertContainsSequence(commands,
+                "load_st_int32_reference 0",
+                "st_top_ref_to_val_int32",
+                "load_st_int32_static 3",
+                "st_less_int32",
+                "ifn_goto 25");
+        assertTrue("continue in while should jump back to condition start",
+                commands.contains("goto 6"));
+        assertEquals("while continue case should contain exactly two back edges to condition",
+                2,
+                commands.stream().filter("goto 6"::equals).count());
+    }
+
+    private static void assertDoWhileContinueTargetsCondition(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertTrue("continue in do-while should jump to condition evaluation point",
+                commands.contains("goto 19"));
+        assertContainsSequence(commands,
+                "goto 19",
+                "load_st_int32_reference 0",
+                "st_top_ref_to_val_int32",
+                "load_st_int32_static 3",
+                "st_less_int32",
+                "if_goto 6");
+    }
+
+    private static void assertNestedLoopBinding(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertTrue("inner continue should jump back to inner loop condition start", commands.contains("goto 14"));
+        assertTrue("inner break should jump to inner loop exit", commands.contains("goto 44"));
+        assertTrue("outer loop back edge should jump to outer condition start", commands.contains("goto 6"));
+        assertEquals("inner continue and normal inner-loop back edge should both target inner condition",
+                2,
+                commands.stream().filter("goto 14"::equals).count());
+    }
+
     private static void assertErrorContextCoverage(SemanticRunReport runReport) {
         assertTrue("condition type rejection should be recorded in error context",
                 assertExpectedRejection(runReport, "text7-condition-int-invalid").getErrorCount() > 0);
@@ -189,27 +232,6 @@ public class AppTest extends TestCase {
         assertTrue("rejected case should record errors or failure: " + caseName,
                 result.getErrorCount() > 0 || result.getFailure() != null);
         return result;
-    }
-
-    private static void assertKnownUnsupportedContinueCase(SemanticRunReport runReport, String caseName) {
-        TestCaseResult result = findCase(runReport, caseName);
-        assertNotNull("missing test case " + caseName, result);
-        assertTrue("unsupported continue case should still be marked as expected acceptance to expose grammar gap", !result.isExpectedFailure());
-        assertFalse("unsupported continue case should not match current expectation until grammar supports it", result.isExpectationMatched());
-        assertTrue("unsupported continue case should fail during parsing", result.isObservedRejected());
-        assertNotNull("unsupported continue case should have a failure", result.getFailure());
-        String failureText = String.valueOf(result.getFailure());
-        assertTrue("unsupported continue case should fail because grammar rejects continue token",
-                failureText.contains("CONTROL_STRUCTURES_CONTINUE"));
-        assertTrue("unsupported continue case should fail before semantic command generation",
-                result.getSemanticResult() == null);
-    }
-
-    private static boolean isKnownUnsupportedContinueCase(TestCaseResult result) {
-        String caseName = result.getCaseName();
-        return "text15-continue-in-while".equals(caseName) ||
-               "text16-continue-in-do-while".equals(caseName) ||
-               "text19-nested-break-continue-binding".equals(caseName);
     }
 
     private static String buildFailureMessage(SemanticRunReport runReport, List<TestCaseResult> failures) {
