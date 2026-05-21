@@ -11,6 +11,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -34,13 +35,13 @@ public class AssignStatementTranslator implements CommandTranslator {
         if (children.length != 4) {
             throw new CompilerException("illegal statement on assign statement production.");
         }
-        SemanticType targetType = children[0].getType();
-        SemanticType sourceType = children[2].getType();
+        SemanticType targetType = TypeAttributes.childType(context, 0);
+        SemanticType sourceType = TypeAttributes.childType(context, 2);
         SemanticTypeDiagnostics.requireAssignable(
                 context,
                 sourceType,
                 targetType,
-                children[1].getAnchorToken(),
+                TypeAttributes.childAnchor(context, 1),
                 "assignment requires assignable types."
         );
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();

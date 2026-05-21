@@ -18,6 +18,7 @@ import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.semantic.type.TypeContext;
+import org.harvey.vie.theory.semantic.type.TypeReductionFrame;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
@@ -47,6 +48,9 @@ public class ShiftReduceSemanticContext {
     private final CommandContext commandContext = new CommandContext();
     @Getter
     private final TypeContext typeContext = new TypeContext();
+    @Setter
+    @Getter
+    private TypeReductionFrame currentTypeReductionFrame;
     @Getter
     private final SemanticTypeSystem typeSystem = new SemanticTypeSystem();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();

@@ -13,6 +13,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -40,7 +41,12 @@ public class WhileStatementTranslator implements CommandTranslator {
         if (children.length != 5) {
             throw new CompilerException("illegal statement on while statement production.");
         }
-        SemanticTypeDiagnostics.requireBoolean(context, children[2].getType(), children[0].getAnchorToken(), "condition must be boolean.");
+        SemanticTypeDiagnostics.requireBoolean(
+                context,
+                TypeAttributes.childType(context, 2),
+                TypeAttributes.childAnchor(context, 0),
+                "condition must be boolean."
+        );
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();

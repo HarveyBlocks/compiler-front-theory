@@ -11,6 +11,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -35,13 +36,13 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[1].register(thisBuilder);
-        SemanticType operandType = children[1].getType();
+        SemanticType operandType = TypeAttributes.childType(context, 1);
         SemanticType instructionType;
         if (operatorType == ProgramTokenType.OPERATOR_LOGICAL_NOT) {
             SemanticTypeDiagnostics.requireBoolean(
                     context,
                     operandType,
-                    children[0].getAnchorToken(),
+                    TypeAttributes.childAnchor(context, 0),
                     "operator '!' requires a boolean operand."
             );
             instructionType = SemanticType.scalar(SemanticType.Kind.BOOLEAN);
@@ -49,7 +50,7 @@ public class UnaryExpressionTranslator implements CommandTranslator {
             SemanticTypeDiagnostics.requireNumeric(
                     context,
                     operandType,
-                    children[0].getAnchorToken(),
+                    TypeAttributes.childAnchor(context, 0),
                     "unary '-' requires a numeric operand."
             );
             instructionType = operandType;
@@ -57,13 +58,6 @@ public class UnaryExpressionTranslator implements CommandTranslator {
             throw new CompilerException("unsupported unary operator type: " + operatorType);
         }
         thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor, instructionType)));
-        return new NormalCommandNodeRegister(
-                thisBuilder.build(),
-                production,
-                children,
-                instructionType,
-                instructionType,
-                children[0].getAnchorToken()
-        );
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

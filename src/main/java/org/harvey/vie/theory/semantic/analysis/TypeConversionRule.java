@@ -9,7 +9,10 @@ public class TypeConversionRule {
         if (from.equals(to)) {
             return true;
         }
-        return from.isNumericScalar() && to.isNumericScalar();
+        if (!from.isNumericScalar() || !to.isNumericScalar()) {
+            return false;
+        }
+        return from.getKind() == SemanticType.Kind.INT32 && to.getKind() == SemanticType.Kind.FLOAT64;
     }
 
     public boolean requiresImplicitCast(SemanticType from, SemanticType to) {

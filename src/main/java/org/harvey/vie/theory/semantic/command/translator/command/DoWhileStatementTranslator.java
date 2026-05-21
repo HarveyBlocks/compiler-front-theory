@@ -13,6 +13,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -41,8 +42,8 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         }
         SemanticTypeDiagnostics.requireBoolean(
                 context,
-                children[4].getType(),
-                children[2].getAnchorToken(),
+                TypeAttributes.childType(context, 4),
+                TypeAttributes.childAnchor(context, 2),
                 "do-while condition must be boolean."
         );
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();

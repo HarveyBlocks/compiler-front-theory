@@ -23,7 +23,6 @@ public class DeclarationWithoutInitializationTranslator implements CommandTransl
         if (children.length != 3) {
             throw new CompilerException("illegal statement on declaration without initialization production.");
         }
-        // TODO 到底是真的需要改成这样还是错误的设计?
-        return new PlaceholderNodeRegister(children[0].getType(), children[0].getInstructionType(), children[1].getAnchorToken());
+        return new PlaceholderNodeRegister();
     }
 }

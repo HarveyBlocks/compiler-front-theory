@@ -12,6 +12,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -36,9 +37,9 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         if (children.length != 3) {
             throw new CompilerException("illegal statement on in-suffix expression production.");
         }
-        SemanticType leftType = children[0].getType();
-        SemanticType rightType = children[2].getType();
-        SourceToken operatorToken = children[1].getAnchorToken();
+        SemanticType leftType = TypeAttributes.childType(context, 0);
+        SemanticType rightType = TypeAttributes.childType(context, 2);
+        SourceToken operatorToken = TypeAttributes.childAnchor(context, 1);
         SemanticType instructionType = inferInstructionType(context, leftType, rightType, operatorToken);
         SemanticType resultType = inferResultType(instructionType);
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
@@ -52,14 +53,7 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
             thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(rightType, instructionType)));
         }
         thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor, instructionType)));
-        return new NormalCommandNodeRegister(
-                thisBuilder.build(),
-                production,
-                children,
-                resultType,
-                instructionType,
-                operatorToken
-        );
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 
     private SemanticType inferInstructionType(

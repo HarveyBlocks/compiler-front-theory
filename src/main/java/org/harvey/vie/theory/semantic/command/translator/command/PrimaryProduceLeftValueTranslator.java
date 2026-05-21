@@ -8,6 +8,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -32,14 +33,7 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
         }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal(children[0].getType())));
-        return new NormalCommandNodeRegister(
-                thisBuilder.build(),
-                production,
-                children,
-                children[0].getType(),
-                children[0].getType(),
-                children[0].getAnchorToken()
-        );
+        thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal(TypeAttributes.childType(context, 0))));
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

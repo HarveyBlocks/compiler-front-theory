@@ -12,6 +12,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -33,22 +34,16 @@ public class ArrayAtExpressionTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[2].register(thisBuilder);
-        SemanticType baseType = children[0].getType();
-        SemanticType indexType = children[2].getType();
+        SemanticType baseType = TypeAttributes.childType(context, 0);
+        SemanticType indexType = TypeAttributes.childType(context, 2);
         if (!baseType.isUnknown() && !baseType.isArray()) {
-            SemanticTypeDiagnostics.reject(context, children[1].getAnchorToken(), "subscript operator requires an array operand.");
+            SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "subscript operator requires an array operand.");
         }
         if (!indexType.isUnknown() && !SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
-            SemanticTypeDiagnostics.reject(context, children[1].getAnchorToken(), "array index must be int32.");
+            SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "array index must be int32.");
         }
         SemanticType resultType = baseType.arrayElementType();
         thisBuilder.add(new TerminalNode(CommandFactory.biasFromStTopToRef(resultType)));
-        return new NormalCommandNodeRegister(thisBuilder.build(),
-                production,
-                children,
-                resultType,
-                resultType,
-                children[0].getAnchorToken()
-        );
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

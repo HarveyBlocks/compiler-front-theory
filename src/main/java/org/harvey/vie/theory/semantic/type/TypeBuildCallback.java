@@ -36,6 +36,7 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
                 SimpleGrammarProduction production,
                 TypeRegister[] children) {
             String key = production.toString().trim();
+            TypeRegister result;
             switch (key) {
                 case "decls->ε":
                 case "stmts->ε":
@@ -43,7 +44,8 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
                 case "stmts->stmts stmt":
                 case "block->OPERATOR_BRACE_OPEN decls stmts OPERATOR_BRACE_CLOSE":
                 case "matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
-                    return TypeRegister.unknown(firstAnchor(children));
+                    result = TypeRegister.unknown(firstAnchor(children));
+                    break;
                 case "program->block":
                 case "stmt->matched_stmt":
                 case "stmt->unmatched_stmt":
@@ -60,50 +62,71 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
                 case "term->unary":
                 case "unary->factor":
                 case "factor->loc":
-                    return passthrough(children, 0);
+                    result = passthrough(children, 0);
+                    break;
                 case "decl->type IDENTIFIER OPERATOR_SEMICOLON":
-                    return new TypeRegister(children[0].getType(), children[1].getAnchorToken());
+                    result = new TypeRegister(
+                            children[0].getType(),
+                            children[0].getInstructionType(),
+                            children[1].getAnchorToken()
+                    );
+                    break;
                 case "type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE":
-                    return arrayType(context, children);
+                    result = arrayType(context, children);
+                    break;
                 case "matched_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
-                    return passthrough(children, 0);
+                    result = passthrough(children, 0);
+                    break;
                 case "matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt":
                 case "unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt":
                 case "matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt":
                 case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt":
                 case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt":
                 case "matched_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON":
-                    return TypeRegister.unknown(children[0].getAnchorToken());
+                    result = TypeRegister.unknown(children[0].getAnchorToken());
+                    break;
                 case "loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE":
-                    return arrayElement(children);
+                    result = arrayElement(children);
+                    break;
                 case "bool->bool OPERATOR_LOGICAL_OR join":
                 case "join->join OPERATOR_LOGICAL_AND equality":
-                    return booleanBinary(children);
+                    result = booleanBinary(children);
+                    break;
                 case "equality->equality OPERATOR_EQUAL rel":
                 case "equality->equality OPERATOR_NOT_EQUAL rel":
-                    return equality(children, context);
+                    result = equality(children, context);
+                    break;
                 case "rel->expr OPERATOR_LESS expr":
                 case "rel->expr OPERATOR_LESS_EQUAL expr":
                 case "rel->expr OPERATOR_GREATER expr":
                 case "rel->expr OPERATOR_GREATER_EQUAL expr":
-                    return relation(children, context);
+                    result = relation(children, context);
+                    break;
                 case "expr->expr OPERATOR_PLUS term":
                 case "expr->expr OPERATOR_MINUS term":
                 case "term->term OPERATOR_MULTIPLY unary":
                 case "term->term OPERATOR_DIVIDE unary":
-                    return numericBinary(children, context);
+                    result = numericBinary(children, context);
+                    break;
                 case "unary->OPERATOR_LOGICAL_NOT unary":
-                    return unaryBoolean(children);
+                    result = unaryBoolean(children);
+                    break;
                 case "unary->OPERATOR_MINUS unary":
-                    return unaryNumeric(children);
+                    result = unaryNumeric(children);
+                    break;
                 case "factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE":
-                    return passthrough(children, 1);
+                    result = passthrough(children, 1);
+                    break;
                 default:
                     if (children.length == 1) {
-                        return passthrough(children, 0);
+                        result = passthrough(children, 0);
+                        break;
                     }
-                    return TypeRegister.unknown(firstAnchor(children));
+                    result = TypeRegister.unknown(firstAnchor(children));
+                    break;
             }
+            context.setCurrentTypeReductionFrame(new TypeReductionFrame(children, result));
+            return result;
         }
 
         @Override
@@ -111,7 +134,8 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
             ProgramTokenType type = (ProgramTokenType) token.getType();
             if (type == ProgramTokenType.IDENTIFIER) {
                 IdentifierRecord record = context.getIdentifier(token);
-                return new TypeRegister(record == null ? SemanticType.unknown() : record.getDeclaredType(), token);
+                SemanticType resolved = record == null ? SemanticType.unknown() : record.getDeclaredType();
+                return TypeRegister.simple(resolved, token);
             }
             switch (type) {
                 case TYPE_BOOLEAN:
@@ -125,7 +149,7 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
                 case CONSTANT_BOOLEAN_FALSE:
                 case CONSTANT_CHARACTER:
                 case CONSTANT_STRING:
-                    return new TypeRegister(resolveTokenType(context, token), token);
+                    return TypeRegister.simple(resolveTokenType(context, token), token);
                 default:
                     return TypeRegister.unknown(token);
             }
@@ -151,7 +175,7 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
                 return TypeRegister.unknown(children[0].getAnchorToken());
             }
             int dimension = context.getTypeSystem().integerLiteral(children[2].getAnchorToken());
-            return new TypeRegister(baseType.withAppendedDimension(dimension), children[0].getAnchorToken());
+            return TypeRegister.simple(baseType.withAppendedDimension(dimension), children[0].getAnchorToken());
         }
 
         private static TypeRegister arrayElement(TypeRegister[] children) {
@@ -160,7 +184,7 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
             if (!baseType.isUnknown() &&
                 baseType.isArray() &&
                 SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
-                return new TypeRegister(baseType.arrayElementType(), children[0].getAnchorToken());
+                return TypeRegister.simple(baseType.arrayElementType(), children[0].getAnchorToken());
             }
             return TypeRegister.unknown(children[0].getAnchorToken());
         }
@@ -169,7 +193,7 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
             SemanticType left = children[0].getType();
             SemanticType right = children[2].getType();
             if (left.isBooleanScalar() && right.isBooleanScalar()) {
-                return new TypeRegister(SemanticType.scalar(SemanticType.Kind.BOOLEAN), children[1].getAnchorToken());
+                return TypeRegister.simple(SemanticType.scalar(SemanticType.Kind.BOOLEAN), children[1].getAnchorToken());
             }
             return TypeRegister.unknown(children[1].getAnchorToken());
         }
@@ -180,49 +204,65 @@ public class TypeBuildCallback extends BuildStackContextCallback<TypeRegister> i
             boolean sameType = !left.isUnknown() && left.equals(right);
             boolean numericComparable = left.isNumericScalar() && right.isNumericScalar();
             if (sameType || numericComparable) {
-                return new TypeRegister(SemanticType.scalar(SemanticType.Kind.BOOLEAN), children[1].getAnchorToken());
+                SemanticType instructionType = numericComparable
+                        ? context.getTypeSystem().commonBinaryType(left, right)
+                        : left;
+                return new TypeRegister(
+                        SemanticType.scalar(SemanticType.Kind.BOOLEAN),
+                        instructionType,
+                        children[1].getAnchorToken()
+                );
             }
             if (left.isUnknown() || right.isUnknown()) {
                 return TypeRegister.unknown(children[1].getAnchorToken());
             }
-            return new TypeRegister(context.getTypeSystem().commonBinaryType(left, right), children[1].getAnchorToken());
+            return TypeRegister.unknown(children[1].getAnchorToken());
         }
 
         private static TypeRegister relation(TypeRegister[] children, ShiftReduceSemanticContext context) {
             SemanticType left = children[0].getType();
             SemanticType right = children[2].getType();
             if (left.isNumericScalar() && right.isNumericScalar()) {
-                return new TypeRegister(SemanticType.scalar(SemanticType.Kind.BOOLEAN), children[1].getAnchorToken());
+                return new TypeRegister(
+                        SemanticType.scalar(SemanticType.Kind.BOOLEAN),
+                        context.getTypeSystem().commonBinaryType(left, right),
+                        children[1].getAnchorToken()
+                );
             }
             if (left.isUnknown() || right.isUnknown()) {
                 return TypeRegister.unknown(children[1].getAnchorToken());
             }
-            return new TypeRegister(context.getTypeSystem().commonBinaryType(left, right), children[1].getAnchorToken());
+            return TypeRegister.unknown(children[1].getAnchorToken());
         }
 
         private static TypeRegister numericBinary(TypeRegister[] children, ShiftReduceSemanticContext context) {
             SemanticType left = children[0].getType();
             SemanticType right = children[2].getType();
             if (left.isNumericScalar() && right.isNumericScalar()) {
-                return new TypeRegister(context.getTypeSystem().commonBinaryType(left, right), children[1].getAnchorToken());
+                SemanticType instructionType = context.getTypeSystem().commonBinaryType(left, right);
+                return new TypeRegister(instructionType, instructionType, children[1].getAnchorToken());
             }
             return TypeRegister.unknown(children[1].getAnchorToken());
         }
 
         private static TypeRegister unaryBoolean(TypeRegister[] children) {
             return children[1].getType().isBooleanScalar()
-                    ? new TypeRegister(SemanticType.scalar(SemanticType.Kind.BOOLEAN), children[0].getAnchorToken())
+                    ? TypeRegister.simple(SemanticType.scalar(SemanticType.Kind.BOOLEAN), children[0].getAnchorToken())
                     : TypeRegister.unknown(children[0].getAnchorToken());
         }
 
         private static TypeRegister unaryNumeric(TypeRegister[] children) {
             return children[1].getType().isNumericScalar()
-                    ? new TypeRegister(children[1].getType(), children[0].getAnchorToken())
+                    ? new TypeRegister(children[1].getType(), children[1].getInstructionType(), children[0].getAnchorToken())
                     : TypeRegister.unknown(children[0].getAnchorToken());
         }
 
         private static TypeRegister passthrough(TypeRegister[] children, int index) {
-            return new TypeRegister(children[index].getType(), children[index].getAnchorToken());
+            return new TypeRegister(
+                    children[index].getType(),
+                    children[index].getInstructionType(),
+                    children[index].getAnchorToken()
+            );
         }
 
         private static SourceToken firstAnchor(TypeRegister[] children) {

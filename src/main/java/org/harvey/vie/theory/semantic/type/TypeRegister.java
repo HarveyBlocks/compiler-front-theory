@@ -12,9 +12,14 @@ import org.harvey.vie.theory.semantic.analysis.SemanticType;
 @AllArgsConstructor
 public class TypeRegister {
     private final SemanticType type;
+    private final SemanticType instructionType;
     private final SourceToken anchorToken;
 
     public static TypeRegister unknown(SourceToken anchorToken) {
-        return new TypeRegister(SemanticType.unknown(), anchorToken);
+        return new TypeRegister(SemanticType.unknown(), SemanticType.unknown(), anchorToken);
+    }
+
+    public static TypeRegister simple(SemanticType type, SourceToken anchorToken) {
+        return new TypeRegister(type, type, anchorToken);
     }
 }
