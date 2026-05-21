@@ -1,0 +1,16 @@
+{
+int32 i;
+int32 j;
+i = 0;
+j = 0;
+while (i < 3) {
+    j = 0;
+    while (j < 3) {
+        j = j + 1;
+        if (j == 1) continue;
+        if (j == 2) break;
+        i = i + 1;
+    }
+    i = i + 1;
+}
+}

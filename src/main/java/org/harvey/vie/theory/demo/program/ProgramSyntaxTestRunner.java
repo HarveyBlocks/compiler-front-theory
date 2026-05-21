@@ -87,16 +87,31 @@ public final class ProgramSyntaxTestRunner {
             failure = throwable;
         }
         boolean hasErrors = !errorContext.isEmpty();
-        boolean success = expectedFailure ? failure != null || hasErrors : executedSuccessfully && !hasErrors;
+        boolean observedRejected = failure != null || hasErrors;
+        boolean observedAccepted = executedSuccessfully && !hasErrors;
+        boolean matchedExpectation = expectedFailure ? observedRejected : observedAccepted;
         Path report = REPORT_DIR.resolve(runId + "-" + caseName + ".md");
-        writeReport(report, caseName, text, semanticResult, errorContext, success, failure, expectedFailure);
+        writeReport(
+                report,
+                caseName,
+                text,
+                semanticResult,
+                errorContext,
+                matchedExpectation,
+                observedAccepted,
+                observedRejected,
+                failure,
+                expectedFailure
+        );
         int commandCount = semanticResult == null ? 0 : semanticResult.getCommands().size();
         int symbolCount = semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length;
         return new TestCaseResult(
                 caseName,
                 report,
-                success,
+                matchedExpectation,
                 expectedFailure,
+                observedAccepted,
+                observedRejected,
                 errorContext.size(),
                 commandCount,
                 symbolCount,
@@ -131,7 +146,7 @@ public final class ProgramSyntaxTestRunner {
     }
 
     private static void writeSummary(Path summaryReport, String runId, List<TestCaseResult> results) throws IOException {
-        long passCount = results.stream().filter(TestCaseResult::isSuccess).count();
+        long passCount = results.stream().filter(TestCaseResult::isExpectationMatched).count();
         long failCount = results.size() - passCount;
         StringBuilder summary = new StringBuilder();
         summary.append("# Program Semantic Test Summary\n\n");
@@ -140,15 +155,17 @@ public final class ProgramSyntaxTestRunner {
         summary.append("- Cases: ").append(results.size()).append("\n");
         summary.append("- Passed: ").append(passCount).append("\n");
         summary.append("- Failed: ").append(failCount).append("\n\n");
-        summary.append("| Case | Expected | Result | Errors | Commands | Symbols | Report |\n");
-        summary.append("| --- | --- | --- | --- | --- | --- | --- |\n");
+        summary.append("| Case | Expected | Observed | Matched | Errors | Commands | Symbols | Report |\n");
+        summary.append("| --- | --- | --- | --- | --- | --- | --- | --- |\n");
         for (TestCaseResult result : results) {
             summary.append("| ")
                     .append(result.caseName)
                     .append(" | ")
-                    .append(result.expectedFailure ? "FAIL" : "PASS")
+                    .append(result.expectedFailure ? "REJECT" : "ACCEPT")
                     .append(" | ")
-                    .append(result.success ? "PASS" : "FAIL")
+                    .append(result.isObservedRejected() ? "REJECT" : "ACCEPT")
+                    .append(" | ")
+                    .append(result.expectationMatched ? "YES" : "NO")
                     .append(" | ")
                     .append(result.errorCount)
                     .append(" | ")
@@ -168,13 +185,16 @@ public final class ProgramSyntaxTestRunner {
             String source,
             SemanticAnalysisResult semanticResult,
             ErrorContext errorContext,
-            boolean success,
+            boolean matchedExpectation,
+            boolean observedAccepted,
+            boolean observedRejected,
             Throwable failure,
             boolean expectedFailure) throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append("# Program Semantic Test: ").append(caseName).append("\n\n");
-        builder.append("- Result: ").append(success ? "PASS" : "FAIL").append("\n");
-        builder.append("- Expected: ").append(expectedFailure ? "FAIL" : "PASS").append("\n");
+        builder.append("- Expected: ").append(expectedFailure ? "REJECT" : "ACCEPT").append("\n");
+        builder.append("- Observed: ").append(observedRejected ? "REJECT" : observedAccepted ? "ACCEPT" : "UNKNOWN").append("\n");
+        builder.append("- Matched Expectation: ").append(matchedExpectation ? "YES" : "NO").append("\n");
         builder.append("- Errors: ").append(errorContext.size()).append("\n");
         builder.append("- Commands: ").append(semanticResult == null ? 0 : semanticResult.getCommands().size()).append("\n");
         builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
@@ -272,8 +292,10 @@ public final class ProgramSyntaxTestRunner {
     public static final class TestCaseResult {
         private final String caseName;
         private final Path report;
-        private final boolean success;
+        private final boolean expectationMatched;
         private final boolean expectedFailure;
+        private final boolean observedAccepted;
+        private final boolean observedRejected;
         private final int errorCount;
         private final int commandCount;
         private final int symbolCount;
@@ -284,8 +306,10 @@ public final class ProgramSyntaxTestRunner {
         private TestCaseResult(
                 String caseName,
                 Path report,
-                boolean success,
+                boolean expectationMatched,
                 boolean expectedFailure,
+                boolean observedAccepted,
+                boolean observedRejected,
                 int errorCount,
                 int commandCount,
                 int symbolCount,
@@ -294,8 +318,10 @@ public final class ProgramSyntaxTestRunner {
                 Throwable failure) {
             this.caseName = caseName;
             this.report = report;
-            this.success = success;
+            this.expectationMatched = expectationMatched;
             this.expectedFailure = expectedFailure;
+            this.observedAccepted = observedAccepted;
+            this.observedRejected = observedRejected;
             this.errorCount = errorCount;
             this.commandCount = commandCount;
             this.symbolCount = symbolCount;
@@ -313,11 +339,23 @@ public final class ProgramSyntaxTestRunner {
         }
 
         public boolean isSuccess() {
-            return success;
+            return expectationMatched;
+        }
+
+        public boolean isExpectationMatched() {
+            return expectationMatched;
         }
 
         public boolean isExpectedFailure() {
             return expectedFailure;
+        }
+
+        public boolean isObservedAccepted() {
+            return observedAccepted;
+        }
+
+        public boolean isObservedRejected() {
+            return observedRejected;
         }
 
         public int getErrorCount() {
