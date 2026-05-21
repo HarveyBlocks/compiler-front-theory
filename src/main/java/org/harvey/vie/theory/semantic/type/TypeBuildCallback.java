@@ -257,7 +257,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
 
     private static SourceToken anchorOf(ShiftReduceSyntaxTreeNode node) {
         // 需要一个Token用来定位, 比如报错需要一个token定位
-        // 因此这里采用了深度优先, 拿到合适的token
+        // 因此这里采用了广度优先, 拿到合适的token
         Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
         queue.add(node);
         while (!queue.isEmpty()) {

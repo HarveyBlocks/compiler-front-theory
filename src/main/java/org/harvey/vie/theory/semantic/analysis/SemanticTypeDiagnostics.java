@@ -46,9 +46,7 @@ public final class SemanticTypeDiagnostics {
             ShiftReduceSemanticContext context,
             SourceToken token,
             String message) {
-        if (token != null) {
-            context.addError(token.getOffset(), message);
-        }
+        context.addError(token.getOffset(), message);
         throw new CompilerException(message);
     }
 }
