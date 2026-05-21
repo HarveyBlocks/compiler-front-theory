@@ -71,7 +71,9 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
             throw new CompileException("duplicate identifier declaration is not allowed.");
         }
         HeadNode typeHeadNode = declarationRecordSupplier.typeHeadNode(headNode);
-        SemanticType declaredType = context.getCommandContext().peek().getType();
+        SemanticType declaredType = context.getTypeContext().isEmpty()
+                ? SemanticType.unknown()
+                : context.getTypeContext().peek().getType();
         boolean initialized = declarationRecordSupplier.initialized(headNode);
         context.registerIdentifier(typeHeadNode, declaredType, identifierToken, initialized);
     }

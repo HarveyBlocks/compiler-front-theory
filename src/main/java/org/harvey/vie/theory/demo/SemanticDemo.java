@@ -20,6 +20,7 @@ import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
 import org.harvey.vie.theory.semantic.log.TreeLogCallback;
 import org.harvey.vie.theory.semantic.tree.TreeBuildCallback;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.type.TypeBuildCallback;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 
@@ -47,6 +48,7 @@ public class SemanticDemo {
         register.add(new TreeBuildCallback());
         register.add(new TreeLogCallback());
         register.add(instanceIdentifierScopeCallback());
+        register.add(new TypeBuildCallback());
         register.add(instanceSemanticCommandPrintCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
         register.add(instanceIdentifierTableBuildCallback());
@@ -58,6 +60,7 @@ public class SemanticDemo {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
         register.add(new TreeBuildCallback());
         register.add(instanceIdentifierScopeCallback());
+        register.add(new TypeBuildCallback());
         register.add(new SemanticResultCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
         register.add(instanceIdentifierTableBuildCallback());

@@ -3,7 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
-import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
@@ -36,10 +36,13 @@ public class AssignStatementTranslator implements CommandTranslator {
         }
         SemanticType targetType = children[0].getType();
         SemanticType sourceType = children[2].getType();
-        if (!targetType.isUnknown() && !sourceType.isUnknown() &&
-            !context.getTypeSystem().canImplicitlyConvert(sourceType, targetType)) {
-            reject(context, children[1].getAnchorToken(), "assignment requires assignable types.");
-        }
+        SemanticTypeDiagnostics.requireAssignable(
+                context,
+                sourceType,
+                targetType,
+                children[1].getAnchorToken(),
+                "assignment requires assignable types."
+        );
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[2].register(thisBuilder);
@@ -48,12 +51,5 @@ public class AssignStatementTranslator implements CommandTranslator {
         }
         thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef(targetType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
-    }
-
-    private void reject(ShiftReduceSemanticContext context, SourceToken token, String message) {
-        if (token != null) {
-            context.addError(token.getOffset(), message);
-        }
-        throw new CompilerException(message);
     }
 }

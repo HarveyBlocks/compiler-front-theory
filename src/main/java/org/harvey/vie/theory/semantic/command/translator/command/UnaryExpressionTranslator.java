@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
@@ -37,14 +38,20 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         SemanticType operandType = children[1].getType();
         SemanticType instructionType;
         if (operatorType == ProgramTokenType.OPERATOR_LOGICAL_NOT) {
-            if (!operandType.isUnknown() && !operandType.isBooleanScalar()) {
-                reject(context, children[0].getAnchorToken(), "operator '!' requires a boolean operand.");
-            }
+            SemanticTypeDiagnostics.requireBoolean(
+                    context,
+                    operandType,
+                    children[0].getAnchorToken(),
+                    "operator '!' requires a boolean operand."
+            );
             instructionType = SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         } else if (operatorType == ProgramTokenType.OPERATOR_MINUS) {
-            if (!operandType.isUnknown() && !operandType.isNumericScalar()) {
-                reject(context, children[0].getAnchorToken(), "unary '-' requires a numeric operand.");
-            }
+            SemanticTypeDiagnostics.requireNumeric(
+                    context,
+                    operandType,
+                    children[0].getAnchorToken(),
+                    "unary '-' requires a numeric operand."
+            );
             instructionType = operandType;
         } else {
             throw new CompilerException("unsupported unary operator type: " + operatorType);
@@ -58,12 +65,5 @@ public class UnaryExpressionTranslator implements CommandTranslator {
                 instructionType,
                 children[0].getAnchorToken()
         );
-    }
-
-    private void reject(ShiftReduceSemanticContext context, org.harvey.vie.theory.lexical.analysis.token.SourceToken token, String message) {
-        if (token != null) {
-            context.addError(token.getOffset(), message);
-        }
-        throw new CompilerException(message);
     }
 }

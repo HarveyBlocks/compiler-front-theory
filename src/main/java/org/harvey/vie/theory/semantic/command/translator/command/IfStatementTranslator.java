@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
@@ -36,7 +37,7 @@ public class IfStatementTranslator implements CommandTranslator {
         if (children.length != 5) {
             throw new CompilerException("illegal statement on if statement production.");
         }
-        validateBooleanCondition(context, children[2].getType(), children[0].getAnchorToken());
+        SemanticTypeDiagnostics.requireBoolean(context, children[2].getType(), children[0].getAnchorToken(), "condition must be boolean.");
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel ifEndLabel = new DefaultSemanticLabel();
         children[2].register(thisBuilder);
@@ -44,19 +45,5 @@ public class IfStatementTranslator implements CommandTranslator {
         children[4].register(thisBuilder);
         thisBuilder.add(new LabelNode(ifEndLabel));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
-    }
-
-    private void validateBooleanCondition(
-            ShiftReduceSemanticContext context,
-            SemanticType type,
-            org.harvey.vie.theory.lexical.analysis.token.SourceToken token) {
-        // TODO 同样代码的问题
-        if (!type.isUnknown() && !type.isBooleanScalar()) {
-            String message = "condition must be boolean.";
-            if (token != null) {
-                context.addError(token.getOffset(), message);
-            }
-            throw new CompilerException(message);
-        }
     }
 }

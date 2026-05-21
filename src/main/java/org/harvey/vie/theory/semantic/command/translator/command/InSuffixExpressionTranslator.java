@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -69,8 +70,8 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         String operator = operatorFactor.toString();
         // TODO 为什么有解析字符串?
         if ("logical_or".equals(operator) || "logical_and".equals(operator)) {
-            requireBoolean(context, leftType, token, "logical operator requires boolean operands.");
-            requireBoolean(context, rightType, token, "logical operator requires boolean operands.");
+            SemanticTypeDiagnostics.requireBoolean(context, leftType, token, "logical operator requires boolean operands.");
+            SemanticTypeDiagnostics.requireBoolean(context, rightType, token, "logical operator requires boolean operands.");
             return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         }
         // TODO 为什么有解析字符串?
@@ -78,19 +79,19 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
             boolean sameType = !leftType.isUnknown() && leftType.equals(rightType);
             boolean numericComparable = leftType.isNumericScalar() && rightType.isNumericScalar();
             if (!leftType.isUnknown() && !rightType.isUnknown() && !sameType && !numericComparable) {
-                reject(context, token, "equality operator requires identical types or comparable numeric types.");
+                SemanticTypeDiagnostics.reject(context, token, "equality operator requires identical types or comparable numeric types.");
             }
             return numericComparable ? context.getTypeSystem().commonBinaryType(leftType, rightType) : leftType;
         }
         // TODO 为什么有解析字符串?
         if ("less".equals(operator) || "less_equal".equals(operator) ||
             "greater".equals(operator) || "greater_equal".equals(operator)) {
-            requireNumeric(context, leftType, token, "relational operator requires numeric operands.");
-            requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
+            SemanticTypeDiagnostics.requireNumeric(context, leftType, token, "relational operator requires numeric operands.");
+            SemanticTypeDiagnostics.requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
             return context.getTypeSystem().commonBinaryType(leftType, rightType);
         }
-        requireNumeric(context, leftType, token, "arithmetic operator requires numeric operands.");
-        requireNumeric(context, rightType, token, "arithmetic operator requires numeric operands.");
+        SemanticTypeDiagnostics.requireNumeric(context, leftType, token, "arithmetic operator requires numeric operands.");
+        SemanticTypeDiagnostics.requireNumeric(context, rightType, token, "arithmetic operator requires numeric operands.");
         return context.getTypeSystem().commonBinaryType(leftType, rightType);
     }
 
@@ -104,32 +105,5 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
             return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         }
         return instructionType;
-    }
-
-    private void requireBoolean(
-            ShiftReduceSemanticContext context,
-            SemanticType type,
-            SourceToken token,
-            String message) {
-        if (!type.isUnknown() && !type.isBooleanScalar()) {
-            reject(context, token, message);
-        }
-    }
-
-    private void requireNumeric(
-            ShiftReduceSemanticContext context,
-            SemanticType type,
-            SourceToken token,
-            String message) {
-        if (!type.isUnknown() && !type.isNumericScalar()) {
-            reject(context, token, message);
-        }
-    }
-
-    private void reject(ShiftReduceSemanticContext context, SourceToken token, String message) {
-        if (token != null) { // TODO 依旧是不负责任的补丁思想
-            context.addError(token.getOffset(), message);
-        }
-        throw new CompilerException(message);
     }
 }
