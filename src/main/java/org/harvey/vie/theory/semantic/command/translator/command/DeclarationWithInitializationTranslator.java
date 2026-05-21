@@ -43,7 +43,7 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[1].register(thisBuilder);
         children[3].register(thisBuilder);
-        if (context.getTypeSystem().requiresImplicitCast(sourceType, targetType)) {
+        if (context.requiresImplicitCast(sourceType, targetType)) {
             // TODO 同上
             thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(sourceType, targetType)));
         }

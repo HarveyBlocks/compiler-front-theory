@@ -8,6 +8,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ReducePredicate;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -71,10 +72,11 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
             throw new CompileException("duplicate identifier declaration is not allowed.");
         }
         HeadNode typeHeadNode = declarationRecordSupplier.typeHeadNode(headNode);
-        if (context.getTypeContext().isEmpty()) {
-            throw new CompileException("declared type is missing in type context.");
+        TypeRegister typeRegister = context.getType(typeHeadNode);
+        if (typeRegister == null) {
+            throw new CompileException("declared type is missing on type node.");
         }
-        SemanticType declaredType = context.getTypeContext().peek()
+        SemanticType declaredType = typeRegister
                 .requireType("declared type is required for identifier declaration.");
         boolean initialized = declarationRecordSupplier.initialized(headNode);
         context.registerIdentifier(typeHeadNode, declaredType, identifierToken, initialized);

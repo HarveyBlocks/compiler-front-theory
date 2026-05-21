@@ -47,7 +47,7 @@ public class AssignStatementTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[2].register(thisBuilder);
-        if (context.getTypeSystem().requiresImplicitCast(sourceType, targetType)) {
+        if (context.requiresImplicitCast(sourceType, targetType)) {
             thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(sourceType, targetType)));
         }
         thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef(targetType)));

@@ -37,7 +37,7 @@ public final class SemanticTypeDiagnostics {
             SemanticType targetType,
             SourceToken token,
             String message) {
-        if (!context.getTypeSystem().canImplicitlyConvert(sourceType, targetType)) {
+        if (!context.canImplicitlyConvert(sourceType, targetType)) {
             reject(context, token, message);
         }
     }

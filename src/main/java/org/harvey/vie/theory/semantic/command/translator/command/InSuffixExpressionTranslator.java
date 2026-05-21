@@ -41,15 +41,14 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         SemanticType rightType = TypeAttributes.childType(context, 2);
         SourceToken operatorToken = TypeAttributes.childAnchor(context, 1);
         SemanticType instructionType = inferInstructionType(context, leftType, rightType, operatorToken);
-        SemanticType resultType = inferResultType(instructionType);
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        if (context.getTypeSystem().requiresImplicitCast(leftType, instructionType)) {
+        if (context.requiresImplicitCast(leftType, instructionType)) {
             // TODO 你的意思是, 现在直接把类型转换耦合放到Translator里面了吗?
             thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(leftType, instructionType)));
         }
         children[2].register(thisBuilder);
-        if (context.getTypeSystem().requiresImplicitCast(rightType, instructionType)) {
+        if (context.requiresImplicitCast(rightType, instructionType)) {
             thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(rightType, instructionType)));
         }
         thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor, instructionType)));
@@ -75,29 +74,17 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
             if (!sameType && !numericComparable) {
                 SemanticTypeDiagnostics.reject(context, token, "equality operator requires identical types or comparable numeric types.");
             }
-            return numericComparable ? context.getTypeSystem().commonBinaryType(leftType, rightType) : leftType;
+            return numericComparable ? context.commonBinaryType(leftType, rightType) : leftType;
         }
         // TODO 为什么有解析字符串?
         if ("less".equals(operator) || "less_equal".equals(operator) ||
             "greater".equals(operator) || "greater_equal".equals(operator)) {
             SemanticTypeDiagnostics.requireNumeric(context, leftType, token, "relational operator requires numeric operands.");
             SemanticTypeDiagnostics.requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
-            return context.getTypeSystem().commonBinaryType(leftType, rightType);
+            return context.commonBinaryType(leftType, rightType);
         }
         SemanticTypeDiagnostics.requireNumeric(context, leftType, token, "arithmetic operator requires numeric operands.");
         SemanticTypeDiagnostics.requireNumeric(context, rightType, token, "arithmetic operator requires numeric operands.");
-        return context.getTypeSystem().commonBinaryType(leftType, rightType);
-    }
-
-    private SemanticType inferResultType(SemanticType instructionType) {
-        String operator = operatorFactor.toString();
-        // TODO 为什么有解析字符串?
-        if ("logical_or".equals(operator) || "logical_and".equals(operator) ||
-            "equal".equals(operator) || "not_equal".equals(operator) ||
-            "less".equals(operator) || "less_equal".equals(operator) ||
-            "greater".equals(operator) || "greater_equal".equals(operator)) {
-            return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
-        }
-        return instructionType;
+        return context.commonBinaryType(leftType, rightType);
     }
 }

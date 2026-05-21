@@ -1,24 +1,23 @@
 package org.harvey.vie.theory.semantic.context;
 
 import lombok.Getter;
-import lombok.Setter;
 import org.harvey.vie.theory.error.SemanticErrorMessage;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
-import org.harvey.vie.theory.semantic.analysis.SemanticTypeSystem;
+import org.harvey.vie.theory.semantic.analysis.TypeConversionRule;
+import org.harvey.vie.theory.semantic.analysis.TypeResolver;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
-import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
-import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.semantic.type.TypeContext;
-import org.harvey.vie.theory.semantic.type.TypeReductionFrame;
+import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
@@ -37,7 +36,6 @@ import java.util.function.Consumer;
  */
 @Getter
 public class ShiftReduceSemanticContext {
-    @Setter
     private SemanticResult result;
     private final ShiftReduceCallbackRegister register;
     private final ShiftReducePhaseContext syntaxContext;
@@ -48,11 +46,8 @@ public class ShiftReduceSemanticContext {
     private final CommandContext commandContext = new CommandContext();
     @Getter
     private final TypeContext typeContext = new TypeContext();
-    @Setter
-    @Getter
-    private TypeReductionFrame currentTypeReductionFrame;
-    @Getter
-    private final SemanticTypeSystem typeSystem = new SemanticTypeSystem();
+    private final TypeResolver typeResolver = new TypeResolver();
+    private final TypeConversionRule typeConversionRule = new TypeConversionRule();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
     private final List<IdentifierRecord> identifierRecords = new ArrayList<>();
 
@@ -129,6 +124,14 @@ public class ShiftReduceSemanticContext {
     }
     // endregion
 
+    public void setResult(SemanticResult result) {
+        this.result = result;
+    }
+
+    public SemanticResult getResult() {
+        return result;
+    }
+
     // region error context
     public void addError(int offset, String message) {
         syntaxContext.getErrorContext().addError(new SemanticErrorMessage(offset, message));
@@ -178,7 +181,48 @@ public class ShiftReduceSemanticContext {
     public IdentifierRecord[] identifierRecords() {
         return identifierRecords.toArray(IdentifierRecord[]::new);
     }
+    // endregion
 
+    // region types
+    public SemanticType literalType(SourceToken token) {
+        return typeResolver.literalType(token);
+    }
+
+    public SemanticType typeToken(SourceToken token) {
+        return typeResolver.typeToken(token);
+    }
+
+    public int integerLiteral(SourceToken token) {
+        return typeResolver.integerLiteral(token);
+    }
+
+    public boolean canImplicitlyConvert(SemanticType from, SemanticType to) {
+        return typeConversionRule.canImplicitlyConvert(from, to);
+    }
+
+    public boolean requiresImplicitCast(SemanticType from, SemanticType to) {
+        return typeConversionRule.requiresImplicitCast(from, to);
+    }
+
+    public SemanticType commonBinaryType(SemanticType left, SemanticType right) {
+        return typeConversionRule.commonBinaryType(left, right);
+    }
+
+    public void bindType(ShiftReduceSyntaxTreeNode node, TypeRegister register) {
+        typeContext.bind(node, register);
+    }
+
+    public TypeRegister getType(ShiftReduceSyntaxTreeNode node) {
+        return typeContext.get(node);
+    }
+
+    public boolean hasType(ShiftReduceSyntaxTreeNode node) {
+        return typeContext.has(node);
+    }
+
+    public void moveTypeBinding(ShiftReduceSyntaxTreeNode from, ShiftReduceSyntaxTreeNode to) {
+        typeContext.move(from, to);
+    }
 
     // endregion
 }

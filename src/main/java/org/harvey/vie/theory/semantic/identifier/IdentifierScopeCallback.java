@@ -9,6 +9,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
+import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -54,7 +55,11 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
             return;
         }
         IdentifierRecord[] scope = context.scopeExist();
-        treeContext.resetTop(top->top.toHead().instanceBlock(scope));
+        treeContext.resetTop(top -> {
+            ShiftReduceSyntaxTreeNode replaced = top.toHead().instanceBlock(scope);
+            context.moveTypeBinding(top, replaced);
+            return replaced;
+        });
     }
 
 }
