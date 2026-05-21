@@ -15,7 +15,7 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 public class DoNothingTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        return new PlaceholderNodeRegister(token);
+        return new PlaceholderNodeRegister();
     }
 
 

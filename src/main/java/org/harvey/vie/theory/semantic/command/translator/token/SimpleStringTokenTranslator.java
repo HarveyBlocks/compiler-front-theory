@@ -16,11 +16,6 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 public class SimpleStringTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        return new TokenCommandRegister(
-                CommandFactory.loadStatic(token),
-                context.getTypeSystem().literalType(token),
-                context.getTypeSystem().literalType(token),
-                token
-        );
+        return new TokenCommandRegister(CommandFactory.loadStatic(token));
     }
 }

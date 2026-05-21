@@ -76,6 +76,32 @@ public class AppTest extends TestCase {
                 danglingIfResult.getCommands().get(11).replace("ifn_goto ", ""),
                 danglingIfResult.getCommands().get(skipElseGotoIndex).replace("goto ", ""));
 
+        TestCaseResult wideningCase = findCase(runReport, "text12-int32-to-float64-implicit-cast");
+        assertNotNull("missing implicit cast widening case", wideningCase);
+        SemanticAnalysisResult wideningResult = wideningCase.getSemanticResult();
+        assertNotNull("semantic result missing for widening case", wideningResult);
+        assertTrue("int32 to float64 assignment should insert cast",
+                wideningResult.getCommands().contains("st_top_int32_cast_float64"));
+        assertTrue("mixed int32/float64 arithmetic should use float64 operator",
+                wideningResult.getCommands().contains("st_plus_float64"));
+        assertTrue("float64 assignment should remain typed",
+                wideningResult.getCommands().contains("assign_from_st_top_to_ref_float64"));
+
+        TestCaseResult narrowingCase = findCase(runReport, "text13-float64-to-int32-invalid");
+        assertNotNull("missing invalid narrowing case", narrowingCase);
+        assertTrue("float64 to int32 assignment should be expected failure", narrowingCase.isExpectedFailure());
+        assertTrue("float64 to int32 assignment should report semantic error or failure",
+                narrowingCase.getErrorCount() > 0 || narrowingCase.getFailure() != null);
+
+        TestCaseResult mixedRelCase = findCase(runReport, "text14-mixed-relational-int-float");
+        assertNotNull("missing mixed relational numeric case", mixedRelCase);
+        SemanticAnalysisResult mixedRelResult = mixedRelCase.getSemanticResult();
+        assertNotNull("semantic result missing for mixed relational case", mixedRelResult);
+        assertTrue("mixed relational comparison should widen before compare",
+                mixedRelResult.getCommands().contains("st_top_int32_cast_float64"));
+        assertTrue("mixed relational comparison should use float64 comparison",
+                mixedRelResult.getCommands().contains("st_less_float64"));
+
         assertTrue("summary report should exist: " + runReport.getSummaryReport(), Files.exists(runReport.getSummaryReport()));
     }
 

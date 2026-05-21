@@ -3,7 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
-import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
@@ -11,6 +11,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -34,12 +35,15 @@ public class AssignStatementTranslator implements CommandTranslator {
         if (children.length != 4) {
             throw new CompilerException("illegal statement on assign statement production.");
         }
-        SemanticType targetType = children[0].getType();
-        SemanticType sourceType = children[2].getType();
-        if (!targetType.isUnknown() && !sourceType.isUnknown() &&
-            !context.getTypeSystem().canImplicitlyConvert(sourceType, targetType)) {
-            reject(context, children[1].getAnchorToken(), "assignment requires assignable types.");
-        }
+        SemanticType targetType = TypeAttributes.childType(context, 0);
+        SemanticType sourceType = TypeAttributes.childType(context, 2);
+        SemanticTypeDiagnostics.requireAssignable(
+                context,
+                sourceType,
+                targetType,
+                TypeAttributes.childAnchor(context, 1),
+                "assignment requires assignable types."
+        );
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[2].register(thisBuilder);
@@ -48,12 +52,5 @@ public class AssignStatementTranslator implements CommandTranslator {
         }
         thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef(targetType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
-    }
-
-    private void reject(ShiftReduceSemanticContext context, SourceToken token, String message) {
-        if (token != null) {
-            context.addError(token.getOffset(), message);
-        }
-        throw new CompilerException(message);
     }
 }

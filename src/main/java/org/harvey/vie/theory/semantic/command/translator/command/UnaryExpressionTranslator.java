@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
@@ -10,6 +11,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -34,36 +36,28 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[1].register(thisBuilder);
-        SemanticType operandType = children[1].getType();
+        SemanticType operandType = TypeAttributes.childType(context, 1);
         SemanticType instructionType;
         if (operatorType == ProgramTokenType.OPERATOR_LOGICAL_NOT) {
-            if (!operandType.isUnknown() && !operandType.isBooleanScalar()) {
-                reject(context, children[0].getAnchorToken(), "operator '!' requires a boolean operand.");
-            }
+            SemanticTypeDiagnostics.requireBoolean(
+                    context,
+                    operandType,
+                    TypeAttributes.childAnchor(context, 0),
+                    "operator '!' requires a boolean operand."
+            );
             instructionType = SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         } else if (operatorType == ProgramTokenType.OPERATOR_MINUS) {
-            if (!operandType.isUnknown() && !operandType.isNumericScalar()) {
-                reject(context, children[0].getAnchorToken(), "unary '-' requires a numeric operand.");
-            }
+            SemanticTypeDiagnostics.requireNumeric(
+                    context,
+                    operandType,
+                    TypeAttributes.childAnchor(context, 0),
+                    "unary '-' requires a numeric operand."
+            );
             instructionType = operandType;
         } else {
             throw new CompilerException("unsupported unary operator type: " + operatorType);
         }
         thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor, instructionType)));
-        return new NormalCommandNodeRegister(
-                thisBuilder.build(),
-                production,
-                children,
-                instructionType,
-                instructionType,
-                children[0].getAnchorToken()
-        );
-    }
-
-    private void reject(ShiftReduceSemanticContext context, org.harvey.vie.theory.lexical.analysis.token.SourceToken token, String message) {
-        if (token != null) {
-            context.addError(token.getOffset(), message);
-        }
-        throw new CompilerException(message);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

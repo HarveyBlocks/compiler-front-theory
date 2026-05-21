@@ -1,0 +1,8 @@
+{
+int32 i;
+float64 f;
+boolean ok;
+i = 1;
+f = 2.5;
+ok = i < f;
+}
