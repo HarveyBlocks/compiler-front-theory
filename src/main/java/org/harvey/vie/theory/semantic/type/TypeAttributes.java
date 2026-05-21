@@ -17,11 +17,12 @@ public final class TypeAttributes {
     }
 
     public static SemanticType childType(ShiftReduceSemanticContext context, int index) {
-        return child(context, index).getType();
+        return child(context, index).requireType("semantic type is required for child #" + index + " but the child has no type.");
     }
 
     public static SemanticType childInstructionType(ShiftReduceSemanticContext context, int index) {
-        return child(context, index).getInstructionType();
+        return child(context, index)
+                .requireInstructionType("instruction type is required for child #" + index + " but the child has no instruction type.");
     }
 
     public static SourceToken childAnchor(ShiftReduceSemanticContext context, int index) {
@@ -30,6 +31,10 @@ public final class TypeAttributes {
 
     public static TypeRegister result(ShiftReduceSemanticContext context) {
         return requireFrame(context).getResult();
+    }
+
+    public static boolean childHasType(ShiftReduceSemanticContext context, int index) {
+        return child(context, index).hasType();
     }
 
     private static TypeReductionFrame requireFrame(ShiftReduceSemanticContext context) {

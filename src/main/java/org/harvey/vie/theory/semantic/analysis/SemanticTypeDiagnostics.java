@@ -16,7 +16,7 @@ public final class SemanticTypeDiagnostics {
             SemanticType type,
             SourceToken token,
             String message) {
-        if (!type.isUnknown() && !type.isBooleanScalar()) {
+        if (!type.isBooleanScalar()) {
             reject(context, token, message);
         }
     }
@@ -26,7 +26,7 @@ public final class SemanticTypeDiagnostics {
             SemanticType type,
             SourceToken token,
             String message) {
-        if (!type.isUnknown() && !type.isNumericScalar()) {
+        if (!type.isNumericScalar()) {
             reject(context, token, message);
         }
     }
@@ -37,9 +37,7 @@ public final class SemanticTypeDiagnostics {
             SemanticType targetType,
             SourceToken token,
             String message) {
-        if (!sourceType.isUnknown() &&
-            !targetType.isUnknown() &&
-            !context.getTypeSystem().canImplicitlyConvert(sourceType, targetType)) {
+        if (!context.getTypeSystem().canImplicitlyConvert(sourceType, targetType)) {
             reject(context, token, message);
         }
     }

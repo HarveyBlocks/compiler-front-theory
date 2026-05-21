@@ -70,9 +70,9 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         }
         // TODO 为什么有解析字符串?
         if ("equal".equals(operator) || "not_equal".equals(operator)) {
-            boolean sameType = !leftType.isUnknown() && leftType.equals(rightType);
+            boolean sameType = leftType.equals(rightType);
             boolean numericComparable = leftType.isNumericScalar() && rightType.isNumericScalar();
-            if (!leftType.isUnknown() && !rightType.isUnknown() && !sameType && !numericComparable) {
+            if (!sameType && !numericComparable) {
                 SemanticTypeDiagnostics.reject(context, token, "equality operator requires identical types or comparable numeric types.");
             }
             return numericComparable ? context.getTypeSystem().commonBinaryType(leftType, rightType) : leftType;

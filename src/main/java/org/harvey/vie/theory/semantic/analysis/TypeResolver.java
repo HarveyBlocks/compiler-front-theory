@@ -21,7 +21,7 @@ public class TypeResolver {
             case CONSTANT_STRING:
                 return SemanticType.scalar(SemanticType.Kind.STRING);
             default:
-                return SemanticType.unknown();
+                throw new IllegalArgumentException("token does not represent a literal type: " + tokenType);
         }
     }
 
@@ -39,7 +39,7 @@ public class TypeResolver {
             case TYPE_STRING:
                 return SemanticType.scalar(SemanticType.Kind.STRING);
             default:
-                return SemanticType.unknown();
+                throw new IllegalArgumentException("token does not represent a declared type: " + tokenType);
         }
     }
 

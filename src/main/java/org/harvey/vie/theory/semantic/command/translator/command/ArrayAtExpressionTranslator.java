@@ -36,10 +36,10 @@ public class ArrayAtExpressionTranslator implements CommandTranslator {
         children[2].register(thisBuilder);
         SemanticType baseType = TypeAttributes.childType(context, 0);
         SemanticType indexType = TypeAttributes.childType(context, 2);
-        if (!baseType.isUnknown() && !baseType.isArray()) {
+        if (!baseType.isArray()) {
             SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "subscript operator requires an array operand.");
         }
-        if (!indexType.isUnknown() && !SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
+        if (!SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
             SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "array index must be int32.");
         }
         SemanticType resultType = baseType.arrayElementType();

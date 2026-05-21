@@ -7,10 +7,8 @@ import java.util.StringJoiner;
 
 public final class SemanticType {
     public enum Kind {
-        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, UNKNOWN
+        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING
     }
-
-    private static final SemanticType UNKNOWN = new SemanticType(Kind.UNKNOWN, List.of());
 
     private final Kind kind;
     private final List<Integer> dimensions;
@@ -18,12 +16,6 @@ public final class SemanticType {
     private SemanticType(Kind kind, List<Integer> dimensions) {
         this.kind = kind;
         this.dimensions = List.copyOf(dimensions);
-    }
-
-    public static SemanticType unknown() {
-        // TODO 任何对Unknown的提供都是不负责任的,
-        //  本质上是拖延了对错误的判断, 最终将找不到真正的错误在哪里
-        return UNKNOWN;
     }
 
     public static SemanticType scalar(Kind kind) {
@@ -42,12 +34,8 @@ public final class SemanticType {
         return dimensions;
     }
 
-    public boolean isUnknown() {
-        return kind == Kind.UNKNOWN;
-    }
-
     public boolean isScalar() {
-        return !isUnknown() && dimensions.isEmpty();
+        return dimensions.isEmpty();
     }
 
     public boolean isArray() {
@@ -70,7 +58,7 @@ public final class SemanticType {
 
     public SemanticType arrayElementType() {
         if (!isArray()) {
-            return unknown();
+            throw new IllegalStateException("array element type requires an array semantic type");
         }
         if (dimensions.size() == 1) {
             return scalar(kind);
@@ -80,7 +68,7 @@ public final class SemanticType {
 
     public SemanticType commonNumericType(SemanticType other) {
         if (!isNumericScalar() || !other.isNumericScalar()) {
-            return unknown(); // TODO 又是开放了一个危险的 unknown
+            throw new IllegalStateException("common numeric type requires numeric scalar operands");
         }
         return kind == Kind.FLOAT64 || other.kind == Kind.FLOAT64 ? scalar(Kind.FLOAT64) : scalar(Kind.INT32);
     }
@@ -104,16 +92,12 @@ public final class SemanticType {
                 return "float64";
             case STRING:
                 return "string";
-            default:
-                return "unknown";
         }
+        throw new IllegalStateException("unexpected semantic type kind: " + kind);
     }
 
     @Override
     public String toString() {
-        if (isUnknown()) {
-            return "unknown";
-        }
         StringJoiner joiner = new StringJoiner(" ");
         joiner.add(mnemonic());
         for (Integer dimension : dimensions) {
