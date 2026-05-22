@@ -140,25 +140,40 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    private static final boolean FLUSH_TABLE = true;
+    private static final boolean FLUSH_TABLE = false;
+    private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(
             String startHead,
             ProductionSetContext context,
             String filename) {
-        ShiftReduceParsingTable table;
-        try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
+        if (cachedShiftReduceParsingTable != null) {
+            return cachedShiftReduceParsingTable;
+        }
+        synchronized (SyntaxDemo.class) {
+            if (cachedShiftReduceParsingTable != null) {
+                return cachedShiftReduceParsingTable;
+            }
+            ShiftReduceParsingTable table;
             if (FLUSH_TABLE) {
                 table = buildShiftReduceParsingTable0(startHead, context);
-                storeTable(table,filename);
+                try {
+                    storeTable(table, filename);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            } else {
+                try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
+                    ShiftReduceParsingTableImpl.Loader loader = getLoader();
+                    table = loader.load(is);
+                    log.info("loaded = {}", table);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            ShiftReduceParsingTableImpl.Loader loader = getLoader();
-            table = loader.load(is);
-            log.info("loaded = {}", table);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            cachedShiftReduceParsingTable = table;
+            return table;
         }
-        return table;
     }
 
     public static ShiftReduceParsingTable loadShiftReduceParsingTable(String filename) {

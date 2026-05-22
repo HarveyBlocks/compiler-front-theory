@@ -1,0 +1,4 @@
+{
+int32 a = 1 + 2 * 3;
+boolean ok = !(false || false);
+}

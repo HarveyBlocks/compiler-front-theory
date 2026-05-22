@@ -5,6 +5,7 @@ import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.analysis.TypeResolver;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 public class TypedCommandFactory {
     private final TypeResolver typeResolver = new TypeResolver();
@@ -19,6 +20,10 @@ public class TypedCommandFactory {
 
     public SemanticCommand loadIdentifierReference(IdentifierRecord record) {
         return new StringCommand("load_st_" + record.getDeclaredType().mnemonic() + "_reference " + record.getOffset());
+    }
+
+    public SemanticCommand loadConstant(ConstantValue constantValue) {
+        return new StringCommand("load_st_" + constantValue.getType().mnemonic() + "_static " + constantValue.literalText());
     }
 
     public SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType) {

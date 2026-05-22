@@ -8,6 +8,7 @@ import org.harvey.vie.theory.demo.program.ProgramSyntaxTestRunner.SemanticRunRep
 import org.harvey.vie.theory.demo.program.ProgramSyntaxTestRunner.TestCaseResult;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 import java.nio.file.Files;
 import java.util.List;
@@ -44,6 +45,9 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
         assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
         assertExpectedAcceptance(runReport, "text20-double-break-binding");
+        assertExpectedAcceptance(runReport, "text21-constant-folding");
+        assertExpectedAcceptance(runReport, "text22-constant-propagation");
+        assertExpectedAcceptance(runReport, "text23-constant-reassigned");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -65,6 +69,9 @@ public class AppTest extends TestCase {
         assertDoWhileContinueTargetsCondition(runReport);
         assertNestedLoopBinding(runReport);
         assertDoubleBreakBinding(runReport);
+        assertConstantFolding(runReport);
+        assertConstantPropagation(runReport);
+        assertConstantInvalidation(runReport);
         assertErrorContextCoverage(runReport);
     }
 
@@ -213,6 +220,52 @@ public class AppTest extends TestCase {
                 assertExpectedRejection(runReport, "text8-array-index-boolean-invalid").getErrorCount());
     }
 
+    private static void assertConstantFolding(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text21-constant-folding");
+        SemanticAnalysisResult semanticResult = result.getSemanticResult();
+        IdentifierRecord a = findRecordByName(semanticResult.getIdentifierRecords(), "a");
+        IdentifierRecord ok = findRecordByName(semanticResult.getIdentifierRecords(), "ok");
+        assertNotNull("missing symbol a", a);
+        assertNotNull("missing symbol ok", ok);
+        assertConstantInt32(a, 7);
+        assertConstantBoolean(ok, true);
+    }
+
+    private static void assertConstantPropagation(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text22-constant-propagation");
+        SemanticAnalysisResult semanticResult = result.getSemanticResult();
+        IdentifierRecord a = findRecordByName(semanticResult.getIdentifierRecords(), "a");
+        IdentifierRecord b = findRecordByName(semanticResult.getIdentifierRecords(), "b");
+        IdentifierRecord ok = findRecordByName(semanticResult.getIdentifierRecords(), "ok");
+        assertNotNull("missing symbol a", a);
+        assertNotNull("missing symbol b", b);
+        assertNotNull("missing symbol ok", ok);
+        assertConstantInt32(a, 7);
+        assertConstantInt32(b, 8);
+        assertConstantBoolean(ok, true);
+    }
+
+    private static void assertConstantInvalidation(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text23-constant-reassigned");
+        SemanticAnalysisResult semanticResult = result.getSemanticResult();
+        IdentifierRecord a = findRecordByName(semanticResult.getIdentifierRecords(), "a");
+        IdentifierRecord b = findRecordByName(semanticResult.getIdentifierRecords(), "b");
+        assertNotNull("missing symbol a", a);
+        assertNotNull("missing symbol b", b);
+        assertNull("a should lose constant state after reassignment", a.getConstantValue());
+        assertNull("b should not be treated as constant after reading reassigned a", b.getConstantValue());
+        assertContainsSequence(semanticResult.getCommands(),
+                "load_st_int32_reference 0",
+                "load_st_int32_static 2",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_identifier_reference b",
+                "load_st_int32_reference 0",
+                "st_top_ref_to_val_int32",
+                "load_st_int32_static 1",
+                "st_plus_int32",
+                "assign_from_st_top_to_ref_int32");
+    }
+
     private static TestCaseResult assertExpectedAcceptance(SemanticRunReport runReport, String caseName) {
         TestCaseResult result = findCase(runReport, caseName);
         assertNotNull("missing test case " + caseName, result);
@@ -301,5 +354,17 @@ public class AppTest extends TestCase {
             }
         }
         return null;
+    }
+
+    private static void assertConstantInt32(IdentifierRecord record, int expected) {
+        ConstantValue value = record.getConstantValue();
+        assertNotNull("missing constant value for " + new String(record.getLexeme()), value);
+        assertEquals("unexpected int32 constant value", expected, value.int32());
+    }
+
+    private static void assertConstantBoolean(IdentifierRecord record, boolean expected) {
+        ConstantValue value = record.getConstantValue();
+        assertNotNull("missing constant value for " + new String(record.getLexeme()), value);
+        assertEquals("unexpected boolean constant value", expected, value.bool());
     }
 }

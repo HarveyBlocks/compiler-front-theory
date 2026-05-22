@@ -4,6 +4,7 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 /**
  * TODO 静态工厂是不解耦的
@@ -29,6 +30,10 @@ public class CommandFactory {
 
     public static SemanticCommand loadIdentifierReference(IdentifierRecord record) {
         return TYPED.loadIdentifierReference(record);
+    }
+
+    public static SemanticCommand loadConstant(ConstantValue constantValue) {
+        return TYPED.loadConstant(constantValue);
     }
 
     public static SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType) {

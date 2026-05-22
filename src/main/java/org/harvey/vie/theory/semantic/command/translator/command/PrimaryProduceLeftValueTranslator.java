@@ -24,6 +24,10 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        CommandNodeRegister constant = ConstantCommandSupport.constantOrNull(context, production, children);
+        if (constant != null) {
+            return constant;
+        }
         // primary->lvalue
         // 此时id保存的commend是reference, primary是右值, 因此需要将引用转成值
         // lvalue.command(); 获取到引用

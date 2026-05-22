@@ -2,8 +2,10 @@ package org.harvey.vie.theory.semantic.identifier.table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
@@ -25,6 +27,8 @@ public class IdentifierRecord {
     private final SemanticType declaredType;
     private final byte[] lexeme;
     private final boolean initialized;
+    @Setter
+    private ConstantValue constantValue;
 
     @Override
     public String toString() {
@@ -32,6 +36,7 @@ public class IdentifierRecord {
                " offset=" + offset +
                " type=" + type.stream().map(Objects::toString).collect(Collectors.joining()) +
                " name=" + new String(lexeme, StandardCharsets.UTF_8) +
-               " initialized=" + initialized;
+               " initialized=" + initialized +
+               " constant=" + (constantValue == null ? "<none>" : constantValue.literalText());
     }
 }

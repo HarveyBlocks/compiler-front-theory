@@ -15,6 +15,10 @@ public class ParenthesizedExpressionTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        CommandNodeRegister constant = ConstantCommandSupport.constantOrNull(context, production, children);
+        if (constant != null) {
+            return constant;
+        }
         if (children.length != 3) {
             throw new CompilerException("illegal statement on parenthesized expression production.");
         }

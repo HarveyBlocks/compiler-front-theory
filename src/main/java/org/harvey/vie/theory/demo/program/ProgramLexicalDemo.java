@@ -57,6 +57,7 @@ public class ProgramLexicalDemo {
             DIGIT, WHITESPACE, LOWER_LETTER, UPPER_LETTER, OPERATOR, OTHER
     );
     private static final boolean FLUSH_TABLE = false;
+    private static volatile LexicalAnalyzer cachedAnalyzer;
 
     private static final List<LexicalPattern> REGEX_PATTERNS = List.of(
             new LexicalPattern("" +
@@ -164,27 +165,39 @@ public class ProgramLexicalDemo {
     }
 
     public static LexicalAnalyzer lexicalAnalyzer() {
-        AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
-        RegexDfaStatusTable table = buildTable(alphabetCharacterFactory);
-        SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
-        return new DefaultLexicalAnalyzer(table, saca);
+        LexicalAnalyzer analyzer = cachedAnalyzer;
+        if (analyzer != null) {
+            return analyzer;
+        }
+        synchronized (ProgramLexicalDemo.class) {
+            if (cachedAnalyzer == null) {
+                AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
+                RegexDfaStatusTable table = buildTable(alphabetCharacterFactory);
+                SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
+                cachedAnalyzer = new DefaultLexicalAnalyzer(table, saca);
+            }
+            return cachedAnalyzer;
+        }
     }
 
     private static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
-        RegexDfaStatusTable table;
-        try (InputStream is = new FileInputStream("src/main/resources/serial/lex_table.data")) {
-            if (FLUSH_TABLE) {
-                table = buildStatusTable(alphabetCharacterFactory);
+        if (FLUSH_TABLE) {
+            try {
+                return buildStatusTable(alphabetCharacterFactory);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
+        }
+        try (InputStream is = new FileInputStream("src/main/resources/serial/lex_table.data")) {
             RegexDfaStatusTable.Loader loader = new RegexDfaStatusTable.Loader(
                     new ProgramTokenType.Loader(),
                     alphabetCharacterFactory
             );
-            table = loader.load(is);
+            RegexDfaStatusTable table = loader.load(is);
             log.info("loaded = {}", table);
+            return table;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return table;
     }
 }
