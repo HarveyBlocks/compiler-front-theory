@@ -15,6 +15,7 @@ import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
@@ -241,13 +242,15 @@ public final class ProgramSyntaxTestRunner {
     }
 
     private static String formatRecord(IdentifierRecord record) {
+        ConstantValue constantValue = record.getConstantValue();
         return String.format(
-                "record=%d offset=%d type=%s name=%s initialized=%s",
+                "record=%d offset=%d type=%s name=%s initialized=%s constant=%s",
                 record.getNo(),
                 record.getOffset(),
                 formatType(record.getType()),
                 new String(record.getLexeme(), StandardCharsets.UTF_8),
-                record.isInitialized()
+                record.isInitialized(),
+                constantValue == null ? "<none>" : constantValue.literalText()
         );
     }
 

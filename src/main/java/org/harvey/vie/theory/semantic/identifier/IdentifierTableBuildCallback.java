@@ -11,6 +11,7 @@ import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -79,7 +80,8 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         SemanticType declaredType = typeRegister
                 .requireType("declared type is required for identifier declaration.");
         boolean initialized = declarationRecordSupplier.initialized(headNode);
-        context.registerIdentifier(typeHeadNode, declaredType, identifierToken, initialized);
+        ConstantValue constantValue = declarationRecordSupplier.initializerValue(context, headNode);
+        context.registerIdentifier(typeHeadNode, declaredType, identifierToken, initialized, constantValue);
     }
 
     @FunctionalInterface
@@ -93,6 +95,10 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         boolean initialized(HeadNode declarationReducedNode);
 
         HeadNode typeHeadNode(HeadNode declarationReducedNode);
+
+        default ConstantValue initializerValue(ShiftReduceSemanticContext context, HeadNode declarationReducedNode) {
+            return null;
+        }
     }
 
 }

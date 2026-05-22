@@ -326,18 +326,32 @@ public class ProgramSyntaxDemo {
 
         contextBuilder.define("block")
                 .alternateTerminal(ProgramTokenType.OPERATOR_BRACE_OPEN)
-                .concatenateDefinitionLast("decls")
-                .concatenateDefinitionLast("stmts")
+                .concatenateDefinitionLast("block_items")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_BRACE_CLOSE);
 
-        contextBuilder.define("decls")
+        contextBuilder.define("block_items")
                 .alternateSelf()
-                .concatenateDefinitionLast("decl")
+                .concatenateDefinitionLast("block_item")
                 .alternateEpsilon();
 
+        contextBuilder.define("block_item")
+                .alternateDefinition("decl")
+                .alternateDefinition("stmt");
+
         contextBuilder.define("decl")
+                .alternateDefinition("decl_plain")
+                .alternateDefinition("decl_init");
+
+        contextBuilder.define("decl_plain")
                 .alternateDefinition("type")
                 .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("decl_init")
+                .alternateDefinition("type")
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_ASSIGN)
+                .concatenateDefinitionLast("bool")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
         contextBuilder.define("type")
@@ -351,34 +365,41 @@ public class ProgramSyntaxDemo {
                 .alternateTerminal(ProgramTokenType.TYPE_FLOAT64)
                 .alternateTerminal(ProgramTokenType.TYPE_STRING);
 
-        contextBuilder.define("stmts")
-                .alternateSelf()
-                .concatenateDefinitionLast("stmt")
-                .alternateEpsilon();
-
         contextBuilder.define("stmt")
                 .alternateDefinition("matched_stmt")
                 .alternateDefinition("unmatched_stmt");
 
         contextBuilder.define("matched_stmt")
+                .alternateDefinition("assign_stmt")
+                .alternateDefinition("matched_while_stmt")
+                .alternateDefinition("do_while_stmt")
+                .alternateDefinition("break_stmt")
+                .alternateDefinition("continue_stmt")
+                .alternateDefinition("block")
+                .alternateDefinition("matched_if_stmt");
+
+        contextBuilder.define("assign_stmt")
                 .alternateDefinition("loc")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_ASSIGN)
                 .concatenateDefinitionLast("bool")
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
-                .alternateDefinition("matched_while_stmt")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("do_while_stmt")
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_DO)
                 .concatenateDefinitionLast("stmt")
                 .concatenateTerminalLast(ProgramTokenType.CONTROL_STRUCTURES_WHILE)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
                 .concatenateDefinitionLast("bool")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("break_stmt")
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_BREAK)
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("continue_stmt")
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE)
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
-                .alternateDefinition("block")
-                .alternateDefinition("matched_if_stmt");
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
         contextBuilder.define("unmatched_stmt")
                 .alternateDefinition("unmatched_if_stmt")

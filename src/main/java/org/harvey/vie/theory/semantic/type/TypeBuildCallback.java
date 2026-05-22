@@ -33,26 +33,34 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             HeadNode head) {
         String key = production.toString().trim();
         switch (key) {
-            case "decls->ε":
-            case "stmts->ε":
-            case "decls->decls decl":
-            case "stmts->stmts stmt":
-            case "block->OPERATOR_BRACE_OPEN decls stmts OPERATOR_BRACE_CLOSE":
-            case "matched_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
-            case "matched_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON":
+            case "block_items->ε":
+            case "block_items->block_item":
+            case "block_items->block_items block_item":
+            case "block->OPERATOR_BRACE_OPEN block_items OPERATOR_BRACE_CLOSE":
+            case "block_item->decl":
+            case "block_item->stmt":
+            case "decl->decl_plain":
+            case "decl->decl_init":
+            case "break_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
+            case "continue_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON":
+            case "matched_stmt->break_stmt":
+            case "matched_stmt->continue_stmt":
+            case "matched_stmt->do_while_stmt":
             case "matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt":
             case "unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt":
             case "matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt":
             case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt":
             case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt":
-            case "matched_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON":
+            case "do_while_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON":
                 return null;
             case "program->block":
             case "stmt->matched_stmt":
             case "stmt->unmatched_stmt":
+            case "stmt->assign_stmt":
             case "matched_stmt->matched_while_stmt":
             case "matched_stmt->block":
             case "matched_stmt->matched_if_stmt":
+            case "matched_stmt->assign_stmt":
             case "unmatched_stmt->unmatched_if_stmt":
             case "unmatched_stmt->unmatched_while_stmt":
             case "bool->join":
@@ -64,11 +72,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             case "unary->factor":
             case "factor->loc":
                 return child(context, head, 0);
-            case "decl->type IDENTIFIER OPERATOR_SEMICOLON":
+            case "decl_plain->type IDENTIFIER OPERATOR_SEMICOLON":
+                return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
+            case "decl_init->type IDENTIFIER OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
                 return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
             case "type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE":
                 return arrayType(context, head);
-            case "matched_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
+            case "assign_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
                 return requireChild(context, head, 0);
             case "loc->IDENTIFIER":
                 return identifierReference(context, childAnchor(head, 0));

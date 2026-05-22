@@ -31,6 +31,10 @@ public class UnaryExpressionTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        CommandNodeRegister constant = ConstantCommandSupport.constantOrNull(context, production, children);
+        if (constant != null) {
+            return constant;
+        }
         if (children.length != 2) {
             throw new CompilerException("illegal statement on unary expression production.");
         }

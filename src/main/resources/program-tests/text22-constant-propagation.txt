@@ -1,0 +1,5 @@
+{
+int32 a = 7;
+int32 b = a + 1;
+boolean ok = b == 8;
+}

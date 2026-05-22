@@ -18,6 +18,8 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.semantic.type.TypeContext;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
+import org.harvey.vie.theory.semantic.value.ConstantValueContext;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
@@ -46,6 +48,8 @@ public class ShiftReduceSemanticContext {
     private final CommandContext commandContext = new CommandContext();
     @Getter
     private final TypeContext typeContext = new TypeContext();
+    @Getter
+    private final ConstantValueContext constantValueContext = new ConstantValueContext();
     private final TypeResolver typeResolver = new TypeResolver();
     private final TypeConversionRule typeConversionRule = new TypeConversionRule();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
@@ -147,6 +151,13 @@ public class ShiftReduceSemanticContext {
         return identifierTableBuilder.getIdentifier(identifierToken);
     }
 
+    public void updateIdentifierConstant(SourceToken identifierToken, ConstantValue constantValue) {
+        IdentifierRecord record = getIdentifier(identifierToken);
+        if (record != null) {
+            record.setConstantValue(constantValue);
+        }
+    }
+
     public IdentifierRecord getIdentifierByNo(int no) {
         for (IdentifierRecord identifierRecord : identifierRecords) {
             if (identifierRecord.getNo() == no) {
@@ -160,12 +171,14 @@ public class ShiftReduceSemanticContext {
             HeadNode typeHeadNode,
             SemanticType declaredType,
             SourceToken identifierToken,
-            boolean initialized) {
+            boolean initialized,
+            ConstantValue constantValue) {
         identifierRecords.add(identifierTableBuilder.registerIdentifier(
                 typeHeadNode,
                 declaredType,
                 identifierToken,
-                initialized
+                initialized,
+                constantValue
         ));
     }
 
@@ -224,5 +237,19 @@ public class ShiftReduceSemanticContext {
         typeContext.move(from, to);
     }
 
+    // endregion
+
+    // region constants
+    public void bindConstantValue(ShiftReduceSyntaxTreeNode node, ConstantValue value) {
+        constantValueContext.bind(node, value);
+    }
+
+    public ConstantValue getConstantValue(ShiftReduceSyntaxTreeNode node) {
+        return constantValueContext.get(node);
+    }
+
+    public boolean hasConstantValue(ShiftReduceSyntaxTreeNode node) {
+        return constantValueContext.has(node);
+    }
     // endregion
 }
