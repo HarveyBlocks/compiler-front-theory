@@ -10,6 +10,7 @@ import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.LabelNode;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.MergedCommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
@@ -42,7 +43,9 @@ public class IfElseStatementTranslator implements CommandTranslator {
         }
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
         if (constantCondition != null) {
-            return constantCondition ? children[4] : children[6];
+            return constantCondition
+                    ? new MergedCommandNodeRegister(children[4], children[6])
+                    : new MergedCommandNodeRegister(children[6], children[4]);
         }
         SemanticTypeDiagnostics.requireBoolean(
                 context,

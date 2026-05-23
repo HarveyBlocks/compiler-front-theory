@@ -7,7 +7,7 @@ import java.util.StringJoiner;
 
 public final class SemanticType {
     public enum Kind {
-        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING
+        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID
     }
 
     private final Kind kind;
@@ -48,6 +48,10 @@ public final class SemanticType {
 
     public boolean isNumericScalar() {
         return isScalar() && (kind == Kind.INT32 || kind == Kind.FLOAT64);
+    }
+
+    public boolean isVoidScalar() {
+        return kind == Kind.VOID && isScalar();
     }
 
     public SemanticType withAppendedDimension(int dimension) {
@@ -92,6 +96,8 @@ public final class SemanticType {
                 return "float64";
             case STRING:
                 return "string";
+            case VOID:
+                return "void";
         }
         throw new IllegalStateException("unexpected semantic type kind: " + kind);
     }

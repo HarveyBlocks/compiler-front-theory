@@ -15,7 +15,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
-        ConstantValue value = build(context, production.toString().trim(), head);
+        ConstantValue value = build(context, normalizeKey(production.toString().trim()), head);
         if (value != null) {
             context.bindConstantValue(head, value);
         }
@@ -23,10 +23,27 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
     }
 
     private ConstantValue build(ShiftReduceSemanticContext context, String key, HeadNode head) {
+        if (isEpsilonOf(key, "param_list", "arg_list", "block_items")) {
+            return null;
+        }
         switch (key) {
+            case "program->top_item":
+            case "program->top_item program":
             case "program->block":
-            case "stmt->matched_stmt":
-            case "stmt->unmatched_stmt":
+            case "top_item->function_decl":
+            case "top_item->block_item":
+            case "function_decl->function_head block":
+            case "function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
+            case "function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
+            case "param_list->params":
+            case "params->param":
+            case "params->params OPERATOR_COMMA param":
+            case "param->type IDENTIFIER":
+            case "arg_list->args":
+            case "args->bool":
+            case "args->args OPERATOR_COMMA bool":
+            case "call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE":
+            case "expr_stmt->expr OPERATOR_SEMICOLON":
             case "matched_stmt->assign_stmt":
             case "matched_stmt->matched_while_stmt":
             case "matched_stmt->do_while_stmt":
@@ -36,11 +53,16 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             case "matched_stmt->break_stmt":
             case "matched_stmt->continue_stmt":
             case "matched_stmt->matched_if_stmt":
+            case "matched_stmt->return_stmt":
+                return null;
+            case "block_items->block_item":
+            case "block_item->decl":
+            case "block_item->stmt":
+            case "stmt->matched_stmt":
+            case "stmt->unmatched_stmt":
             case "unmatched_stmt->unmatched_if_stmt":
             case "unmatched_stmt->unmatched_while_stmt":
-            case "block_items->block_item":
             case "block_items->block_items block_item":
-                return child(context, head, 0);
             case "bool->join":
             case "join->equality":
             case "equality->rel":
@@ -48,7 +70,6 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             case "expr->term":
             case "term->unary":
             case "unary->factor":
-                return child(context, head, 0);
             case "factor->loc":
                 return child(context, head, 0);
             case "factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE":
@@ -93,6 +114,30 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             default:
                 return null;
         }
+    }
+
+    private String normalizeKey(String key) {
+        return key.replace("return_type", "type");
+    }
+
+    private boolean isEpsilonOf(String key, String... heads) {
+        int index = key.indexOf("->");
+        if (index < 0) {
+            return false;
+        }
+        String head = key.substring(0, index);
+        boolean matchesHead = false;
+        for (String candidate : heads) {
+            if (candidate.equals(head)) {
+                matchesHead = true;
+                break;
+            }
+        }
+        if (!matchesHead) {
+            return false;
+        }
+        String body = key.substring(index + 2).trim();
+        return body.isEmpty() || "蔚".equals(body) || "ε".equals(body);
     }
 
     private ConstantValue literal(ShiftReduceSemanticContext context, SourceToken token) {

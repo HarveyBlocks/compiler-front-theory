@@ -18,28 +18,27 @@ import java.util.List;
 public class SemanticResultCallback implements ShiftReduceCallback {
     @Override
     public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        CommandNodeRegister top = topCommandNodeRegister(context);
-        ShiftReduceCallback.super.beforeAccept(context, production);
-        context.setResult(buildResult(context, top));
-    }
-
-    private static CommandNodeRegister topCommandNodeRegister(ShiftReduceSemanticContext context) {
         CommandContext commandContext = context.getCommandContext();
-        if (commandContext.size() != 1) {
+        if (commandContext.isEmpty()) {
             throw new CompilerException("illegal statement before accept on production.");
         }
-        return commandContext.peek();
+        context.setResult(buildResult(context, commandContext));
+        ShiftReduceCallback.super.beforeAccept(context, production);
     }
 
-    private static SemanticAnalysisResult buildResult(ShiftReduceSemanticContext context, CommandNodeRegister top) {
+    private static SemanticAnalysisResult buildResult(ShiftReduceSemanticContext context, CommandContext commandContext) {
         CommandNodeBuilder resultBuilder = new CommandNodeListBuilder();
-        top.register(resultBuilder);
+        for (CommandNodeRegister register : commandContext) {
+            register.register(resultBuilder);
+        }
         CommandNode[] array = resultBuilder.build();
-        if (array.length != 1) {
+        if (array.length == 0) {
             throw new CompilerException("illegal statement before accept on production.");
         }
         List<SemanticCommand> commands = new ArrayList<>();
-        array[0].flat(commands);
+        for (CommandNode node : array) {
+            node.flat(commands);
+        }
         ThreeAddressCodePrinter printer = new ThreeAddressCodePrinter();
         List<String> lines = printer.print(commands);
         return new SemanticAnalysisResult(lines, context.identifierRecords());

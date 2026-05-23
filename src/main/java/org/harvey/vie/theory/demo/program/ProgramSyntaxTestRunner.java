@@ -38,6 +38,8 @@ public final class ProgramSyntaxTestRunner {
     private static final Path REPORT_DIR = Path.of("run-reports/program-syntax");
     private static final DateTimeFormatter RUN_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
+    private static final String TRACE_STEPS_PROPERTY = "syntax.traceSteps";
+    private static final String ONLY_CASE_PROPERTY = "program.testCase";
 
     private ProgramSyntaxTestRunner() {
     }
@@ -66,8 +68,10 @@ public final class ProgramSyntaxTestRunner {
     }
 
     private static List<Path> listTestCases() throws IOException {
+        String onlyCase = System.getProperty(ONLY_CASE_PROPERTY);
         try (Stream<Path> stream = Files.list(TEST_CASE_DIR)) {
             return stream.filter(path -> path.getFileName().toString().endsWith(".txt"))
+                    .filter(path -> onlyCase == null || path.getFileName().toString().equals(onlyCase + ".txt"))
                     .sorted(Comparator.comparing(path -> path.getFileName().toString()))
                     .collect(Collectors.toList());
         }
@@ -126,7 +130,7 @@ public final class ProgramSyntaxTestRunner {
         LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
         Resource resource = new AsciiStringResource(text);
         ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
-                "program",
+                "compilation_unit",
                 ProgramSyntaxDemo.buildGrammar0(),
                 SERIAL_SYNTAX_TABLE
         );
@@ -134,7 +138,7 @@ public final class ProgramSyntaxTestRunner {
                 shiftReduceParsingTable,
                 t -> !ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(t.getType()),
                 SemanticDemo.buildShiftReduceTestRegister(),
-                false
+                Boolean.getBoolean(TRACE_STEPS_PROPERTY)
         );
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
             SemanticResult result = phaser.phase(iterator, errorContext);

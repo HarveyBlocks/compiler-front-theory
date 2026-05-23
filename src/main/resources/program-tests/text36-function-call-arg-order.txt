@@ -1,0 +1,8 @@
+int32 add(int32 x) {
+    return x + 1;
+}
+{
+    int32 a;
+    a = 1;
+    add(a + 2);
+}

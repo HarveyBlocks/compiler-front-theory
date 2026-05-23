@@ -11,6 +11,10 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
+import org.harvey.vie.theory.semantic.function.FunctionBodyState;
+import org.harvey.vie.theory.semantic.function.FunctionContext;
+import org.harvey.vie.theory.semantic.function.FunctionParameter;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
@@ -25,6 +29,7 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 
 import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -54,6 +59,9 @@ public class ShiftReduceSemanticContext {
     private final TypeConversionRule typeConversionRule = new TypeConversionRule();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
     private final List<IdentifierRecord> identifierRecords = new ArrayList<>();
+    private final FunctionContext functionContext = new FunctionContext();
+    private final ArrayDeque<Boolean> blockFunctionFlags = new ArrayDeque<>();
+    private FunctionRecord pendingFunction;
 
     public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register, ShiftReducePhaseContext syntaxContext) {
         this.register = register;
@@ -193,6 +201,93 @@ public class ShiftReduceSemanticContext {
 
     public IdentifierRecord[] identifierRecords() {
         return identifierRecords.toArray(IdentifierRecord[]::new);
+    }
+    // endregion
+
+    // region functions
+    public boolean existFunction(String name) {
+        return functionContext.exists(name);
+    }
+
+    public FunctionRecord getFunction(String name) {
+        return functionContext.get(name);
+    }
+
+    public void registerFunction(FunctionRecord record) {
+        functionContext.register(record);
+    }
+
+    public void registerCurrentFunction(FunctionRecord record) {
+        functionContext.register(record);
+        functionContext.enter(record);
+    }
+
+    public void enterFunction(FunctionRecord record) {
+        functionContext.enter(record);
+    }
+
+    public FunctionRecord exitFunction() {
+        return functionContext.exit().getFunction();
+    }
+
+    public boolean insideFunction() {
+        return functionContext.insideFunction();
+    }
+
+    public SemanticType currentFunctionReturnType() {
+        return functionContext.currentReturnType();
+    }
+
+    public FunctionRecord currentFunction() {
+        return functionContext.requireCurrent();
+    }
+
+    public FunctionBodyState currentFunctionBodyState() {
+        return functionContext.currentBodyState();
+    }
+
+    public boolean isCurrentBlockFunctionBody() {
+        return !blockFunctionFlags.isEmpty() && blockFunctionFlags.peek();
+    }
+
+    public void markPendingFunction(FunctionRecord record) {
+        pendingFunction = record;
+    }
+
+    public FunctionRecord consumePendingFunction() {
+        FunctionRecord function = pendingFunction;
+        pendingFunction = null;
+        return function;
+    }
+
+    public void scopeIntoBlock() {
+        scopeInto();
+        FunctionRecord function = consumePendingFunction();
+        if (function == null) {
+            blockFunctionFlags.push(Boolean.FALSE);
+            return;
+        }
+        enterFunction(function);
+        blockFunctionFlags.push(Boolean.TRUE);
+        for (FunctionParameter parameter : function.getParameters()) {
+            SourceToken nameToken = parameter.getNameToken();
+            if (existIdentifier(nameToken)) {
+                addError(nameToken.getOffset(), "duplicate identifier declaration is not allowed.");
+                throw new CompilerException("duplicate identifier declaration is not allowed.");
+            }
+            registerIdentifier(parameter.getTypeNode(), parameter.getType(), nameToken, true, null);
+        }
+    }
+
+    public IdentifierRecord[] scopeExistBlock() {
+        return scopeExist();
+    }
+
+    public void finishBlockScope() {
+        boolean functionBody = !blockFunctionFlags.isEmpty() && blockFunctionFlags.pop();
+        if (functionBody) {
+            exitFunction();
+        }
     }
     // endregion
 

@@ -104,7 +104,7 @@ public class ProgramSyntaxDemo {
             ProductionSetContext context = buildGrammar0();
             System.out.println(context);
             ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
-                    "program",
+                    "compilation_unit",
                     context,
                     "syntax_table.data"
             );
@@ -321,8 +321,47 @@ public class ProgramSyntaxDemo {
         TerminalFactory terminalFactory = terminal -> new TokenTypeTerminalSymbol((TokenType) terminal);
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
 
+        contextBuilder.define("compilation_unit")
+                .alternateDefinition("program");
+
         contextBuilder.define("program")
-                .alternateDefinition("block");
+                .alternateDefinition("top_item")
+                .alternateDefinition("top_item")
+                .concatenateSelfLast();
+
+        contextBuilder.define("top_item")
+                .alternateDefinition("function_decl")
+                .alternateDefinition("block_item");
+
+        contextBuilder.define("function_decl")
+                .alternateDefinition("function_head")
+                .concatenateDefinitionLast("block");
+
+        contextBuilder.define("function_head")
+                .alternateDefinition("type")
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("param_list")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .alternateTerminal(ProgramTokenType.TYPE_VOID)
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("param_list")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE);
+
+        contextBuilder.define("param_list")
+                .alternateDefinition("params")
+                .alternateEpsilon();
+
+        contextBuilder.define("params")
+                .alternateDefinition("params")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_COMMA)
+                .concatenateDefinitionLast("param")
+                .alternateDefinition("param");
+
+        contextBuilder.define("param")
+                .alternateDefinition("type")
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER);
 
         contextBuilder.define("block")
                 .alternateTerminal(ProgramTokenType.OPERATOR_BRACE_OPEN)
@@ -371,10 +410,12 @@ public class ProgramSyntaxDemo {
 
         contextBuilder.define("matched_stmt")
                 .alternateDefinition("assign_stmt")
+                .alternateDefinition("expr_stmt")
                 .alternateDefinition("matched_while_stmt")
                 .alternateDefinition("do_while_stmt")
                 .alternateDefinition("break_stmt")
                 .alternateDefinition("continue_stmt")
+                .alternateDefinition("return_stmt")
                 .alternateDefinition("block")
                 .alternateDefinition("matched_if_stmt");
 
@@ -382,6 +423,10 @@ public class ProgramSyntaxDemo {
                 .alternateDefinition("loc")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_ASSIGN)
                 .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("expr_stmt")
+                .alternateDefinition("expr")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
         contextBuilder.define("do_while_stmt")
@@ -399,6 +444,13 @@ public class ProgramSyntaxDemo {
 
         contextBuilder.define("continue_stmt")
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+
+        contextBuilder.define("return_stmt")
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_RETURN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_RETURN)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
         contextBuilder.define("unmatched_stmt")
@@ -514,11 +566,28 @@ public class ProgramSyntaxDemo {
                 .alternateTerminal(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
                 .concatenateDefinitionLast("bool")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
+                .alternateDefinition("call_expr")
                 .alternateDefinition("loc")
                 .alternateTerminal(ProgramTokenType.CONSTANT_INTEGER)
                 .alternateTerminal(ProgramTokenType.CONSTANT_FLOAT)
                 .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_TRUE)
                 .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_FALSE);
+
+        contextBuilder.define("call_expr")
+                .alternateTerminal(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateDefinitionLast("arg_list")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE);
+
+        contextBuilder.define("arg_list")
+                .alternateDefinition("args")
+                .alternateEpsilon();
+
+        contextBuilder.define("args")
+                .alternateDefinition("args")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_COMMA)
+                .concatenateDefinitionLast("bool")
+                .alternateDefinition("bool");
 
         return contextBuilder.build();
     }

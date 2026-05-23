@@ -55,6 +55,9 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text28-nested-if-constant-inner-then");
         assertExpectedAcceptance(runReport, "text29-nested-if-constant-inner-else");
         assertExpectedAcceptance(runReport, "text30-nested-if-outer-false");
+        assertExpectedAcceptance(runReport, "text31-function-return");
+        assertExpectedAcceptance(runReport, "text32-function-call");
+        assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -65,6 +68,13 @@ public class AppTest extends TestCase {
         assertExpectedRejection(runReport, "text13-float64-to-int32-invalid");
         assertExpectedRejection(runReport, "text17-continue-outside-loop-invalid");
         assertExpectedRejection(runReport, "text18-break-outside-loop-invalid");
+        assertExpectedRejection(runReport, "text33-function-missing-return-invalid");
+        assertExpectedRejection(runReport, "text34-void-return-value-invalid");
+        assertExpectedRejection(runReport, "text35-return-outside-function-invalid");
+        assertExpectedRejection(runReport, "text37-function-call-arg-count-invalid");
+        assertExpectedRejection(runReport, "text38-if-false-break-invalid");
+        assertExpectedRejection(runReport, "text39-if-false-continue-invalid");
+        assertExpectedRejection(runReport, "text40-function-conditional-return-invalid");
 
         assertSiblingScopeOffsets(runReport);
         assertNoUnknownTypedReference(runReport, "text3");
@@ -86,6 +96,10 @@ public class AppTest extends TestCase {
         assertNestedIfConstantThen(runReport);
         assertNestedIfConstantElse(runReport);
         assertNestedIfOuterFalse(runReport);
+        assertFunctionReturn(runReport);
+        assertFunctionCall(runReport);
+        assertDeadBranchControlFlowIsStillDiagnosed(runReport);
+        assertConditionalReturnDoesNotSatisfyFunction(runReport);
         assertErrorContextCoverage(runReport);
     }
 
@@ -367,6 +381,38 @@ public class AppTest extends TestCase {
         assertFalse("outer false branch should remove inner then assignment 1", commands.contains("load_st_int32_static 1"));
         assertFalse("outer false branch should remove inner else assignment 2", commands.contains("load_st_int32_static 2"));
         assertTrue("outer false branch should keep else assignment 3", commands.contains("load_st_int32_static 3"));
+    }
+
+    private static void assertFunctionReturn(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text31-function-return");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertContainsSequence(commands, "load_st_int32_reference 0", "st_top_ref_to_val_int32", "load_st_int32_static 1", "st_plus_int32", "return");
+    }
+
+    private static void assertFunctionCall(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text32-function-call");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertContainsSequence(commands, "load_st_int32_static 2", "call inc");
+    }
+
+    private static void assertDeadBranchControlFlowIsStillDiagnosed(SemanticRunReport runReport) {
+        assertExpectedRejection(runReport, "text38-if-false-break-invalid");
+        assertExpectedRejection(runReport, "text39-if-false-continue-invalid");
+    }
+
+    private static void assertConditionalReturnDoesNotSatisfyFunction(SemanticRunReport runReport) {
+        assertExpectedRejection(runReport, "text40-function-conditional-return-invalid");
+    }
+
+    private static void assertFunctionCallArgOrder(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertContainsSequence(commands,
+                "load_st_int32_reference 0",
+                "st_top_ref_to_val_int32",
+                "load_st_int32_static 2",
+                "st_plus_int32",
+                "call add");
     }
 
     private static TestCaseResult assertExpectedAcceptance(SemanticRunReport runReport, String caseName) {

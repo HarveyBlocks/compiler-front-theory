@@ -18,7 +18,7 @@
 
 它主要做四件事：
 
-1. 准备测试输入文本。当前测试用例放在 `src/main/resources/program-tests` 目录下，默认入口会批量读取其中的 `text1.txt`、`text2.txt`、`text3.txt` 并逐个运行。
+1. 准备测试输入文本。当前测试用例放在 `src/main/resources/program-tests` 目录下，默认入口会由 `ProgramSyntaxTestRunner` 批量读取并逐个运行。
 2. 调用程序语言专用的词法分析器，把字符串包装成字符资源，再变成 token 迭代器。
 3. 构造 `grammar0` 文法，并生成或加载移进归约分析表。
 4. 创建移进归约分析器，并把语义回调注册进去，让语法分析过程中同步触发语义处理。
@@ -262,100 +262,64 @@ COMMENT_BLOCK
 - 逻辑表达式
 - 布尔常量、整数常量、浮点常量
 
-### 4.1 程序和块
+### 4.1 程序入口和顶层结构
 
-文法入口是：
-
-```text
-program ::= block
-```
-
-也就是说，完整程序必须是一个代码块。
-
-代码块结构是：
+当前文法入口是：
 
 ```text
-block ::= { decls stmts }
+compilation_unit ::= program
 ```
 
-一个块由三部分组成：
+`program` 不是单一代码块，而是顶层条目序列。当前顶层条目分两类：
 
-1. 左大括号 `{`
-2. 声明列表 `decls`
-3. 语句列表 `stmts`
-4. 右大括号 `}`
+- `function_decl`
+- `block_item`
 
-这个设计决定了：声明必须出现在语句之前。比如：
+对应的顶层组织可以概括为：
 
 ```text
-{
-    int32 a;
-    a = 1;
-}
+program ::= top_item
+         | top_item program
+
+top_item ::= function_decl
+          | block_item
 ```
 
-是符合文法的，而声明夹在语句之后是否可行，要看文法是否允许。当前 `grammar0` 的结构要求先声明后语句。
+这意味着：
 
-### 4.2 声明列表和语句列表
+- 函数定义和普通块内容已经分层
+- 顶层可以有多个条目
+- 函数是顶层结构，不是普通语句的一种
 
-声明列表：
+`block` 仍然存在，但它只负责块内部内容，不再作为整个程序的唯一入口。
+
+### 4.2 函数和参数
+
+函数定义的核心结构是：
 
 ```text
-decls ::= decls decl
-        | ε
+function_decl ::= function_head block
 ```
 
-语句列表：
+函数头负责：
+
+- 返回类型
+- 函数名
+- 参数列表
+
+`void` 可以作为返回类型使用，但不应扩展成普通变量类型的一部分。
+
+函数的更完整约束和后续扩展思路，见 `函数.md`。
+
+### 4.3 块内部结构
+
+块内部条目是：
 
 ```text
-stmts ::= stmts stmt
-        | ε
+block_item ::= decl | stmt
 ```
 
-这两个列表都是左递归结构，并且都允许为空。
-
-这说明：
-
-- 一个块中可以没有声明。
-- 一个块中可以没有语句。
-- 一个块中可以有多个声明。
-- 一个块中可以有多个语句。
-
-使用左递归也说明这套文法不是面向 LL 预测分析器设计的，而是面向移进归约分析器设计的。
-
-### 4.3 类型和数组类型
-
-声明语句是：
-
-```text
-decl ::= type id ;
-```
-
-类型是：
-
-```text
-type ::= type [ num ]
-       | basic
-```
-
-在代码构造中，`basic` 被展开成具体 token，例如：
-
-```text
-boolean
-char
-int32
-float64
-string
-```
-
-数组类型通过递归构造。例如：
-
-```text
-int32[10]
-int32[2][3]
-```
-
-都可以由 `type ::= type [ num ]` 推导出来。
+也就是说，块里既可以有声明，也可以有语句。
 
 ### 4.4 语句拆分：matched_stmt 与 unmatched_stmt
 
@@ -397,7 +361,41 @@ stmt ::= matched_stmt
 
 通过这个拆分，文法本身就消除了悬挂 `if` 的歧义。语义阶段不需要猜测 `else` 归属，语法树结构已经确定。
 
-### 4.5 赋值和左值
+### 4.5 声明和类型
+
+声明语句是：
+
+```text
+decl ::= type id ;
+```
+
+类型是：
+
+```text
+type ::= type [ num ]
+       | basic
+```
+
+在代码构造中，`basic` 被展开成具体 token，例如：
+
+```text
+boolean
+char
+int32
+float64
+string
+```
+
+数组类型通过递归构造。例如：
+
+```text
+int32[10]
+int32[2][3]
+```
+
+都可以由 `type ::= type [ num ]` 推导出来。
+
+### 4.6 赋值和左值
 
 赋值语句在 `grammar0` 中是：
 
@@ -431,7 +429,7 @@ matrix[row][col]
 
 注意，下标表达式使用的是 `bool`，所以当前文法允许更宽泛的表达式作为数组下标。语义阶段当前主要生成命令，并没有在这里强制做类型检查。
 
-### 4.6 表达式优先级
+### 4.7 表达式优先级
 
 表达式分层如下：
 
@@ -774,10 +772,10 @@ type id ;
 - 标识符生成“加载标识符引用”的命令。
 - 整数、浮点、字符、字符串、布尔常量生成“加载静态值”的命令。
 - `break` 生成一个目标标签暂未确定的跳转命令。
-- `continue` 在语义框架里也有对应的未定标签跳转处理入口，但 `grammar0` 当前没有 `continue` 语句产生式。
+- `continue` 生成一个目标标签暂未确定的跳转命令。
 - 其他 token 默认不生成命令。
 
-需要说明的是，`continue` 在词法层和语义辅助层已经有对应处理入口，但当前 `grammar0` 文法里没有定义 `continue` 语句产生式，所以它更像是框架预留能力，而不是 grammar0 已经可直接接受的语法。
+当前 `grammar0` 已经把 `continue_stmt` 接入了语句层，因此 `continue` 不是预留能力，而是已经可直接接受并翻译的语句。
 
 这里的“加载引用”和“加载值”区别很重要：
 
@@ -942,7 +940,10 @@ else 分支执行
 
 当前 translator 代码里创建了 else 起始标签和 else 结束标签，并把 then 分支、else 分支按顺序组织进命令节点。
 
-需要注意：当前代码中可以看到 `elseEndLabel` 被创建并放置为标签，但显式跳过 else 分支的 `goto elseEndLabel` 命令没有出现在当前 translator 的实际命令构造中。文档这里只描述已经实现的结构，不把未出现的跳转命令当成已实现能力。
+then 分支结束后会显式跳过 else 分支，因此 if-else 的控制流骨架已经完整。
+
+如果条件在语义阶段已知是编译期布尔常量，translator 会直接裁剪不可能执行的分支。
+但这个裁剪只影响命令输出，不影响控制流诊断：死分支里未被循环吸收的 `break/continue` 仍然会被保留并在更外层报错。
 
 ### 11.6 while 语句
 
@@ -1147,14 +1148,16 @@ term -> unary
 expr -> expr + term
 ...
 matched_stmt -> loc = bool ;
-stmts -> stmts stmt
+block_item -> stmt
 ```
 
 最后整个大括号内容归约成：
 
 ```text
-block -> { decls stmts }
-program -> block
+block -> { block_items }
+top_item -> block_item
+program -> top_item
+compilation_unit -> program
 ```
 
 第三步，语义分析：
@@ -1199,7 +1202,9 @@ program -> block
 
 ### 15.6 break 和 continue 采用延迟标签回填
 
-`break` 和 `continue` 的目标标签由循环结构决定。当前实现里，循环 translator 负责把未定跳转回填成真实标签；不过在 `grammar0` 中，`continue` 语句本身没有产生式，因此这里主要能在框架层看到它的处理入口。
+`break` 和 `continue` 的目标标签由循环结构决定。当前实现里，循环 translator 负责把未定跳转回填成真实标签；如果到 program 顶层仍未被任何循环吸收，就会报错。
+
+常量裁剪后的死分支也遵循这条规则。
 
 ## 16. 当前实现边界
 
@@ -1211,7 +1216,7 @@ program -> block
 
 第三，当前文档描述的类型能力主要来自文法和 token。代码中没有看到完整的类型检查流程，例如数组下标是否必须为整数、赋值左右类型是否兼容等。
 
-第四，`if-else` translator 当前创建了 else 相关标签，但没有看到显式生成“then 分支结束后跳过 else 分支”的命令。因此不能把它描述成已经完整实现了所有控制流细节。
+第四，非 `void` 函数的返回检查已经不是“函数体里出现过一次 return 就算过”，而是要看最终块结构是否保证所有路径都返回。像条件返回这种只覆盖部分路径的函数，仍然会被拒绝。
 
 第五，语义动作当前依赖产生式文本进行匹配，不再依赖 `grammar0_pool.txt` 的产生式 id。这样可以避免语法表重建后 id 漂移造成语义处理器错配；但如果文法产生式的文本结构本身改变，`reduceStrategies0()` 仍然需要同步维护。
 

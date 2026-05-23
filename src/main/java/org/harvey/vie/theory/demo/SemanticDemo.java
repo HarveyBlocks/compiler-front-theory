@@ -24,6 +24,9 @@ import org.harvey.vie.theory.semantic.command.translator.command.DeclarationWith
 import org.harvey.vie.theory.semantic.command.translator.command.DeclarationWithoutInitializationTranslator;
 import org.harvey.vie.theory.semantic.command.translator.command.DoNotingTranslator;
 import org.harvey.vie.theory.semantic.command.translator.command.DoWhileStatementTranslator;
+import org.harvey.vie.theory.semantic.command.translator.command.FunctionCallTranslator;
+import org.harvey.vie.theory.semantic.command.translator.command.FunctionHeadTranslator;
+import org.harvey.vie.theory.semantic.command.translator.command.FunctionReturnTranslator;
 import org.harvey.vie.theory.semantic.command.translator.command.IfElseStatementTranslator;
 import org.harvey.vie.theory.semantic.command.translator.command.IfStatementTranslator;
 import org.harvey.vie.theory.semantic.command.translator.command.InSuffixExpressionTranslator;
@@ -43,6 +46,7 @@ import org.harvey.vie.theory.semantic.command.translator.token.SimpleStringToken
 import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.TypeTokenTranslator;
 import org.harvey.vie.theory.semantic.error.PassiveErrorCallback;
+import org.harvey.vie.theory.semantic.function.FunctionSemanticCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierScopeCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
 import org.harvey.vie.theory.semantic.log.TreeLogCallback;
@@ -73,6 +77,7 @@ public class SemanticDemo {
         register.add(instanceIdentifierScopeCallback());
         register.add(new TypeBuildCallback());
         register.add(new ConstantValueBuildCallback());
+        register.add(new FunctionSemanticCallback());
         register.add(instanceSemanticCommandPrintCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
         register.add(instanceIdentifierTableBuildCallback());
@@ -87,6 +92,7 @@ public class SemanticDemo {
         register.add(instanceIdentifierScopeCallback());
         register.add(new TypeBuildCallback());
         register.add(new ConstantValueBuildCallback());
+        register.add(new FunctionSemanticCallback());
         register.add(new SemanticResultCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
         register.add(instanceIdentifierTableBuildCallback());
@@ -129,7 +135,18 @@ public class SemanticDemo {
         CommandTranslator doNothing = new DoNotingTranslator();
         CommandTranslator simpleShrink = defaultCommandTranslator;
 
-        map.put("program->block", new ProgramCommandTranslator());
+        CommandTranslator programTranslator = new ProgramCommandTranslator();
+        map.put("compilation_unit->program", programTranslator);
+        map.put("program->block", programTranslator);
+        map.put("program->top_item", programTranslator);
+        map.put("program->top_item program", programTranslator);
+        map.put("top_item->function_decl", simpleShrink);
+        map.put("top_item->block_item", simpleShrink);
+        map.put("function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE",
+                new FunctionHeadTranslator());
+        map.put("function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE",
+                new FunctionHeadTranslator());
+        map.put("function_decl->function_head block", simpleShrink);
         map.put("block_items->蔚", doNothing);
         map.put("block_items->block_item", simpleShrink);
         map.put("block_items->block_items block_item", new StatementListTranslator());
@@ -140,8 +157,19 @@ public class SemanticDemo {
         map.put("decl_plain->type IDENTIFIER OPERATOR_SEMICOLON", new DeclarationWithoutInitializationTranslator());
         map.put("decl_init->type IDENTIFIER OPERATOR_ASSIGN bool OPERATOR_SEMICOLON",
                 new DeclarationWithInitializationTranslator());
+        map.put("matched_stmt->expr_stmt", simpleShrink);
         map.put("break_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON", simpleShrink);
         map.put("continue_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON", simpleShrink);
+        map.put("return_stmt->CONTROL_STRUCTURES_RETURN bool OPERATOR_SEMICOLON", new FunctionReturnTranslator());
+        map.put("return_stmt->CONTROL_STRUCTURES_RETURN OPERATOR_SEMICOLON", new FunctionReturnTranslator());
+        map.put("param_list->params", simpleShrink);
+        map.put("param_list->蔚", doNothing);
+        map.put("args->bool", simpleShrink);
+        map.put("args->args OPERATOR_COMMA bool", new StatementListTranslator());
+        map.put("call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE", new FunctionCallTranslator());
+        map.put("arg_list->args", simpleShrink);
+        map.put("arg_list->蔚", doNothing);
+        map.put("expr_stmt->expr OPERATOR_SEMICOLON", simpleShrink);
         map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", new ArrayTypeTranslator());
         map.put("factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE", new ParenthesizedExpressionTranslator());
         map.put("factor->loc", new PrimaryProduceLeftValueTranslator());
