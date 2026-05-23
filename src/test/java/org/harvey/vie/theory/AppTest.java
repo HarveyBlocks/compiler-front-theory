@@ -48,6 +48,10 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text21-constant-folding");
         assertExpectedAcceptance(runReport, "text22-constant-propagation");
         assertExpectedAcceptance(runReport, "text23-constant-reassigned");
+        assertExpectedAcceptance(runReport, "text24-if-true-inline");
+        assertExpectedAcceptance(runReport, "text25-if-false-elided");
+        assertExpectedAcceptance(runReport, "text26-while-false-elided");
+        assertExpectedAcceptance(runReport, "text27-do-while-false-once");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -72,6 +76,10 @@ public class AppTest extends TestCase {
         assertConstantFolding(runReport);
         assertConstantPropagation(runReport);
         assertConstantInvalidation(runReport);
+        assertIfTrueInlined(runReport);
+        assertIfFalseElided(runReport);
+        assertWhileFalseElided(runReport);
+        assertDoWhileFalseOnce(runReport);
         assertErrorContextCoverage(runReport);
     }
 
@@ -263,6 +271,68 @@ public class AppTest extends TestCase {
                 "st_top_ref_to_val_int32",
                 "load_st_int32_static 1",
                 "st_plus_int32",
+                "assign_from_st_top_to_ref_int32");
+    }
+
+    private static void assertIfTrueInlined(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text24-if-true-inline");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("if(true) should be inlined without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertFalse("if(true) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
+        assertContainsSequence(commands,
+                "load_st_int32_reference 0",
+                "load_st_int32_static 1",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_int32_reference 0",
+                "load_st_int32_static 2",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_int32_reference 0",
+                "load_st_int32_static 3",
+                "assign_from_st_top_to_ref_int32");
+    }
+
+    private static void assertIfFalseElided(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text25-if-false-elided");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("if(false) should be removed without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertFalse("if(false) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
+        assertContainsSequence(commands,
+                "load_st_int32_reference 0",
+                "load_st_int32_static 1",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_int32_reference 0",
+                "load_st_int32_static 3",
+                "assign_from_st_top_to_ref_int32");
+    }
+
+    private static void assertWhileFalseElided(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text26-while-false-elided");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("while(false) should be removed without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertFalse("while(false) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
+        assertContainsSequence(commands,
+                "load_st_int32_reference 0",
+                "load_st_int32_static 1",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_int32_reference 0",
+                "load_st_int32_static 3",
+                "assign_from_st_top_to_ref_int32");
+    }
+
+    private static void assertDoWhileFalseOnce(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text27-do-while-false-once");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("do-while(false) should not emit conditional branch", commands.stream().anyMatch(c -> c.startsWith("if_goto")));
+        assertFalse("do-while(false) should not emit back edges", commands.stream().anyMatch(c -> c.startsWith("goto ")));
+        assertContainsSequence(commands,
+                "load_st_int32_reference 0",
+                "load_st_int32_static 1",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_int32_reference 0",
+                "load_st_int32_static 2",
+                "assign_from_st_top_to_ref_int32",
+                "load_st_int32_reference 0",
+                "load_st_int32_static 3",
                 "assign_from_st_top_to_ref_int32");
     }
 

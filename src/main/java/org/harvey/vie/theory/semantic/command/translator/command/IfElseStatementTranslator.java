@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
@@ -40,6 +39,10 @@ public class IfElseStatementTranslator implements CommandTranslator {
         //    L2:
         if (children.length != 7) {
             throw new CompilerException("illegal statement on if-else statement production.");
+        }
+        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
+        if (constantCondition != null) {
+            return constantCondition ? children[4] : children[6];
         }
         SemanticTypeDiagnostics.requireBoolean(
                 context,

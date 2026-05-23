@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
@@ -39,6 +38,17 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         //    L3:
         if (children.length != 7) {
             throw new CompilerException("illegal statement on do while statement production.");
+        }
+        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
+        if (Boolean.FALSE.equals(constantCondition)) {
+            SemanticLabel whileStartLabel = new DefaultSemanticLabel();
+            SemanticLabel whileEndLabel = new DefaultSemanticLabel();
+            CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
+            thisBuilder.add(new LabelNode(whileStartLabel));
+            children[1].register(thisBuilder);
+            thisBuilder.add(new LabelNode(whileEndLabel));
+            WhileStatementTranslator.bindLoopLabels(children[1], whileEndLabel, whileEndLabel);
+            return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
         }
         SemanticTypeDiagnostics.requireBoolean(
                 context,

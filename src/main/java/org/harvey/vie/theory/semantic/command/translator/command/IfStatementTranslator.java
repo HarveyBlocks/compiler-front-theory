@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
@@ -12,6 +11,7 @@ import org.harvey.vie.theory.semantic.command.node.LabelNode;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -37,6 +37,10 @@ public class IfStatementTranslator implements CommandTranslator {
         //    L1:
         if (children.length != 5) {
             throw new CompilerException("illegal statement on if statement production.");
+        }
+        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
+        if (constantCondition != null) {
+            return constantCondition ? children[4] : new PlaceholderNodeRegister();
         }
         SemanticTypeDiagnostics.requireBoolean(
                 context,
