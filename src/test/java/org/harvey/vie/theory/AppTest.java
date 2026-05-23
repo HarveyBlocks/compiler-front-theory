@@ -52,6 +52,9 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text25-if-false-elided");
         assertExpectedAcceptance(runReport, "text26-while-false-elided");
         assertExpectedAcceptance(runReport, "text27-do-while-false-once");
+        assertExpectedAcceptance(runReport, "text28-nested-if-constant-inner-then");
+        assertExpectedAcceptance(runReport, "text29-nested-if-constant-inner-else");
+        assertExpectedAcceptance(runReport, "text30-nested-if-outer-false");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -80,6 +83,9 @@ public class AppTest extends TestCase {
         assertIfFalseElided(runReport);
         assertWhileFalseElided(runReport);
         assertDoWhileFalseOnce(runReport);
+        assertNestedIfConstantThen(runReport);
+        assertNestedIfConstantElse(runReport);
+        assertNestedIfOuterFalse(runReport);
         assertErrorContextCoverage(runReport);
     }
 
@@ -334,6 +340,33 @@ public class AppTest extends TestCase {
                 "load_st_int32_reference 0",
                 "load_st_int32_static 3",
                 "assign_from_st_top_to_ref_int32");
+    }
+
+    private static void assertNestedIfConstantThen(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text28-nested-if-constant-inner-then");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("nested constant if should not keep conditional branches", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertTrue("nested constant if should resolve to then branch", commands.contains("load_st_int32_static 1"));
+        assertFalse("nested constant if should not keep else assignment 2", commands.contains("load_st_int32_static 2"));
+        assertFalse("outer if(true) should not keep else assignment 3", commands.contains("load_st_int32_static 3"));
+    }
+
+    private static void assertNestedIfConstantElse(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text29-nested-if-constant-inner-else");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("nested constant if should not keep conditional branches", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertFalse("nested constant if should not keep then assignment 1", commands.contains("load_st_int32_static 1"));
+        assertTrue("nested constant if should resolve to else branch", commands.contains("load_st_int32_static 2"));
+        assertFalse("outer if(true) should not keep else assignment 3", commands.contains("load_st_int32_static 3"));
+    }
+
+    private static void assertNestedIfOuterFalse(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text30-nested-if-outer-false");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertFalse("outer false branch should remove conditional branches", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertFalse("outer false branch should remove inner then assignment 1", commands.contains("load_st_int32_static 1"));
+        assertFalse("outer false branch should remove inner else assignment 2", commands.contains("load_st_int32_static 2"));
+        assertTrue("outer false branch should keep else assignment 3", commands.contains("load_st_int32_static 3"));
     }
 
     private static TestCaseResult assertExpectedAcceptance(SemanticRunReport runReport, String caseName) {
