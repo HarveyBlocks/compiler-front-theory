@@ -44,3 +44,7 @@ build/
 *.data
 !src/main/resources/serial/*.data
 *.pdf
+
+
+### config ###
+config.json

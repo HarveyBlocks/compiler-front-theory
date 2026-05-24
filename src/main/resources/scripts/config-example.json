@@ -1,0 +1,8 @@
+{
+  "token": "github_pat_xxxxxxxxxxxxxxxxxxx",
+  "owner": "HarveyBlocks",
+  "repo": "compiler-front-theory",
+  "pr": 6,
+  "contextLines": 10,
+  "outputFile": "review-pr6.md"
+}
