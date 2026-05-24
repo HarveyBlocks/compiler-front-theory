@@ -1,5 +1,11 @@
 package org.harvey.vie.theory.semantic.function;
 
+import lombok.Getter;
+
+/**
+ * @author Temper
+ */
+@Getter
 public class FunctionBodyState {
     private final FunctionRecord function;
 
@@ -7,7 +13,5 @@ public class FunctionBodyState {
         this.function = function;
     }
 
-    public FunctionRecord getFunction() {
-        return function;
-    }
 }
+

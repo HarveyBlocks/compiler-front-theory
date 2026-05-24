@@ -6,6 +6,9 @@ import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Temper
+ */
 public class ProductionTagStrategy<T> {
     private final List<Rule<T>> rules = new ArrayList<>();
     private final T defaultValue;
@@ -43,3 +46,4 @@ public class ProductionTagStrategy<T> {
         }
     }
 }
+

@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.identifier.table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
@@ -36,7 +37,7 @@ public class IdentifierRecord {
         return "record=" + no +
                " offset=" + offset +
                " type=" + type.stream().map(Objects::toString).collect(Collectors.joining()) +
-               " name=" + new String(lexeme, StandardCharsets.UTF_8) +
+               " name=" + SourceTokenStringMapping.utf8(lexeme) +
                " initialized=" + initialized +
                " constant=" + (constantValue == null ? "<none>" : constantValue.literalText());
     }

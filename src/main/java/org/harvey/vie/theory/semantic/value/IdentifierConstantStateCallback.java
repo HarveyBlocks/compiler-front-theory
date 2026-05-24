@@ -15,6 +15,8 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  *
  * <p>Declarations may introduce constant values, but any ordinary assignment invalidates the
  * variable's propagated compile-time constant, because path-sensitive reassignment is not tracked yet.</p>
+ *
+ * @author Temper
  */
 public class IdentifierConstantStateCallback implements ShiftReduceCallback {
     private final ReducePredicate assignmentPredicate =
@@ -58,3 +60,4 @@ public class IdentifierConstantStateCallback implements ShiftReduceCallback {
         return context.getTreeContext().peek().toHead();
     }
 }
+

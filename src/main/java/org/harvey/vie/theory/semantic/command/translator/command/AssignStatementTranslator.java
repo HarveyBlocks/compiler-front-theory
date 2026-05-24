@@ -2,9 +2,9 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -31,7 +31,7 @@ public class AssignStatementTranslator implements CommandTranslator {
         // lvalue是reference, expr是value, 直接赋值即可
         //  `lvalue.command();
         //  expr.command();
-        //  CommandFactory.assign_from_st_top_to_ref();`
+        //  DefaultCommandFactory.assign_from_st_top_to_ref();`
         if (children.length != 4) {
             throw new CompilerException("illegal statement on assign statement production.");
         }
@@ -48,9 +48,9 @@ public class AssignStatementTranslator implements CommandTranslator {
         children[0].register(thisBuilder);
         children[2].register(thisBuilder);
         if (context.requiresImplicitCast(sourceType, targetType)) {
-            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(sourceType, targetType)));
+            thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(sourceType, targetType)));
         }
-        thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef(targetType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToRef(targetType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

@@ -7,6 +7,8 @@ import java.util.Map;
 
 /**
  * Stores compile-time constant values on concrete syntax nodes.
+ *
+ * @author Temper
  */
 public class ConstantValueContext {
     private final Map<ShiftReduceSyntaxTreeNode, ConstantValue> values = new IdentityHashMap<>();
@@ -30,3 +32,4 @@ public class ConstantValueContext {
         return values.containsKey(node);
     }
 }
+

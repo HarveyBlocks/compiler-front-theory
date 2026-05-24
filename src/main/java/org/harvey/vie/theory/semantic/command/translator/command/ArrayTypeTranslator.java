@@ -6,6 +6,9 @@ import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 public class ArrayTypeTranslator implements CommandTranslator {
     @Override
     public CommandNodeRegister translate(
@@ -18,3 +21,4 @@ public class ArrayTypeTranslator implements CommandTranslator {
         return new PlaceholderNodeRegister();
     }
 }
+

@@ -2,9 +2,13 @@ package org.harvey.vie.theory.semantic.type;
 
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * @author Temper
+ */
 public class TypeResolver {
     public SemanticType literalType(SourceToken token) {
         ProgramTokenType tokenType = tokenType(token);
@@ -47,7 +51,7 @@ public class TypeResolver {
 
     public int integerLiteral(SourceToken token) {
         // TODO 直接使用Java的SDK进行Integer解析, 太过粗暴, 初始阶段勉强可以接受, 之后一定要改
-        return Integer.parseInt(new String(token.getLexeme(), StandardCharsets.UTF_8));
+        return Integer.parseInt(SourceTokenStringMapping.utf8(token));
     }
 
     private ProgramTokenType tokenType(SourceToken token) {

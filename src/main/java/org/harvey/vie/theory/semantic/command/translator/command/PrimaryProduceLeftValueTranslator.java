@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
@@ -31,13 +31,13 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
         // primary->lvalue
         // 此时id保存的commend是reference, primary是右值, 因此需要将引用转成值
         // lvalue.command(); 获取到引用
-        // CommandFactory.st_top_ref_to_val();
+        // DefaultCommandFactory.st_top_ref_to_val();
         if (children.length != 1) {
             throw new CompilerException("illegal statement on primary to left value production.");
         }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.stTopRefToVal(TypeAttributes.childType(context, 0))));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopRefToVal(TypeAttributes.childType(context, 0))));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

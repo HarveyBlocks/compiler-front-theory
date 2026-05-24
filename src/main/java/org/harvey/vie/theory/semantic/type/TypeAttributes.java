@@ -7,6 +7,7 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
 /**
  * Helper for reading semantic type attributes from the current reduced node.
+ * @author Temper
  */
 public final class TypeAttributes {
     private TypeAttributes() {

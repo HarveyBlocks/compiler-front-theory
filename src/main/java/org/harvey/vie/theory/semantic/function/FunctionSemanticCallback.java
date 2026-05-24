@@ -17,6 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+/**
+ * @author Temper
+ */
 public class FunctionSemanticCallback implements ShiftReduceCallback {
     private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP).when(
                     (context, head, production) -> prepareFunction(context, head),
@@ -190,3 +193,4 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         void accept(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
     }
 }
+

@@ -1,7 +1,9 @@
-package org.harvey.vie.theory.semantic.command.command;
+package org.harvey.vie.theory.semantic.command.command.string;
 
 import lombok.Data;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 
 /**
  * TODO 仅用作测试和demo

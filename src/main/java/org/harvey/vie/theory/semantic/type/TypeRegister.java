@@ -7,6 +7,7 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 
 /**
  * Semantic type attribute bound to a syntax node.
+ * @author Temper
  */
 @Getter
 @AllArgsConstructor

@@ -1,6 +1,7 @@
-package org.harvey.vie.theory.semantic.command.command;
+package org.harvey.vie.theory.semantic.command.command.string;
 
 import lombok.AllArgsConstructor;
+import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 
 /**
  * TODO 仅用作测试和demo

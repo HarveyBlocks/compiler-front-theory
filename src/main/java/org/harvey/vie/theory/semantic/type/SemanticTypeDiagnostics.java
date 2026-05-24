@@ -6,6 +6,8 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 
 /**
  * Shared semantic type validations used by translators.
+ *
+ * @author Temper
  */
 public final class SemanticTypeDiagnostics {
     private SemanticTypeDiagnostics() {

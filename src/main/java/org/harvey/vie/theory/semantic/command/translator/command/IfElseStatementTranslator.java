@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -32,9 +32,9 @@ public class IfElseStatementTranslator implements CommandTranslator {
         // if ( expr ) stmt else stmt
         // if-else 语句
         //    expr.command();
-        //    CommandFactory.ifn_goto(L1);
+        //    DefaultCommandFactory.ifn_goto(L1);
         //    stmt.command();
-        //    CommandFactory.ifn_goto(L2);
+        //    DefaultCommandFactory.ifn_goto(L2);
         //    L1:
         //    (unmatched_stmt|matched_stmt).command();
         //    L2:
@@ -57,9 +57,9 @@ public class IfElseStatementTranslator implements CommandTranslator {
         SemanticLabel elseStartLabel = new DefaultSemanticLabel();
         SemanticLabel elseEndLabel = new DefaultSemanticLabel();
         children[2].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(elseStartLabel)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().ifnGoto(elseStartLabel)));
         children[4].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(elseEndLabel)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().gotoCommand(elseEndLabel)));
         thisBuilder.add(new LabelNode(elseStartLabel));
         children[6].register(thisBuilder);
         thisBuilder.add(new LabelNode(elseEndLabel));

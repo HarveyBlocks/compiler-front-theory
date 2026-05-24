@@ -14,6 +14,9 @@ import java.nio.file.Files;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * @author Temper
+ */
 public class AppTest extends TestCase {
     public AppTest(String testName) {
         super(testName);
@@ -517,3 +520,4 @@ public class AppTest extends TestCase {
         assertEquals("unexpected boolean constant value", expected, value.bool());
     }
 }
+

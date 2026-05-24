@@ -4,6 +4,7 @@ import lombok.Getter;
 import org.harvey.vie.theory.error.SemanticErrorMessage;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeConversionRule;
 import org.harvey.vie.theory.semantic.type.TypeResolver;
@@ -43,14 +44,19 @@ import java.util.function.Consumer;
  */
 @Getter
 public class ShiftReduceSemanticContext {
-    private SemanticResult result;
+
     private final ShiftReduceCallbackRegister register;
+    @Getter
+    private SemanticResult result;
     private final ShiftReducePhaseContext syntaxContext;
     private Iterator<ShiftReduceCallback> callbackIter;
     @Getter
     private final TreeContext treeContext = new TreeContext();
     @Getter
     private final CommandContext commandContext = new CommandContext();
+
+    @Getter
+    private final CommandFactory commandFactory;
     @Getter
     private final TypeContext typeContext = new TypeContext();
     @Getter
@@ -63,10 +69,12 @@ public class ShiftReduceSemanticContext {
     private final ArrayDeque<Boolean> blockFunctionFlags = new ArrayDeque<>();
     private FunctionRecord pendingFunction;
 
-    public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register, ShiftReducePhaseContext syntaxContext) {
+    public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register, ShiftReducePhaseContext syntaxContext,
+            CommandFactory commandFactory) {
         this.register = register;
         this.syntaxContext = syntaxContext;
         callbackIter = register.iterator();
+        this.commandFactory = commandFactory;
     }
 
     // region callback
@@ -138,10 +146,6 @@ public class ShiftReduceSemanticContext {
 
     public void setResult(SemanticResult result) {
         this.result = result;
-    }
-
-    public SemanticResult getResult() {
-        return result;
     }
 
     // region error context

@@ -5,9 +5,13 @@ import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 
+/**
+ * @author Temper
+ */
 public class TypeTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
         return new PlaceholderNodeRegister();
     }
 }
+

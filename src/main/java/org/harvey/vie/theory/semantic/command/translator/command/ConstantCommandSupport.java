@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNode;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
@@ -10,6 +10,9 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 final class ConstantCommandSupport {
     private ConstantCommandSupport() {
     }
@@ -23,7 +26,7 @@ final class ConstantCommandSupport {
         if (constantValue == null) {
             return null;
         }
-        CommandNode node = new TerminalNode(CommandFactory.loadConstant(constantValue));
+        CommandNode node = new TerminalNode(context.getCommandFactory().loadConstant(constantValue));
         return new NormalCommandNodeRegister(new CommandNode[]{node}, production, children);
     }
 
@@ -34,3 +37,4 @@ final class ConstantCommandSupport {
         return context.getTreeContext().peek().toHead();
     }
 }
+

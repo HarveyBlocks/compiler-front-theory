@@ -2,9 +2,9 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -45,9 +45,9 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
         children[3].register(thisBuilder);
         if (context.requiresImplicitCast(sourceType, targetType)) {
             // TODO 同上
-            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(sourceType, targetType)));
+            thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(sourceType, targetType)));
         }
-        thisBuilder.add(new TerminalNode(CommandFactory.assignFromStTopToRef(targetType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToRef(targetType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

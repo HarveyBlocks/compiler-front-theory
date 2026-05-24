@@ -122,7 +122,8 @@ public class ProgramSyntaxDemo {
             );
             ShiftReducePhaser phaser = new ShiftReducePhaserImpl(shiftReduceParsingTable,
                     t -> !SHOULD_BE_FILTERED.contains(t.getType()),
-                    SemanticDemo.buildShiftReduceRegister()
+                    SemanticDemo.buildShiftReduceRegister(),
+                    SyntaxDemo.STRING_COMMAND_FACTORY
             );
             return phaser.phase(iter, errCtx);
         });

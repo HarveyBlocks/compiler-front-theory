@@ -4,6 +4,9 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.value.ConstantAttributes;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
+/**
+ * @author Temper
+ */
 final class ConstantConditionSupport {
     private ConstantConditionSupport() {
     }
@@ -23,3 +26,4 @@ final class ConstantConditionSupport {
         return booleanValue(context, childIndex) != null;
     }
 }
+

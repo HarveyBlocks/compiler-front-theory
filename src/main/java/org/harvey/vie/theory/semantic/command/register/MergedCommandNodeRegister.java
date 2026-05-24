@@ -7,6 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * @author Temper
+ */
 public class MergedCommandNodeRegister implements CommandNodeRegister {
     private final CommandNodeRegister primary;
     private final List<CommandNodeRegister> extras;
@@ -39,3 +42,4 @@ public class MergedCommandNodeRegister implements CommandNodeRegister {
         return result;
     }
 }
+

@@ -63,6 +63,9 @@ import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * @author Temper
+ */
 public class SemanticDemo {
     public static ShiftReduceCallbackRegister buildSimpleShiftReduceRegister() {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
@@ -281,3 +284,4 @@ public class SemanticDemo {
         return register;
     }
 }
+

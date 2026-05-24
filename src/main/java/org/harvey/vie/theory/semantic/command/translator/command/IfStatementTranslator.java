@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -33,7 +33,7 @@ public class IfStatementTranslator implements CommandTranslator {
         // if ( expr ) stmt
         // 一般的 if 语句
         //    expr.command();
-        //    CommandFactory.ifn_goto(L1);
+        //    DefaultCommandFactory.ifn_goto(L1);
         //    stmt.command();
         //    L1:
         if (children.length != 5) {
@@ -54,7 +54,7 @@ public class IfStatementTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel ifEndLabel = new DefaultSemanticLabel();
         children[2].register(thisBuilder);
-        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(ifEndLabel)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().ifnGoto(ifEndLabel)));
         children[4].register(thisBuilder);
         thisBuilder.add(new LabelNode(ifEndLabel));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);

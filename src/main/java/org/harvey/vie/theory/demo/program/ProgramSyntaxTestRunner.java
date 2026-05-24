@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.demo.program;
 
+import lombok.Getter;
 import org.harvey.vie.theory.demo.SemanticDemo;
 import org.harvey.vie.theory.demo.SyntaxDemo;
 import org.harvey.vie.theory.error.CompileErrorMessage;
@@ -10,6 +11,7 @@ import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
@@ -36,6 +38,9 @@ import java.util.stream.Stream;
 import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMANTIC_TAG_COMPARATOR;
 import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMANTIC_TAG_LOADER;
 
+/**
+ * @author Temper
+ */
 public final class ProgramSyntaxTestRunner {
     private static final Path TEST_CASE_DIR = Path.of("src/main/resources/program-tests");
     private static final Path REPORT_DIR = Path.of("run-reports/program-syntax");
@@ -143,7 +148,7 @@ public final class ProgramSyntaxTestRunner {
                 shiftReduceParsingTable,
                 t -> !ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(t.getType()),
                 SemanticDemo.buildShiftReduceTestRegister(),
-                Boolean.getBoolean(TRACE_STEPS_PROPERTY)
+                SyntaxDemo.STRING_COMMAND_FACTORY, Boolean.getBoolean(TRACE_STEPS_PROPERTY)
         );
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
             SemanticResult result = phaser.phase(iterator, errorContext);
@@ -257,7 +262,7 @@ public final class ProgramSyntaxTestRunner {
                 record.getNo(),
                 record.getOffset(),
                 formatType(record.getType()),
-                new String(record.getLexeme(), StandardCharsets.UTF_8),
+                SourceTokenStringMapping.utf8(record.getLexeme()),
                 record.isInitialized(),
                 constantValue == null ? "<none>" : constantValue.literalText()
         );
@@ -273,7 +278,7 @@ public final class ProgramSyntaxTestRunner {
     private static void appendTypeLexemes(ShiftReduceSyntaxTreeNode node, StringJoiner joiner) {
         if (node.isToken()) {
             SourceToken token = node.toToken().getSource();
-            joiner.add(new String(token.getLexeme(), StandardCharsets.UTF_8));
+            joiner.add(SourceTokenStringMapping.utf8(token));
             return;
         }
         for (ShiftReduceSyntaxTreeNode child : node.toHead()) {
@@ -281,6 +286,7 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
+    @Getter
     public static final class SemanticRunReport {
         private final String runId;
         private final Path summaryReport;
@@ -292,19 +298,9 @@ public final class ProgramSyntaxTestRunner {
             this.results = List.copyOf(results);
         }
 
-        public String getRunId() {
-            return runId;
-        }
-
-        public Path getSummaryReport() {
-            return summaryReport;
-        }
-
-        public List<TestCaseResult> getResults() {
-            return results;
-        }
     }
 
+    @Getter
     public static final class TestCaseResult {
         private final String caseName;
         private final Path report;
@@ -346,56 +342,10 @@ public final class ProgramSyntaxTestRunner {
             this.failure = failure;
         }
 
-        public String getCaseName() {
-            return caseName;
-        }
-
-        public Path getReport() {
-            return report;
-        }
-
         public boolean isSuccess() {
             return expectationMatched;
         }
 
-        public boolean isExpectationMatched() {
-            return expectationMatched;
-        }
-
-        public boolean isExpectedFailure() {
-            return expectedFailure;
-        }
-
-        public boolean isObservedAccepted() {
-            return observedAccepted;
-        }
-
-        public boolean isObservedRejected() {
-            return observedRejected;
-        }
-
-        public int getErrorCount() {
-            return errorCount;
-        }
-
-        public int getCommandCount() {
-            return commandCount;
-        }
-
-        public int getSymbolCount() {
-            return symbolCount;
-        }
-
-        public SemanticAnalysisResult getSemanticResult() {
-            return semanticResult;
-        }
-
-        public List<CompileErrorMessage> getErrors() {
-            return errors;
-        }
-
-        public Throwable getFailure() {
-            return failure;
-        }
     }
 }
+

@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -34,7 +34,7 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         //    stmt.command();
         //    L2:
         //    expr.command();
-        //    CommandFactory.if_goto(L1);
+        //    DefaultCommandFactory.if_goto(L1);
         //    L3:
         if (children.length != 7) {
             throw new CompilerException("illegal statement on do while statement production.");
@@ -64,7 +64,7 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         children[1].register(thisBuilder); // stmt
         thisBuilder.add(new LabelNode(beforeTestLabel));
         children[4].register(thisBuilder); // expr
-        thisBuilder.add(new TerminalNode(CommandFactory.ifGoto(whileStartLabel)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().ifGoto(whileStartLabel)));
         thisBuilder.add(new LabelNode(whileEndLabel));
         WhileStatementTranslator.bindLoopLabels(children[1], beforeTestLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);

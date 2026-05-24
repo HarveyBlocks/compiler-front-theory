@@ -9,6 +9,8 @@ import java.util.List;
  * TODO 现在看来似乎不需要这个机制了. <br>
  *  Register 本来是用来处理label 与 outer 的关系的. <br>
  *  label如何注册, 可能要看 outer 的具体情况 <br>
+ *
+ * @author Temper
  */
 public interface CommandNodeRegister {
     void register(CommandNodeBuilder outer);
@@ -21,3 +23,4 @@ public interface CommandNodeRegister {
         return List.of();
     }
 }
+

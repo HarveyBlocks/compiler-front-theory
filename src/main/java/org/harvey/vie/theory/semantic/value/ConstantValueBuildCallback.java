@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.value;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
@@ -12,6 +13,9 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 import java.nio.charset.StandardCharsets;
 
+/**
+ * @author Temper
+ */
 public class ConstantValueBuildCallback implements ShiftReduceCallback {
     private static final ProductionTagStrategy<ConstantRule> RULES = new ProductionTagStrategy<>(ConstantRule.NONE)
             .when(ConstantRule.NONE, ProgramSemanticTag.PROGRAM)
@@ -74,7 +78,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
     private static ConstantValue literal(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = head.get(0).toToken().getSource();
         SemanticType type = context.literalType(token);
-        String lexeme = new String(token.getLexeme(), StandardCharsets.UTF_8);
+        String lexeme = SourceTokenStringMapping.utf8(token);
         switch (type.getKind()) {
             case BOOLEAN:
                 return new ConstantValue(type, Boolean.parseBoolean(lexeme));
@@ -228,3 +232,4 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         ConstantValue build(ShiftReduceSemanticContext context, HeadNode head);
     }
 }
+

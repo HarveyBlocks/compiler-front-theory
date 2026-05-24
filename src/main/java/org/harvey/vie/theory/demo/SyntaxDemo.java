@@ -17,6 +17,10 @@ import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
+import org.harvey.vie.theory.semantic.command.command.string.SimpleStringCommandFactory;
+import org.harvey.vie.theory.semantic.command.command.string.TypedStringCommandFactory;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
@@ -73,8 +77,7 @@ public class SyntaxDemo {
                 // syntax analyzer
                 PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable("E");
                 GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
-                PredictivePhaserImpl phaser = new PredictivePhaserImpl(
-                        start,
+                PredictivePhaserImpl phaser = new PredictivePhaserImpl(start,
                         predictiveParsingTable,
                         SemanticDemo.buildPredicativeRegister(),
                         t -> true
@@ -85,22 +88,25 @@ public class SyntaxDemo {
         }
     }
 
+    public static final CommandFactory STRING_COMMAND_FACTORY = new DefaultCommandFactory(new TypedStringCommandFactory(),
+            new SimpleStringCommandFactory()
+    );
+
     private static class ShiftReduce {
         public static void main(String[] args) {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
                 System.out.println(context);
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable(
-                        "S",
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S",
                         context,
                         "syntax_simple.data",
                         is -> null, /*不是Program的, 不支持Tag*/
                         (t1, t2) -> 0 /*不是Program的, 不支持Tag*/
                 );
-                ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
-                        shiftReduceParsingTable,
+                ShiftReducePhaser phaser = new ShiftReducePhaserImpl(shiftReduceParsingTable,
                         t -> true,
-                        SemanticDemo.buildSimpleShiftReduceRegister()
+                        SemanticDemo.buildSimpleShiftReduceRegister(),
+                        STRING_COMMAND_FACTORY
                 );
                 return phaser.phase(iter, errCtx);
             });
@@ -207,13 +213,11 @@ public class SyntaxDemo {
     private static ShiftReduceParsingTableImpl.Loader getLoader(SemanticTag.Loader<?> tagLoader) {
         TokenTypeTerminalSymbol.Loader terminalSymbolLoader = new TokenTypeTerminalSymbol.Loader(new ProgramTokenType.Loader());
         HeadDefineSymbolImpl.Loader headSymbolLoader = new HeadDefineSymbolImpl.Loader();
-        DefineSimpleGrammarProduction.Loader productionLoader = new DefineSimpleGrammarProduction.Loader(
-                headSymbolLoader,
+        DefineSimpleGrammarProduction.Loader productionLoader = new DefineSimpleGrammarProduction.Loader(headSymbolLoader,
                 terminalSymbolLoader,
                 tagLoader
         );
-        return new ShiftReduceParsingTableImpl.Loader(
-                terminalSymbolLoader,
+        return new ShiftReduceParsingTableImpl.Loader(terminalSymbolLoader,
                 headSymbolLoader,
                 productionLoader,
                 MATCHER_FACTORY
@@ -238,12 +242,10 @@ public class SyntaxDemo {
             System.out.println("I" + (cur++) + ": " + lookaheadMap);
         }
         System.out.println("------------shift reduce table-----------");
-        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(
-                MATCHER_FACTORY,
+        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(MATCHER_FACTORY,
                 tagComparator
         );
-        ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(
-                startHead,
+        ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(startHead,
                 context,
                 firstMap,
                 family,

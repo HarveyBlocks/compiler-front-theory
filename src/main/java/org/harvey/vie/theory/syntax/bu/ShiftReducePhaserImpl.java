@@ -5,6 +5,7 @@ import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
@@ -25,26 +26,27 @@ import java.util.function.Supplier;
  */
 public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     private final ShiftReduceParsingTable table;
-
     private final ShiftReduceCallbackRegister register;
     private final TokenFilterPredict tokenFilterPredict;
+    private final CommandFactory commandFactory;
     private final boolean traceSteps;
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
             TokenFilterPredict tokenFilterPredict,
-            ShiftReduceCallbackRegister register) {
-        this(table, tokenFilterPredict, register, false);
+            ShiftReduceCallbackRegister register, CommandFactory commandFactory) {
+        this(table, tokenFilterPredict, register, commandFactory, false);
     }
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
             TokenFilterPredict tokenFilterPredict,
             ShiftReduceCallbackRegister register,
-            boolean traceSteps) {
+            CommandFactory commandFactory, boolean traceSteps) {
         this.tokenFilterPredict = tokenFilterPredict;
         this.table = table;
         this.register = register;
+        this.commandFactory = commandFactory;
         this.traceSteps = traceSteps;
     }
 
@@ -81,13 +83,14 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
                 errorContext
         );
         ShiftReduceSemanticContext context = new ShiftReduceSemanticContext(
-                register, ctx
+                register, ctx,
+                commandFactory
         );
         context.onStart();
         while (true) {
             SourceToken current = ctx.currentToken();
-            // trace(()->"syntax stack: " + ctx.statusStackString());
-            // trace(()->"current token: " + current.hintString() + " -> " + new String(current.getLexeme()));
+            // ...trace(()->"syntax stack: " + ctx.statusStackString());
+            // ...trace(()-> "current token: " + current.hintString() + " -> " + SourceTokenStringMapping.utf8(current));
             if (ctx.isStackEmpty()) {
                 context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;

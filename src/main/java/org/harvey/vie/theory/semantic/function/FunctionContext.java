@@ -10,6 +10,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
+/**
+ * @author Temper
+ */
 public class FunctionContext {
     private final Map<IdentifierKey, FunctionRecord> functions = new LinkedHashMap<>();
     private final ArrayDeque<FunctionRecord> functionStack = new ArrayDeque<>();
@@ -75,3 +78,4 @@ public class FunctionContext {
     }
 
 }
+

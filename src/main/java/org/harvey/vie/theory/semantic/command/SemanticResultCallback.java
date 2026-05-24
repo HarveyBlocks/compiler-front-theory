@@ -15,6 +15,9 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author Temper
+ */
 public class SemanticResultCallback implements ShiftReduceCallback {
     @Override
     public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -44,3 +47,4 @@ public class SemanticResultCallback implements ShiftReduceCallback {
         return new SemanticAnalysisResult(lines, context.identifierRecords());
     }
 }
+

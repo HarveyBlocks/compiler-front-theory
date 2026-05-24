@@ -3,9 +3,9 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -15,6 +15,9 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 @AllArgsConstructor
 public class InSuffixExpressionTranslator implements CommandTranslator {
     private final OperatorFactor operatorFactor;
@@ -38,13 +41,13 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         if (context.requiresImplicitCast(leftType, instructionType)) {
-            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(leftType, instructionType)));
+            thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(leftType, instructionType)));
         }
         children[2].register(thisBuilder);
         if (context.requiresImplicitCast(rightType, instructionType)) {
-            thisBuilder.add(new TerminalNode(CommandFactory.stTopCast(rightType, instructionType)));
+            thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(rightType, instructionType)));
         }
-        thisBuilder.add(new TerminalNode(CommandFactory.stOperator(operatorFactor, instructionType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().stOperator(operatorFactor, instructionType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 
@@ -78,3 +81,4 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         return context.commonBinaryType(leftType, rightType);
     }
 }
+

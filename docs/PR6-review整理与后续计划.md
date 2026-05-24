@@ -1504,9 +1504,9 @@ Review 快照行： `44`
 ```java
   34:         //    L1:
   35:         //    expr.command();
-  36:         //    CommandFactory.ifn_goto(L2);
+  36:         //    DefaultCommandFactory.ifn_goto(L2);
   37:         //    (matched_stmt|unmatched_stmt).command();
-  38:         //    CommandFactory.goto(L1);
+  38:         //    DefaultCommandFactory.goto(L1);
   39:         //    L2:
   40:
   41:         if (children.length != 5) {
@@ -1546,7 +1546,7 @@ Review 快照行： `43`
   34:         //    stmt.command();
   35:         //    L2:
   36:         //    expr.command();
-  37:         //    CommandFactory.if_goto(L1);
+  37:         //    DefaultCommandFactory.if_goto(L1);
   38:         //    L3:
   39:         if (children.length != 7) {
   40:             throw new CompilerException("illegal statement on do while statement production.");
@@ -1858,17 +1858,17 @@ Review 快照行： `1`
 代码上下文：
 
 ```java
-> 1: package org.harvey.vie.theory.semantic.command.translator.command;
-  2:
-  3: import org.harvey.vie.theory.exception.CompilerException;
-  4: import org.harvey.vie.theory.semantic.command.command.CommandFactory;
-  5: import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
-  6: import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-  7: import org.harvey.vie.theory.semantic.command.node.TerminalNode;
-  8: import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
-  9: import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
-  10: import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
-  11: import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+>1:package org.harvey.vie.theory.semantic.command.translator.command;
+        2:
+        3:
+  4:
+  5:
+  6:
+  7:
+  8:
+  9:
+  10:
+  11:
 ```
 
 Comment 原文：

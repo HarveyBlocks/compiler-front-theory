@@ -2,11 +2,14 @@ package org.harvey.vie.theory.semantic.command.translator.token;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.TokenCommandRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+
+import java.util.List;
 
 /**
  * TODO
@@ -20,11 +23,11 @@ public class BreakTokenTranslator implements TokenTranslator {
 
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        UncertainLabelGotoCommand gotoCommand = CommandFactory.gotoCommandUncertainLabel(token);
+        UncertainLabelGotoCommand gotoCommand = context.getCommandFactory().gotoCommandUncertainLabel(token);
         return new TokenCommandRegister(
                 gotoCommand,
-                java.util.List.of(gotoCommand),
-                java.util.List.of()
+                List.of(gotoCommand),
+                List.of()
         );
     }
 }

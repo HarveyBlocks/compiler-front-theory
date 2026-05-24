@@ -1,13 +1,21 @@
 package org.harvey.vie.theory.semantic.type;
 
+import lombok.Getter;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.StringJoiner;
 
+
+/**
+ * @author Temper
+ */
+@Getter
 public final class SemanticType {
     public enum Kind {
-        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID
+        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID;
+
     }
 
     private final Kind kind;
@@ -24,14 +32,6 @@ public final class SemanticType {
 
     public static SemanticType array(Kind kind, List<Integer> dimensions) {
         return new SemanticType(kind, dimensions);
-    }
-
-    public Kind getKind() {
-        return kind;
-    }
-
-    public List<Integer> getDimensions() {
-        return dimensions;
     }
 
     public boolean isScalar() {
@@ -82,30 +82,11 @@ public final class SemanticType {
 
     }
 
-    public String mnemonic() {
-        // TODO 不合适的设计, 本质是解析字符串,
-        //  通过JDK的字符串在类之间互相传递是没有丝毫可维护性的做法
-        switch (kind) {
-            case BOOLEAN:
-                return "boolean";
-            case CHARACTER:
-                return "character";
-            case INT32:
-                return "int32";
-            case FLOAT64:
-                return "float64";
-            case STRING:
-                return "string";
-            case VOID:
-                return "void";
-        }
-        throw new IllegalStateException("unexpected semantic type kind: " + kind);
-    }
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(" ");
-        joiner.add(mnemonic());
+        joiner.add(kind.name());
         for (Integer dimension : dimensions) {
             joiner.add("[");
             joiner.add(String.valueOf(dimension));

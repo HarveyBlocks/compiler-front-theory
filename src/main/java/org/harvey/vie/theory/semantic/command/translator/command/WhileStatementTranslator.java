@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -33,9 +33,9 @@ public class WhileStatementTranslator implements CommandTranslator {
         // while 循环语句
         //    L1:
         //    expr.command();
-        //    CommandFactory.ifn_goto(L2);
+        //    DefaultCommandFactory.ifn_goto(L2);
         //    (matched_stmt|unmatched_stmt).command();
-        //    CommandFactory.goto(L1);
+        //    DefaultCommandFactory.goto(L1);
         //    L2:
 
         if (children.length != 5) {
@@ -56,9 +56,9 @@ public class WhileStatementTranslator implements CommandTranslator {
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
         thisBuilder.add(new LabelNode(whileStartLabel));
         children[2].register(thisBuilder); // expr
-        thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(whileEndLabel))); // ifn_goto L2
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().ifnGoto(whileEndLabel))); // ifn_goto L2
         children[4].register(thisBuilder); // matched_stmt|unmatched_stmt
-        thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().gotoCommand(whileStartLabel))); // goto L1
         thisBuilder.add(new LabelNode(whileEndLabel)); // L2
         bindLoopLabels(children[4], whileStartLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);

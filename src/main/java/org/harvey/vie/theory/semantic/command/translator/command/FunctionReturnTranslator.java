@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -12,6 +12,9 @@ import org.harvey.vie.theory.semantic.value.ConstantAttributes;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 public class FunctionReturnTranslator implements CommandTranslator {
     @Override
     public CommandNodeRegister translate(
@@ -25,12 +28,13 @@ public class FunctionReturnTranslator implements CommandTranslator {
         if (children.length == 3 && ConstantAttributes.childIsConstant(context, 1)) {
             ConstantValue value = ConstantAttributes.child(context, 1);
             if (value != null) {
-                builder.add(new TerminalNode(CommandFactory.loadConstant(value)));
+                builder.add(new TerminalNode(context.getCommandFactory().loadConstant(value)));
             }
         } else if (children.length == 3) {
             children[1].register(builder);
         }
-        builder.add(new TerminalNode(CommandFactory.returnCommand()));
+        builder.add(new TerminalNode(context.getCommandFactory().returnCommand()));
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 }
+

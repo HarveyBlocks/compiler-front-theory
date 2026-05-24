@@ -2,9 +2,9 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -42,7 +42,7 @@ public class ArrayAtExpressionTranslator implements CommandTranslator {
             SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "array index must be int32.");
         }
         SemanticType resultType = baseType.arrayElementType();
-        thisBuilder.add(new TerminalNode(CommandFactory.biasFromStTopToRef(resultType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().biasFromStTopToRef(resultType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

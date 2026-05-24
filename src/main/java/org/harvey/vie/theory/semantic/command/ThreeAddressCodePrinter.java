@@ -7,6 +7,8 @@ import java.util.List;
 
 /**
  * 把 demo 语义命令整理成更容易阅读的展示文本。
+ *
+ * @author Temper
  */
 public class ThreeAddressCodePrinter {
     private final List<String> lines = new ArrayList<>();
@@ -23,3 +25,4 @@ public class ThreeAddressCodePrinter {
         return List.copyOf(lines);
     }
 }
+

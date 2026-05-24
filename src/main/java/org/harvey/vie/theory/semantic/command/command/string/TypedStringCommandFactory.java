@@ -1,0 +1,96 @@
+package org.harvey.vie.theory.semantic.command.command.string;
+
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
+import org.harvey.vie.theory.semantic.command.command.*;
+import org.harvey.vie.theory.semantic.command.command.factory.TypedCommandFactory;
+import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
+import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.type.SemanticType;
+import org.harvey.vie.theory.semantic.type.TypeResolver;
+import org.harvey.vie.theory.semantic.value.ConstantValue;
+
+/**
+ * TODO
+ *
+ * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
+ * @version 1.0
+ * @date 2026-05-24 23:04
+ */
+public class TypedStringCommandFactory implements TypedCommandFactory {
+    private final TypeResolver typeResolver = new TypeResolver();
+
+    @Override
+    public SemanticCommand loadLiteral(SourceToken token) {
+        return new StringCommand("load_st_" +
+                                 mnemonic(typeResolver.literalType(token)) +
+                                 "_static " +
+                                 SourceTokenStringMapping.utf8(token));
+    }
+
+    @Override
+    public SemanticCommand loadIdentifierReference(SourceToken token) {
+        return new StringCommand("load_st_identifier_reference " + SourceTokenStringMapping.utf8(token));
+    }
+
+    @Override
+    public SemanticCommand loadIdentifierReference(IdentifierRecord record) {
+        return new StringCommand("load_st_" + mnemonic(record.getDeclaredType()) + "_reference " + record.getOffset());
+    }
+
+    @Override
+    public SemanticCommand loadConstant(ConstantValue constantValue) {
+        return new StringCommand("load_st_" +
+                                 mnemonic(constantValue.getType()) +
+                                 "_static " +
+                                 constantValue.literalText());
+    }
+
+    @Override
+    public SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType) {
+        return new StringCommand("st_" + operatorFactor + "_" + mnemonic(operandType));
+    }
+
+    @Override
+    public SemanticCommand stTopRefToVal(SemanticType type) {
+        return new StringCommand("st_top_ref_to_val_" + mnemonic(type));
+    }
+
+    @Override
+    public SemanticCommand assignFromStTopToRef(SemanticType type) {
+        return new StringCommand("assign_from_st_top_to_ref_" + mnemonic(type));
+    }
+
+    @Override
+    public SemanticCommand biasFromStTopToRef(SemanticType elementType) {
+        return new StringCommand("bias_from_st_top_to_ref_" + mnemonic(elementType));
+    }
+
+    @Override
+    public SemanticCommand stTopCast(SemanticType from, SemanticType to) {
+        return new StringCommand("st_top_" + mnemonic(from) + "_cast_" + mnemonic(to));
+    }
+
+    @Override
+    public SemanticCommand ifGoto(SemanticLabel label) {
+        return new StringSupplierCommand(() -> "if_goto " + label.getIndex());
+    }
+
+    @Override
+    public SemanticCommand ifnGoto(SemanticLabel label) {
+        return new StringSupplierCommand(() -> "ifn_goto " + label.getIndex());
+    }
+
+    @Override
+    public SemanticCommand gotoCommand(SemanticLabel label) {
+        return new StringSupplierCommand(() -> "goto " + label.getIndex());
+    }
+
+    @Override
+    public UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token) {
+        return new StringUncertainLabelGotoCommand(token);
+    }
+    private static String mnemonic(SemanticType type) {
+        return type.getKind().name().toLowerCase();
+    }
+}

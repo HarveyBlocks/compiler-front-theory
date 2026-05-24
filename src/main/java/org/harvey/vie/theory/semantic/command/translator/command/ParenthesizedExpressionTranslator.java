@@ -8,6 +8,9 @@ import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 public class ParenthesizedExpressionTranslator implements CommandTranslator {
     @Override
     public CommandNodeRegister translate(
@@ -26,3 +29,4 @@ public class ParenthesizedExpressionTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 }
+

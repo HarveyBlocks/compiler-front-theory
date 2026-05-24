@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.token;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.TokenCommandRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
@@ -14,8 +14,9 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
  * @date 2026-04-20 22:21
  */
 public class SimpleStringTokenTranslator implements TokenTranslator {
+
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        return new TokenCommandRegister(CommandFactory.loadStatic(token));
+        return new TokenCommandRegister(context.getCommandFactory().loadStatic(token));
     }
 }

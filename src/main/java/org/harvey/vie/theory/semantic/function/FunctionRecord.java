@@ -1,10 +1,15 @@
 package org.harvey.vie.theory.semantic.function;
 
+import lombok.Getter;
 import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 
 import java.util.List;
 
+/**
+ * @author Temper
+ */
+@Getter
 public class FunctionRecord {
     private final FunctionSignature signature;
     private final List<FunctionParameter> parameters;
@@ -24,19 +29,8 @@ public class FunctionRecord {
         return signature.getNameKey();
     }
 
-    public FunctionSignature getSignature() {
-        return signature;
-    }
-
-    public List<FunctionParameter> getParameters() {
-        return parameters;
-    }
-
-    public HeadNode getFunctionHeadNode() {
-        return functionHeadNode;
-    }
-
     public HeadNode getDeclarationNode() {
         return signature.getDeclarationNode();
     }
 }
+

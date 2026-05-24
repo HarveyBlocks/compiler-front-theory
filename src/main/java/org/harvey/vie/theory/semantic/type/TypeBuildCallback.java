@@ -10,6 +10,9 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 public class TypeBuildCallback implements ShiftReduceCallback {
     private static final ProductionTagStrategy<TypeRule> RULES = new ProductionTagStrategy<>(TypeRule.UNHANDLED)
             .when(TypeRule.NONE, ProgramSemanticTag.PROGRAM)
@@ -288,3 +291,4 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         TypeRegister build(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
     }
 }
+

@@ -6,6 +6,8 @@ import org.harvey.vie.theory.semantic.type.SemanticType;
 
 /**
  * Compile-time constant value bound to a syntax node.
+ *
+ * @author Temper
  */
 @Getter
 @AllArgsConstructor
@@ -38,3 +40,4 @@ public class ConstantValue {
         }
     }
 }
+

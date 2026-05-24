@@ -1,7 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.CommandFactory;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -13,6 +13,9 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * @author Temper
+ */
 public class FunctionCallTranslator implements CommandTranslator {
     @Override
     public CommandNodeRegister translate(
@@ -25,7 +28,7 @@ public class FunctionCallTranslator implements CommandTranslator {
         CommandNodeBuilder builder = new CommandNodeListBuilder();
         FunctionRecord record = function(context);
         children[2].register(builder);
-        builder.add(new TerminalNode(CommandFactory.callFunction(record)));
+        builder.add(new TerminalNode(context.getCommandFactory().callFunction(record)));
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 
@@ -45,3 +48,4 @@ public class FunctionCallTranslator implements CommandTranslator {
         return record;
     }
 }
+

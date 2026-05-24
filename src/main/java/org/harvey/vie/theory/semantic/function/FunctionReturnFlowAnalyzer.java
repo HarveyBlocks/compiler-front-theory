@@ -7,6 +7,9 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
+/**
+ * @author Temper
+ */
 public final class FunctionReturnFlowAnalyzer {
     private static final ProductionTagStrategy<ReturnRule> RULES = new ProductionTagStrategy<>(ReturnRule.NEVER)
             .when(ReturnRule.BLOCK, ProgramSemanticTag.BLOCK, ProgramSemanticTag.COMMAND)
@@ -85,3 +88,4 @@ public final class FunctionReturnFlowAnalyzer {
         boolean test(ShiftReduceSemanticContext context, HeadNode head);
     }
 }
+

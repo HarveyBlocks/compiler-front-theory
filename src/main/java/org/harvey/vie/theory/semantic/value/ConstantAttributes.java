@@ -6,6 +6,8 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
 /**
  * Helper for reading constant-value attributes from the current reduced node.
+ *
+ * @author Temper
  */
 public final class ConstantAttributes {
     private ConstantAttributes() {
@@ -32,3 +34,4 @@ public final class ConstantAttributes {
         return context.getTreeContext().peek().toHead();
     }
 }
+

@@ -7,6 +7,8 @@ import java.util.Map;
 
 /**
  * Type attributes bound to concrete syntax tree nodes.
+ *
+ * @author Temper
  */
 public class TypeContext {
     private final Map<ShiftReduceSyntaxTreeNode, TypeRegister> attributes = new IdentityHashMap<>();
@@ -40,3 +42,4 @@ public class TypeContext {
         }
     }
 }
+

@@ -1,6 +1,9 @@
 package org.harvey.vie.theory.semantic.type;
 
 // TODO 意义不明, 为什么要专门写? 意义呢? 专门用来干嘛的? 说清楚了吗?
+/**
+ * @author Temper
+ */
 public class TypeConversionRule {
     public boolean canImplicitlyConvert(SemanticType from, SemanticType to) {
         if (from.equals(to)) {
@@ -26,3 +29,4 @@ public class TypeConversionRule {
         return SemanticType.scalar(SemanticType.Kind.INT32);
     }
 }
+
