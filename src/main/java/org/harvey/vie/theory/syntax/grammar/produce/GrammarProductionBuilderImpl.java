@@ -2,6 +2,7 @@ package org.harvey.vie.theory.syntax.grammar.produce;
 
 import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 
 import java.util.Objects;
 
@@ -41,7 +42,7 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
         if (body == null) {
             body = new GrammarAlternationImpl();
         }
-        if (concatenable == GrammarSymbol.EPSILON) {
+        if (concatenable.isEpsilon()) {
             placeholder = false;
             body.alternateEpsilon();
             return this;
@@ -57,7 +58,7 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
 
     @Override
     public GrammarProductionBuilder alternateEpsilon() {
-        return alternate(GrammarSymbol.EPSILON);
+        return alternate(GrammarSymbol.epsilon());
     }
 
     @Override
@@ -118,6 +119,12 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
     }
 
     private GrammarProductionBuilder concatenate(int i, ConcatenableSymbol concatenable) {
+        initLastAlternation(i);
+        concatenate0(i, concatenable);
+        return this;
+    }
+
+    private void initLastAlternation(int i) {
         if (body == null) {
             if (i != 0) {
                 throw new IllegalArgumentException(
@@ -133,9 +140,8 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
                 body.alternate(new GrammarConcatenationImpl());
             }
         }
-        concatenate0(i, concatenable);
-        return this;
     }
+
 
     private void concatenate0(int i, GrammarSymbol concatenable) {
         AlterableSymbol symbol = body.get(i);
@@ -147,6 +153,22 @@ public class GrammarProductionBuilderImpl implements GrammarProductionBuilder {
             throw new IllegalStateException("Symbols are not allowed to be concatenated to non-GrammarConcatenation");
         }
         symbol.toConcatenation().concatenate(concatenable.toConcatenable());
+    }
+
+    @Override
+    public GrammarProductionBuilder tagLast(SemanticTag... tag) {
+        return tag(body.size() - 1, tag);
+    }
+
+    @Override
+    public GrammarProductionBuilder tag(int i, SemanticTag... tag) {
+        if (tag == null || tag.length == 0) {
+            return this;
+        }
+        initLastAlternation(i);
+        AlterableSymbol symbol = body.get(i);
+        symbol.addTag(tag);
+        return this;
     }
 
     @Override

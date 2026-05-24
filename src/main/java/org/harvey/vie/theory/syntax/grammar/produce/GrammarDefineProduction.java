@@ -11,7 +11,6 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
  * @date 2026-03-28 02:30
  */
 public interface GrammarDefineProduction extends GrammarProduction {
-
     HeadDefineSymbol getDefine();
 
     @Override

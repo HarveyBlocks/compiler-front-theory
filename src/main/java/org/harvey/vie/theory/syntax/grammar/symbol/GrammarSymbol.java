@@ -8,7 +8,9 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @date 2026-03-28 00:39
  */
 public interface GrammarSymbol {
-    AlterableSymbol EPSILON = new EpsilonSymbol();
+    static AlterableSymbol epsilon() {
+        return new EpsilonSymbol();
+    }
 
     static UnsupportedOperationException unsupportedTest() {
         return new UnsupportedOperationException(
@@ -63,11 +65,12 @@ public interface GrammarSymbol {
     default HeadSymbol toHead() {
         throw unsupportedCast();
     }
+
+
 }
 
-class EpsilonSymbol implements GrammarSymbol, AlterableSymbol {
+class EpsilonSymbol extends AbstractTagGrammarSymbol implements AlterableSymbol {
     EpsilonSymbol() {}
-
 
     @Override
     public String toString() {
@@ -84,4 +87,3 @@ class EpsilonSymbol implements GrammarSymbol, AlterableSymbol {
         return false;
     }
 }
-

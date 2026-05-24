@@ -6,6 +6,7 @@ import lombok.Getter;
 import org.harvey.vie.theory.io.Loaders;
 import org.harvey.vie.theory.io.Storages;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -26,6 +27,7 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
 
     private final HeadDefineSymbol head;
     private final AlterableSymbol body;
+    private final SemanticTag[] tags;
 
     public HeadDefineSymbol getDefine() {
         return head;
@@ -44,6 +46,15 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
         } else {
             GrammarConcatenation concatenation = body.toConcatenation();
             len += storeConcatenation(os, concatenation);
+        }
+        len += storeTags(os);
+        return len;
+    }
+
+    private int storeTags(OutputStream os) throws IOException {
+        int len = Storages.storeInteger(os, tags.length);
+        for (SemanticTag tag : tags) {
+            len += tag.store(os);
         }
         return len;
     }
@@ -71,18 +82,30 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
         return len;
     }
 
+
     @AllArgsConstructor
     public static class Loader implements SimpleGrammarProduction.Loader<DefineSimpleGrammarProduction> {
         private final HeadDefineSymbol.Loader<?> headLoader;
         private final TerminalSymbol.Loader<?> terminalLoader;
+        private final SemanticTag.Loader<?> tagLoader;
 
         @Override
         public DefineSimpleGrammarProduction load(InputStream is) throws IOException {
             HeadDefineSymbol head = headLoader.load(is);
             int size = Loaders.loadInteger(is);
             AlterableSymbol body =
-                    size == 0 ? GrammarSymbol.EPSILON : new GrammarConcatenationImpl(loadConcatenation(is, size));
-            return new DefineSimpleGrammarProduction(head, body);
+                    size == 0 ? GrammarSymbol.epsilon() : new GrammarConcatenationImpl(loadConcatenation(is, size));
+            SemanticTag[] tags = loadTags(is);
+            return new DefineSimpleGrammarProduction(head, body,tags);
+        }
+
+        private SemanticTag[] loadTags(InputStream is) throws IOException {
+            int length = Loaders.loadInteger(is);
+            SemanticTag[] result = new SemanticTag[length];
+            for (int i = 0; i < length; i++) {
+                result[i] = tagLoader.load(is);
+            }
+            return result;
         }
 
         private GrammarUnitSymbol[] loadConcatenation(InputStream is, int size) throws IOException {

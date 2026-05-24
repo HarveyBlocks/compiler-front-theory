@@ -10,12 +10,16 @@ import java.util.stream.Collectors;
  * @version 1.0
  * @date 2026-03-28 02:07
  */
-public class GrammarConcatenationImpl implements GrammarConcatenation {
+public class GrammarConcatenationImpl extends AbstractTagGrammarSymbol implements GrammarConcatenation {
     private final List<GrammarUnitSymbol> list;
 
-    public GrammarConcatenationImpl() {list = new ArrayList<>();}
+    public GrammarConcatenationImpl() {
+        list = new ArrayList<>();
+    }
 
-    public GrammarConcatenationImpl(GrammarUnitSymbol[] array) {this.list = List.copyOf(List.of(array));}
+    public GrammarConcatenationImpl(GrammarUnitSymbol[] array) {
+        this.list = List.copyOf(List.of(array));
+    }
 
     @Override
     public void concatenate(ConcatenableSymbol concatenable) {

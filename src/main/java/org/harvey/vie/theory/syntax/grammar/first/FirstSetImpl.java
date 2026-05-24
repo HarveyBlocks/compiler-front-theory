@@ -54,7 +54,7 @@ public class FirstSetImpl implements FirstSet {
             sj.add("'" + terminalSymbol.toString() + "'");
         }
         if (containsEpsilon) {
-            sj.add("'" + GrammarSymbol.EPSILON + "'");
+            sj.add("'" + GrammarSymbol.epsilon() + "'");
         }
         return sj.toString();
     }

@@ -7,7 +7,7 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @version 1.0
  * @date 2026-04-03 19:54
  */
-public interface AlterableSymbol extends GrammarSymbol {
+public interface AlterableSymbol extends TagGrammarSymbol, GrammarSymbol {
     @Override
     default boolean isEpsilon() {
         return false;

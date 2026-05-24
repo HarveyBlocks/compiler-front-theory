@@ -2,6 +2,7 @@ package org.harvey.vie.theory.syntax.grammar.produce;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 
 /**
  * TODO
@@ -11,7 +12,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
  * @date 2026-03-28 00:56
  */
 public interface ProductionSetContextBuilder {
-    GrammarProductionBuilder define(String name);
+    GrammarProductionBuilder define(String name, SemanticTag... tags);
 
     TerminalSymbol createTerminal(TerminalFactor factor);
 

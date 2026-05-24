@@ -102,7 +102,7 @@ public class PredictivePhaserImpl implements PredictivePhaser {
             ctx.onError(PredicativeErrorType.UNDEFINED_PRODUCTION);
         }
         // 3.2 逆序入栈
-        else if (alterableSymbol == GrammarSymbol.EPSILON) {
+        else if (alterableSymbol.isEpsilon()) {
             ctx.onEpsilonProduction(head);
         } else if (alterableSymbol.isConcatenation()) {
             // 表项产生 X -> UVW

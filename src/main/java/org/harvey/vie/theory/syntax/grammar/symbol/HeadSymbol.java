@@ -7,7 +7,7 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @version 1.0
  * @date 2026-03-28 01:19
  */
-public interface HeadSymbol extends GrammarUnitSymbol {
+public interface HeadSymbol extends TagGrammarSymbol, GrammarUnitSymbol {
     @Override
     default boolean isTerminal() {
         return false;

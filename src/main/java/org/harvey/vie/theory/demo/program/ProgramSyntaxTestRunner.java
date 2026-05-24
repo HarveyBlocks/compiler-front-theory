@@ -33,6 +33,8 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMANTIC_TAG_LOADER;
+
 public final class ProgramSyntaxTestRunner {
     private static final Path TEST_CASE_DIR = Path.of("src/main/resources/program-tests");
     private static final Path REPORT_DIR = Path.of("run-reports/program-syntax");
@@ -132,7 +134,8 @@ public final class ProgramSyntaxTestRunner {
         ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
                 "compilation_unit",
                 ProgramSyntaxDemo.buildGrammar0(),
-                SERIAL_SYNTAX_TABLE
+                SERIAL_SYNTAX_TABLE,
+                PROGRAM_SEMANTIC_TAG_LOADER
         );
         ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                 shiftReduceParsingTable,

@@ -16,7 +16,7 @@ public interface PredictiveParsingTable {
     TerminalSymbol END_MARK_SYMBOL = TerminalSymbol.END_MARK_SYMBOL;
 
     /**
-     * @return null/{@link GrammarSymbol#EPSILON}/{@link GrammarConcatenation}
+     * @return null/{@link GrammarSymbol#epsilon()}/{@link GrammarConcatenation}
      */
     AlterableSymbol get(HeadSymbol head, SourceToken token);
 

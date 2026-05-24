@@ -56,7 +56,7 @@ public class ProgramLexicalDemo {
     private static final RegexCharSet ANY = RegexCharSet.unionAll(
             DIGIT, WHITESPACE, LOWER_LETTER, UPPER_LETTER, OPERATOR, OTHER
     );
-    private static final boolean FLUSH_TABLE = Boolean.getBoolean("lexical.flushTable");
+    public static final boolean FLUSH_TABLE = Boolean.getBoolean("lexical.flushTable");
     private static volatile LexicalAnalyzer cachedAnalyzer;
 
     private static final List<LexicalPattern> REGEX_PATTERNS = List.of(

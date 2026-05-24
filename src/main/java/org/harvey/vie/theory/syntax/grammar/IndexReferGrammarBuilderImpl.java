@@ -1,9 +1,11 @@
 package org.harvey.vie.theory.syntax.grammar;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import org.harvey.vie.theory.syntax.grammar.produce.GrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSet;
+import org.harvey.vie.theory.syntax.grammar.symbol.AbstractTagGrammarSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.ReferredHeadSymbol;
 
@@ -25,9 +27,10 @@ public class IndexReferGrammarBuilderImpl implements GrammarBuilder {
         return null;
     }
 
+    @Getter
+    @EqualsAndHashCode(callSuper = false)
     @AllArgsConstructor
-    @Data
-    private static class IndexReferredHeadSymbol implements ReferredHeadSymbol {
+    private static class IndexReferredHeadSymbol extends AbstractTagGrammarSymbol implements ReferredHeadSymbol {
         private final int id;
     }
 }

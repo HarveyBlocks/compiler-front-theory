@@ -15,13 +15,12 @@ import org.harvey.vie.theory.syntax.grammar.produce.GrammarDefineProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 import org.harvey.vie.theory.util.CollectionUtil;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 /**
  * TODO
@@ -180,7 +179,10 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         }
 
         public ShiftReduceParsingTable build(
-                ActiveTableElement[][] activeTable, int[][] gotoTable, int accept, TerminalMatcherFactory terminalMatcherFactory) {
+                ActiveTableElement[][] activeTable,
+                int[][] gotoTable,
+                int accept,
+                TerminalMatcherFactory terminalMatcherFactory) {
             return new ShiftReduceParsingTableImpl(
                     family.startIndex(),
                     accept,
@@ -242,8 +244,12 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                 throw new IllegalStateException("It is not allowed to build phasing table with non-define head. " +
                                                 "It is not supported.");
             }
+
+            SemanticTag[] tags = Stream.concat(Arrays.stream(head.getTags()), Arrays.stream(body.getTags()))
+                    .distinct()
+                    .toArray(SemanticTag[]::new);
             return productionDict.computeIfAbsent(
-                    new DefineSimpleGrammarProduction(head.toDefine(), body),
+                    new DefineSimpleGrammarProduction(head.toDefine(), body, tags),
                     k -> productionDict.size()
             );
         }

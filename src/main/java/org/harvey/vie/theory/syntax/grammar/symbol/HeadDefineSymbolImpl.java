@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
  * @date 2026-03-28 00:46
  */
 @Getter
-@EqualsAndHashCode
+@EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
-public class HeadDefineSymbolImpl implements HeadDefineSymbol {
+public class HeadDefineSymbolImpl  extends AbstractTagGrammarSymbol implements HeadDefineSymbol {
     private final String name;
 
     @Override
@@ -46,4 +46,5 @@ public class HeadDefineSymbolImpl implements HeadDefineSymbol {
             return new HeadDefineSymbolImpl(new String(bytes, StandardCharsets.UTF_8));
         }
     }
+
 }

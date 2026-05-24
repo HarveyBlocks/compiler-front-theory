@@ -45,6 +45,7 @@ import org.harvey.vie.theory.syntax.grammar.normalize.LeftRecursionEliminatorImp
 import org.harvey.vie.theory.syntax.grammar.produce.DefineSimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
 import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTableFactory;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
@@ -88,7 +89,11 @@ public class SyntaxDemo {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
                 System.out.println(context);
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S", context,"syntax_simple.data");
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S",
+                        context,
+                        "syntax_simple.data",
+                        is -> null /*不是Program的, 不支持Tag*/
+                );
                 ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                         shiftReduceParsingTable,
                         t -> true,
@@ -140,13 +145,13 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    private static final boolean FLUSH_TABLE = Boolean.getBoolean("syntax.flushTable");
+    public static final boolean FLUSH_TABLE = Boolean.getBoolean("syntax.flushTable");
     private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(
             String startHead,
             ProductionSetContext context,
-            String filename) {
+            String filename, SemanticTag.Loader<?> tagLoader) {
         if (cachedShiftReduceParsingTable != null) {
             return cachedShiftReduceParsingTable;
         }
@@ -164,7 +169,7 @@ public class SyntaxDemo {
                 }
             } else {
                 try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
-                    ShiftReduceParsingTableImpl.Loader loader = getLoader();
+                    ShiftReduceParsingTableImpl.Loader loader = getLoader(tagLoader);
                     table = loader.load(is);
                     log.info("loaded = {}", table);
                 } catch (IOException e) {
@@ -176,9 +181,9 @@ public class SyntaxDemo {
         }
     }
 
-    public static ShiftReduceParsingTable loadShiftReduceParsingTable(String filename) {
+    public static ShiftReduceParsingTable loadShiftReduceParsingTable(String filename, SemanticTag.Loader<?> tagLoader) {
         try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
-            ShiftReduceParsingTableImpl.Loader loader = getLoader();
+            ShiftReduceParsingTableImpl.Loader loader = getLoader(tagLoader);
             return loader.load(is);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -193,12 +198,13 @@ public class SyntaxDemo {
         }
     }
 
-    private static ShiftReduceParsingTableImpl.Loader getLoader() {
+    private static ShiftReduceParsingTableImpl.Loader getLoader(SemanticTag.Loader<?> tagLoader) {
         TokenTypeTerminalSymbol.Loader terminalSymbolLoader = new TokenTypeTerminalSymbol.Loader(new ProgramTokenType.Loader());
         HeadDefineSymbolImpl.Loader headSymbolLoader = new HeadDefineSymbolImpl.Loader();
         DefineSimpleGrammarProduction.Loader productionLoader = new DefineSimpleGrammarProduction.Loader(
                 headSymbolLoader,
-                terminalSymbolLoader
+                terminalSymbolLoader,
+                tagLoader
         );
         return new ShiftReduceParsingTableImpl.Loader(
                 terminalSymbolLoader,

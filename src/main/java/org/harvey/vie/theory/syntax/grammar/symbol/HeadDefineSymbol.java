@@ -11,6 +11,7 @@ import org.harvey.vie.theory.io.Storage;
  * @date 2026-03-28 00:39
  */
 public interface HeadDefineSymbol extends HeadSymbol, Storage {
+    // 直接比较name不是很好, HeadDefineSymbol其实应该自己能够比较, 而不是必须要getName
     String getName();
 
     @Override

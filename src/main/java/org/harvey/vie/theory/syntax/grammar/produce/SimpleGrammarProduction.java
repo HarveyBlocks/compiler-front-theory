@@ -4,6 +4,7 @@ import org.harvey.vie.theory.io.ILoader;
 import org.harvey.vie.theory.io.Storage;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 
 /**
  * TODO 没有 `|` 的产生式
@@ -16,6 +17,8 @@ public interface SimpleGrammarProduction extends Storage {
     HeadSymbol getHead();
 
     AlterableSymbol getBody();
+
+    SemanticTag[] getTags();
 
     interface Loader<T extends SimpleGrammarProduction> extends ILoader<T> {
     }

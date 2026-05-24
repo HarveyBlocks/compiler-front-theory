@@ -19,6 +19,7 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilder;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContextBuilderImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 import org.harvey.vie.theory.syntax.grammar.symbol.TokenTypeTerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -38,6 +39,7 @@ public class ProgramSyntaxDemo {
             ProgramTokenType.COMMENT_LINE,
             ProgramTokenType.COMMENT_BLOCK
     );
+    public static final SemanticTag.Loader<?> PROGRAM_SEMANTIC_TAG_LOADER = new ProgramSemanticTag.Loader();
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -106,7 +108,8 @@ public class ProgramSyntaxDemo {
             ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
                     "compilation_unit",
                     context,
-                    "syntax_table.data"
+                    "syntax_table.data",
+                    PROGRAM_SEMANTIC_TAG_LOADER
             );
             ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                     shiftReduceParsingTable,

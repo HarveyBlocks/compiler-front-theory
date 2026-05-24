@@ -4,6 +4,7 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadDefineSymbolImpl;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactor;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalFactory;
 import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,13 +32,18 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
     }
 
     @Override
-    public GrammarProductionBuilder define(String name) {
+    public GrammarProductionBuilder define(String name, SemanticTag... tags) {
         Integer idx = definitionIdxMap.computeIfAbsent(name, k -> {
             int i = list.size();
-            list.add(new GrammarProductionBuilderImpl(new HeadDefineSymbolImpl(name), this));
+            HeadDefineSymbolImpl head = new HeadDefineSymbolImpl(name);
+            list.add(new GrammarProductionBuilderImpl(head, this));
             return i;
         });
-        return list.get(idx);
+        GrammarProductionBuilder productionBuilder = list.get(idx);
+        if (tags != null && tags.length != 0) {
+            productionBuilder.getHead().addTag(tags);
+        }
+        return productionBuilder;
     }
 
     @Override

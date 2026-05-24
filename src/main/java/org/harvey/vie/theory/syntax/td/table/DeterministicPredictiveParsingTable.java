@@ -84,7 +84,7 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         if (element.rightId() == null) {
             return null;
         }
-        return element.rightId() == EPSILON_REFERENCE ? GrammarSymbol.EPSILON : concatenations[element.rightId()];
+        return element.rightId() == EPSILON_REFERENCE ? GrammarSymbol.epsilon() : concatenations[element.rightId()];
     }
 
     @Override

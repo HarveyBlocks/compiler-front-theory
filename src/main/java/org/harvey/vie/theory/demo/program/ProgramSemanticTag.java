@@ -1,0 +1,32 @@
+package org.harvey.vie.theory.demo.program;
+
+import org.harvey.vie.theory.io.Loaders;
+import org.harvey.vie.theory.io.Storages;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+/**
+ * TODO 一个Production对应0-n个Tag
+ *
+ * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
+ * @version 1.0
+ * @date 2026-05-24 16:19
+ */
+public enum ProgramSemanticTag implements SemanticTag {
+    DEMO;
+
+    @Override
+    public int store(OutputStream os) throws IOException {
+        return Storages.storeInteger(os, this.ordinal());
+    }
+
+    public static class Loader implements SemanticTag.Loader<ProgramSemanticTag> {
+        @Override
+        public ProgramSemanticTag load(InputStream is) throws IOException {
+            return ProgramSemanticTag.values()[Loaders.loadInteger(is)];
+        }
+    }
+}
