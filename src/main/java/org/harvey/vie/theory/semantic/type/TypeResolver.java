@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.semantic.analysis;
+package org.harvey.vie.theory.semantic.type;
 
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;

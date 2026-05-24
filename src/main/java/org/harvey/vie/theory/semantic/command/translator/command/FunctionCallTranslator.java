@@ -8,11 +8,10 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
-
-import java.nio.charset.StandardCharsets;
 
 public class FunctionCallTranslator implements CommandTranslator {
     @Override
@@ -24,13 +23,13 @@ public class FunctionCallTranslator implements CommandTranslator {
             throw new CompilerException("illegal statement on function call production.");
         }
         CommandNodeBuilder builder = new CommandNodeListBuilder();
-        String name = functionName(context);
+        FunctionRecord record = function(context);
         children[2].register(builder);
-        builder.add(new TerminalNode(CommandFactory.callFunction(name)));
+        builder.add(new TerminalNode(CommandFactory.callFunction(record)));
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 
-    private String functionName(ShiftReduceSemanticContext context) {
+    private FunctionRecord function(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             throw new CompilerException("current reduced head is absent for function call.");
         }
@@ -39,6 +38,10 @@ public class FunctionCallTranslator implements CommandTranslator {
         if (!token.isToken()) {
             throw new CompilerException("function call name is absent.");
         }
-        return new String(token.toToken().getSource().getLexeme(), StandardCharsets.UTF_8);
+        FunctionRecord record = context.getFunction(token.toToken().getSource());
+        if (record == null) {
+            throw new CompilerException("function is not declared in current visible scope.");
+        }
+        return record;
     }
 }

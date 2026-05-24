@@ -1,8 +1,8 @@
 package org.harvey.vie.theory.semantic.command.command;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
-import org.harvey.vie.theory.semantic.analysis.TypeResolver;
+import org.harvey.vie.theory.semantic.type.SemanticType;
+import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.value.ConstantValue;

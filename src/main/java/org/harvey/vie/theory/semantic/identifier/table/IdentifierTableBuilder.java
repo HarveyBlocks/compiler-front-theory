@@ -3,7 +3,7 @@ package org.harvey.vie.theory.semantic.identifier.table;
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.util.IdGenerator;

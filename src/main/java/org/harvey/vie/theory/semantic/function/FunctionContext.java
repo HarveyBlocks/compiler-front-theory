@@ -1,6 +1,8 @@
 package org.harvey.vie.theory.semantic.function;
 
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 
 import java.util.ArrayDeque;
 import java.util.Collection;
@@ -9,16 +11,16 @@ import java.util.Map;
 import java.util.Optional;
 
 public class FunctionContext {
-    private final Map<String, FunctionRecord> functions = new LinkedHashMap<>();
+    private final Map<IdentifierKey, FunctionRecord> functions = new LinkedHashMap<>();
     private final ArrayDeque<FunctionRecord> functionStack = new ArrayDeque<>();
     private final ArrayDeque<FunctionBodyState> bodyStateStack = new ArrayDeque<>();
 
-    public boolean exists(String name) {
-        return functions.containsKey(name);
+    public boolean exists(SourceToken token) {
+        return functions.containsKey(IdentifierKey.generate(token));
     }
 
-    public FunctionRecord get(String name) {
-        return functions.get(name);
+    public FunctionRecord get(SourceToken token) {
+        return functions.get(IdentifierKey.generate(token));
     }
 
     public Collection<FunctionRecord> records() {
@@ -26,7 +28,7 @@ public class FunctionContext {
     }
 
     public void register(FunctionRecord record) {
-        functions.put(record.getName(), record);
+        functions.put(record.getSignature().getNameKey(), record);
     }
 
     public void enter(FunctionRecord record) {

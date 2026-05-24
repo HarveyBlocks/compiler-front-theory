@@ -255,17 +255,17 @@ Review 快照行： `1`
 代码上下文：
 
 ```java
-> 1: package org.harvey.vie.theory.semantic.type;
-  2:
-  3: import org.harvey.vie.theory.exception.CompilerException;
-  4: import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-  5: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  6: import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
-  7: import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-  8: import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-  9: import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-  10: import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
-  11: import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
+>1:package org.harvey.vie.theory.semantic.type;
+        2:
+        3:
+  4:
+  5:
+  6:
+  7:
+  8:
+  9:
+  10:
+  11:
 ```
 
 Comment 原文：
@@ -285,17 +285,17 @@ Review 快照行： `1`
 代码上下文：
 
 ```java
-> 1: package org.harvey.vie.theory.semantic.type;
-  2:
-  3: import org.harvey.vie.theory.exception.CompilerException;
-  4: import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-  5: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  6: import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
-  7: import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-  8: import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-  9: import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-  10: import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
-  11: import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
+>1:package org.harvey.vie.theory.semantic.type;
+        2:
+        3:
+  4:
+  5:
+  6:
+  7:
+  8:
+  9:
+  10:
+  11:
 ```
 
 Comment 原文：
@@ -1067,24 +1067,32 @@ Review 快照行： `8`
 代码上下文：
 
 ```java
-  1: package org.harvey.vie.theory.semantic.function;
-  2:
-  3: import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-  4: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  5: import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+  1:package org.harvey.vie.theory.semantic.function;
+        2:
+        3:import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+  4:import org.harvey.vie.theory.semantic.type.SemanticType;
+  5:import org.harvey.vie.theory.semantic.tree.node.HeadNode;
   6:
-  7: public class FunctionSignature {
-> 8:     private final String name;
-  9:     private final SourceToken nameToken;
-  10:     private final SemanticType returnType;
-  11:     private final HeadNode declarationNode;
+          7:
+
+public class FunctionSignature {
+>8:
+    private final String name;
+  9:
+    private final SourceToken nameToken;
+  10:
+    private final SemanticType returnType;
+  11:
+    private final HeadNode declarationNode;
   12:
-  13:     public FunctionSignature(String name, SourceToken nameToken, SemanticType returnType, HeadNode declarationNode) {
-  14:         this.name = name;
-  15:         this.nameToken = nameToken;
-  16:         this.returnType = returnType;
-  17:         this.declarationNode = declarationNode;
-  18:     }
+          13:
+
+    public FunctionSignature(String name, SourceToken nameToken, SemanticType returnType, HeadNode declarationNode) {
+        14:this.name = name;
+        15:this.nameToken = nameToken;
+        16:this.returnType = returnType;
+        17:this.declarationNode = declarationNode;
+        18:}
 ```
 
 Comment 原文：
@@ -1185,26 +1193,35 @@ Review 快照行： `12`
 
 ```java
   2:
-  3: import org.harvey.vie.theory.semantic.analysis.SemanticType;
+        3:
   4:
-  5: import java.util.ArrayDeque;
-  6: import java.util.Collection;
-  7: import java.util.LinkedHashMap;
-  8: import java.util.Map;
-  9: import java.util.Optional;
+          5:import java.util.ArrayDeque;
+  6:
+  7:import java.util.LinkedHashMap;
+  8:import java.util.Map;
+  9:
   10:
-  11: public class FunctionContext {
-> 12:     private final Map<String, FunctionRecord> functions = new LinkedHashMap<>();
-  13:     private final ArrayDeque<FunctionRecord> functionStack = new ArrayDeque<>();
-  14:     private final ArrayDeque<FunctionBodyState> bodyStateStack = new ArrayDeque<>();
+          11:
+
+public class FunctionContext {
+>12:
+    private final Map<String, FunctionRecord> functions = new LinkedHashMap<>();
+  13:
+    private final ArrayDeque<FunctionRecord> functionStack = new ArrayDeque<>();
+  14:
+    private final ArrayDeque<FunctionBodyState> bodyStateStack = new ArrayDeque<>();
   15:
-  16:     public boolean exists(String name) {
-  17:         return functions.containsKey(name);
-  18:     }
+          16:
+
+    public boolean exists(String name) {
+        17:return functions.containsKey(name);
+        18:}
   19:
-  20:     public FunctionRecord get(String name) {
-  21:         return functions.get(name);
-  22:     }
+          20:
+
+    public FunctionRecord get(String name) {
+        21:return functions.get(name);
+        22:}
 ```
 
 Comment 原文：

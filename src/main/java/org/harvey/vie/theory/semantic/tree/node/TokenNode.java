@@ -24,24 +24,6 @@ public class TokenNode implements ShiftReduceSyntaxTreeNode {
         return true;
     }
 
-    @Override
-    public SourceToken anchor() {
-        Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
-        queue.add(this);
-        while (!queue.isEmpty()) {
-            ShiftReduceSyntaxTreeNode current = queue.remove();
-            if (current.isToken()) {
-                return current.toToken().getSource();
-            }
-            if (!current.isHead()) {
-                continue;
-            }
-            for (ShiftReduceSyntaxTreeNode child : current.toHead()) {
-                queue.add(child);
-            }
-        }
-        throw new IllegalStateException("syntax tree node has no token anchor.");
-    }
 
     @Override
     public String toString() {

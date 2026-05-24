@@ -32,6 +32,7 @@ public class HeadNode implements ShiftReduceSyntaxTreeNode, IRandomAccess<ShiftR
         return true;
     }
 
+
     @Override
     public String toString() {
         return "SPECIAL[`" + symbol + "`]";
@@ -85,4 +86,5 @@ public class HeadNode implements ShiftReduceSyntaxTreeNode, IRandomAccess<ShiftR
     public boolean containsTag(SemanticTag tag) {
         return production.containsTag(tag);
     }
+
 }

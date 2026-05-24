@@ -3,15 +3,12 @@ package org.harvey.vie.theory.semantic.type;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
-
-import java.nio.charset.StandardCharsets;
 
 public class TypeBuildCallback implements ShiftReduceCallback {
     private static final ProductionTagStrategy<TypeRule> RULES = new ProductionTagStrategy<>(TypeRule.UNHANDLED)
@@ -139,8 +136,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
 
     private static TypeRegister functionCall(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = childAnchor(head, 0);
-        String name = new String(token.getLexeme(), StandardCharsets.UTF_8);
-        var function = context.getFunction(name);
+        var function = context.getFunction(token);
         if (function == null) {
             throw new CompilerException("function is not declared in current visible scope.");
         }
@@ -257,7 +253,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     }
 
     private static SourceToken childAnchor(HeadNode head, int index) {
-        return head.get(index).anchor();
+        return ShiftReduceSyntaxTreeNode.anchor(head.get(index));
     }
 
     private static TypeRegister withAnchor(TypeRegister register, SourceToken anchor) {

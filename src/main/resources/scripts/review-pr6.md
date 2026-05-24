@@ -130,17 +130,17 @@
 - **Line**: 1
 
 ```java
-> 1: package org.harvey.vie.theory.semantic.type;
-  2: 
-  3: import org.harvey.vie.theory.exception.CompilerException;
-  4: import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-  5: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  6: import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
-  7: import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-  8: import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-  9: import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-  10: import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
-  11: import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
+>1:package org.harvey.vie.theory.semantic.type;
+        2:
+        3:
+  4:
+  5:
+  6:
+  7:
+  8:
+  9:
+  10:
+  11:
 ```
 
 > 和theory/semantic/value/ConstantValueBuildCallback.java什么关系? 为啥有两个?
@@ -148,17 +148,17 @@
 - **Line**: 1
 
 ```java
-> 1: package org.harvey.vie.theory.semantic.type;
-  2: 
-  3: import org.harvey.vie.theory.exception.CompilerException;
-  4: import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-  5: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  6: import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
-  7: import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-  8: import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-  9: import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-  10: import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
-  11: import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
+>1:package org.harvey.vie.theory.semantic.type;
+        2:
+        3:
+  4:
+  5:
+  6:
+  7:
+  8:
+  9:
+  10:
+  11:
 ```
 
 > 哦哦, 一个是Type, 一个是Constant, 懂了. 两个逻辑挺类似的
@@ -202,24 +202,32 @@
 - **Line**: 8
 
 ```java
-  1: package org.harvey.vie.theory.semantic.function;
-  2: 
-  3: import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-  4: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  5: import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-  6: 
-  7: public class FunctionSignature {
-> 8:     private final String name;
-  9:     private final SourceToken nameToken;
-  10:     private final SemanticType returnType;
-  11:     private final HeadNode declarationNode;
-  12: 
-  13:     public FunctionSignature(String name, SourceToken nameToken, SemanticType returnType, HeadNode declarationNode) {
-  14:         this.name = name;
-  15:         this.nameToken = nameToken;
-  16:         this.returnType = returnType;
-  17:         this.declarationNode = declarationNode;
-  18:     }
+  1:package org.harvey.vie.theory.semantic.function;
+        2:
+        3:import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+  4:import org.harvey.vie.theory.semantic.type.SemanticType;
+  5:import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+  6:
+          7:
+
+public class FunctionSignature {
+>8:
+    private final String name;
+  9:
+    private final SourceToken nameToken;
+  10:
+    private final SemanticType returnType;
+  11:
+    private final HeadNode declarationNode;
+  12:
+          13:
+
+    public FunctionSignature(String name, SourceToken nameToken, SemanticType returnType, HeadNode declarationNode) {
+        14:this.name = name;
+        15:this.nameToken = nameToken;
+        16:this.returnType = returnType;
+        17:this.declarationNode = declarationNode;
+        18:}
 ```
 
 > 有了nameToken为什么需要name? 这个nameToken是通过读取源码文件来的, 源码文件的编码方式不好说, 怎么能直接解析成Java的String的name呢?
@@ -621,27 +629,36 @@
 - **Line**: 12
 
 ```java
-  2: 
-  3: import org.harvey.vie.theory.semantic.analysis.SemanticType;
-  4: 
-  5: import java.util.ArrayDeque;
-  6: import java.util.Collection;
-  7: import java.util.LinkedHashMap;
-  8: import java.util.Map;
-  9: import java.util.Optional;
-  10: 
-  11: public class FunctionContext {
-> 12:     private final Map<String, FunctionRecord> functions = new LinkedHashMap<>();
-  13:     private final ArrayDeque<FunctionRecord> functionStack = new ArrayDeque<>();
-  14:     private final ArrayDeque<FunctionBodyState> bodyStateStack = new ArrayDeque<>();
-  15: 
-  16:     public boolean exists(String name) {
-  17:         return functions.containsKey(name);
-  18:     }
-  19: 
-  20:     public FunctionRecord get(String name) {
-  21:         return functions.get(name);
-  22:     }
+  2:
+        3:
+  4:
+          5:import java.util.ArrayDeque;
+  6:
+  7:import java.util.LinkedHashMap;
+  8:import java.util.Map;
+  9:
+  10:
+          11:
+
+public class FunctionContext {
+>12:
+    private final Map<String, FunctionRecord> functions = new LinkedHashMap<>();
+  13:
+    private final ArrayDeque<FunctionRecord> functionStack = new ArrayDeque<>();
+  14:
+    private final ArrayDeque<FunctionBodyState> bodyStateStack = new ArrayDeque<>();
+  15:
+          16:
+
+    public boolean exists(String name) {
+        17:return functions.containsKey(name);
+        18:}
+  19:
+          20:
+
+    public FunctionRecord get(String name) {
+        21:return functions.get(name);
+        22:}
 ```
 
 > 直接String不太好. 是不是因为我在Identifier的符号表里也用String了? 其实不好, 应该用SourceToken作为Key的, 在SourceToken上OverrideHashcode和equals方法是比较好的做法, 而不是String

@@ -1,10 +1,13 @@
 package org.harvey.vie.theory.semantic.command.command;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * TODO 静态工厂是不解耦的
@@ -17,6 +20,7 @@ public class CommandFactory {
     // TODO 糟糕的设计, 但是暂且不改
     //  正常应该是抽象工厂-具体工厂; 抽象产品-具体产品. 但是这个优先级低, 就不修改
     private static final TypedCommandFactory TYPED = new TypedCommandFactory();
+
     /**
      * 仅用作测试和demo
      */
@@ -68,8 +72,9 @@ public class CommandFactory {
         return TYPED.gotoCommand(label);
     }
 
-    public static SemanticCommand callFunction(String name) {
-        return new StringCommand("call " + name);
+    public static SemanticCommand callFunction(FunctionRecord name) {
+        return new StringCommand("call " +
+                                 new String(name.getSignature().getNameToken().getLexeme(), StandardCharsets.UTF_8));
     }
 
     public static SemanticCommand returnCommand() {

@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.type;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
@@ -32,7 +31,7 @@ public final class TypeAttributes {
     }
 
     public static SourceToken childAnchor(ShiftReduceSemanticContext context, int index) {
-        return reducedHead(context).get(index).anchor();
+        return ShiftReduceSyntaxTreeNode.anchor(reducedHead(context).get(index));
     }
 
     public static TypeRegister result(ShiftReduceSemanticContext context) {
@@ -49,7 +48,7 @@ public final class TypeAttributes {
     }
 
     public static SourceToken resultAnchor(ShiftReduceSemanticContext context) {
-        return reducedHead(context).anchor();
+        return ShiftReduceSyntaxTreeNode.anchor(reducedHead(context));
     }
 
     private static HeadNode reducedHead(ShiftReduceSemanticContext context) {

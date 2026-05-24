@@ -3,8 +3,8 @@ package org.harvey.vie.theory.semantic.function;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
-import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.type.SemanticType;
+import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
@@ -13,7 +13,6 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,8 +48,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
 
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken nameToken = head.get(1).toToken().getSource();
-        String name = new String(nameToken.getLexeme(), StandardCharsets.UTF_8);
-        if (context.existFunction(name)) {
+        if (context.existFunction(nameToken)) {
             SemanticTypeDiagnostics.reject(context, nameToken, "duplicate function declaration is not allowed.");
         }
         TypeRegister returnTypeRegister = context.getType(head.get(0));
@@ -59,7 +57,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
         SemanticType returnType = returnTypeRegister.requireType("function return type is required.");
         List<FunctionParameter> parameters = collectParameters(context, head.get(3));
-        FunctionRecord record = new FunctionRecord(new FunctionSignature(name, nameToken, returnType, head),
+        FunctionRecord record = new FunctionRecord(new FunctionSignature(nameToken, returnType, head),
                 parameters,
                 head
         );
@@ -99,8 +97,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
 
     private void validateCall(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken nameToken = head.get(0).toToken().getSource();
-        String name = new String(nameToken.getLexeme(), StandardCharsets.UTF_8);
-        FunctionRecord record = context.getFunction(name);
+        FunctionRecord record = context.getFunction(nameToken);
         if (record == null) {
             SemanticTypeDiagnostics.reject(context, nameToken, "function must be defined before it is called.");
             return;

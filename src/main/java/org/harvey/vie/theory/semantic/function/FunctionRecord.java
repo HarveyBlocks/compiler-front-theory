@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.semantic.function;
 
+import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 
 import java.util.List;
@@ -18,8 +19,9 @@ public class FunctionRecord {
         this.functionHeadNode = functionHeadNode;
     }
 
-    public String getName() {
-        return signature.getName();
+
+    public IdentifierKey getNameKey() {
+        return signature.getNameKey();
     }
 
     public FunctionSignature getSignature() {

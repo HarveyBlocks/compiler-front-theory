@@ -4,9 +4,9 @@ import lombok.Getter;
 import org.harvey.vie.theory.error.SemanticErrorMessage;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
-import org.harvey.vie.theory.semantic.analysis.TypeConversionRule;
-import org.harvey.vie.theory.semantic.analysis.TypeResolver;
+import org.harvey.vie.theory.semantic.type.SemanticType;
+import org.harvey.vie.theory.semantic.type.TypeConversionRule;
+import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
@@ -205,12 +205,12 @@ public class ShiftReduceSemanticContext {
     // endregion
 
     // region functions
-    public boolean existFunction(String name) {
-        return functionContext.exists(name);
+    public boolean existFunction(SourceToken nameToken) {
+        return functionContext.exists(nameToken);
     }
 
-    public FunctionRecord getFunction(String name) {
-        return functionContext.get(name);
+    public FunctionRecord getFunction(SourceToken nameToken) {
+        return functionContext.get(nameToken);
     }
 
     public void registerFunction(FunctionRecord record) {

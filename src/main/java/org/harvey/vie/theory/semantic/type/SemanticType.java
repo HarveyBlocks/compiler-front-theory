@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.semantic.analysis;
+package org.harvey.vie.theory.semantic.type;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -2,7 +2,7 @@ package org.harvey.vie.theory.semantic.value;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.harvey.vie.theory.semantic.analysis.SemanticType;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 
 /**
  * Compile-time constant value bound to a syntax node.

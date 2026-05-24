@@ -2,6 +2,9 @@ package org.harvey.vie.theory.semantic.tree.node;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 /**
  * TODO
  *
@@ -26,5 +29,25 @@ public interface ShiftReduceSyntaxTreeNode {
         return (TokenNode) this;
     }
 
-    SourceToken anchor();
+
+    /**
+     * 用于获取一个Token, 一般可以用在抛出异常的地方使用
+     */
+    static SourceToken anchor(ShiftReduceSyntaxTreeNode node) {
+        Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
+        queue.add(node);
+        while (!queue.isEmpty()) {
+            ShiftReduceSyntaxTreeNode current = queue.remove();
+            if (current.isToken()) {
+                return current.toToken().getSource();
+            }
+            if (!current.isHead()) {
+                continue;
+            }
+            for (ShiftReduceSyntaxTreeNode child : current.toHead()) {
+                queue.add(child);
+            }
+        }
+        throw new IllegalStateException("syntax tree node has no token anchor.");
+    }
 }
