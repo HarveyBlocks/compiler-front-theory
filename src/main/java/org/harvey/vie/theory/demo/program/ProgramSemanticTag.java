@@ -38,6 +38,7 @@ public enum ProgramSemanticTag implements SemanticTag {
     SEQUENCE,
     TYPE,
     ARRAY,
+    FORWARD,
     PARENTHESIZED,
     LITERAL,
     LEFT_VALUE,

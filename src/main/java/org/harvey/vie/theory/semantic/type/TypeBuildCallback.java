@@ -1,11 +1,12 @@
 package org.harvey.vie.theory.semantic.type;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -15,157 +16,77 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 public class TypeBuildCallback implements ShiftReduceCallback {
+    private static final ProductionTagStrategy<TypeRule> RULES = new ProductionTagStrategy<>(TypeRule.UNHANDLED)
+            .when(TypeRule.NONE, ProgramSemanticTag.PROGRAM)
+            .when(TypeRule.NONE, ProgramSemanticTag.NOOP)
+            .when(TypeRule.NONE, ProgramSemanticTag.RETURN)
+            .when(TypeRule.NONE, ProgramSemanticTag.LOOP)
+            .when(TypeRule.NONE, ProgramSemanticTag.CONDITIONAL)
+            .when(TypeRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.COMMAND)
+            .when(TypeRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+            .when(TypeRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(TypeRule.NONE, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+            .when(TypeRule.NONE, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(TypeRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+            .when(TypeRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(TypeRule.FORWARD, ProgramSemanticTag.FORWARD)
+            .when(TypeRule.ARRAY_TYPE, ProgramSemanticTag.TYPE, ProgramSemanticTag.ARRAY)
+            .when(TypeRule.TYPE_DECLARATION, ProgramSemanticTag.TYPE)
+            .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.IDENTIFIER)
+            .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)
+            .when(TypeRule.IDENTIFIER_REFERENCE, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
+            .when(TypeRule.ARRAY_ACCESS, ProgramSemanticTag.ACCESS)
+            .when(TypeRule.LEFT_VALUE, ProgramSemanticTag.LEFT_VALUE)
+            .when(TypeRule.FUNCTION_CALL, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
+            .when(TypeRule.LITERAL, ProgramSemanticTag.LITERAL)
+            .when(TypeRule.PARENTHESIZED, ProgramSemanticTag.PARENTHESIZED)
+            .when(TypeRule.UNARY_BOOLEAN, ProgramSemanticTag.LOGICAL_NOT)
+            .when(TypeRule.UNARY_NUMERIC, ProgramSemanticTag.NEGATE)
+            .when(TypeRule.BOOLEAN_BINARY, ProgramSemanticTag.OR)
+            .when(TypeRule.BOOLEAN_BINARY, ProgramSemanticTag.AND)
+            .when(TypeRule.EQUALITY, ProgramSemanticTag.EQUAL)
+            .when(TypeRule.EQUALITY, ProgramSemanticTag.NOT_EQUAL)
+            .when(TypeRule.RELATION, ProgramSemanticTag.LESS)
+            .when(TypeRule.RELATION, ProgramSemanticTag.LESS_EQUAL)
+            .when(TypeRule.RELATION, ProgramSemanticTag.GREATER)
+            .when(TypeRule.RELATION, ProgramSemanticTag.GREATER_EQUAL)
+            .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.PLUS)
+            .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.MINUS)
+            .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.MULTIPLY)
+            .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.DIVIDE)
+            .when(TypeRule.ASSIGNMENT, ProgramSemanticTag.ASSIGNMENT)
+            .when(TypeRule.VOID_FUNCTION_HEAD, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD);
+
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
-        TypeRegister result = build(context, normalizeKey(production.toString().trim()), head);
+        TypeRegister result = RULES.resolve(production).build(context, head, production);
         if (result != null) {
             context.bindType(head, result);
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
 
-    private TypeRegister build(ShiftReduceSemanticContext context, String key, HeadNode head) {
-        if (isEpsilonOf(key, "param_list", "arg_list", "block_items")) {
-            return null;
-        }
-        switch (key) {
-            case "program->top_item":
-            case "program->top_item program":
-            case "top_item->function_decl":
-            case "top_item->block_item":
-            case "function_decl->function_head block":
-                return null;
-            case "function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
-            case "function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
-                return null;
-            case "param_list->params":
-            case "block_items->block_item":
-            case "block_item->decl":
-            case "block_item->stmt":
-            case "decl->decl_plain":
-            case "decl->decl_init":
-            case "stmt->matched_stmt":
-            case "stmt->unmatched_stmt":
-            case "matched_stmt->matched_while_stmt":
-            case "matched_stmt->block":
-            case "matched_stmt->matched_if_stmt":
-            case "matched_stmt->assign_stmt":
-            case "matched_stmt->expr_stmt":
-            case "unmatched_stmt->unmatched_if_stmt":
-            case "unmatched_stmt->unmatched_while_stmt":
-            case "bool->join":
-            case "join->equality":
-            case "equality->rel":
-            case "rel->expr":
-            case "expr->term":
-            case "term->unary":
-            case "unary->factor":
-            case "factor->loc":
-            case "factor->call_expr":
-                return child(context, head, 0);
-            case "params->param":
-            case "params->params OPERATOR_COMMA param":
-            case "arg_list->args":
-            case "args->bool":
-            case "args->args OPERATOR_COMMA bool":
-            case "expr_stmt->expr OPERATOR_SEMICOLON":
-            case "matched_stmt->return_stmt":
-            case "matched_stmt->break_stmt":
-            case "matched_stmt->continue_stmt":
-            case "matched_stmt->do_while_stmt":
-            case "block_items->block_items block_item":
-            case "block->OPERATOR_BRACE_OPEN block_items OPERATOR_BRACE_CLOSE":
-            case "break_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
-            case "continue_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON":
-            case "return_stmt->CONTROL_STRUCTURES_RETURN bool OPERATOR_SEMICOLON":
-            case "return_stmt->CONTROL_STRUCTURES_RETURN OPERATOR_SEMICOLON":
-            case "matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt":
-            case "unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt":
-            case "matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt":
-            case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt":
-            case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt":
-            case "do_while_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON":
-                return null;
-            case "decl_plain->type IDENTIFIER OPERATOR_SEMICOLON":
-            case "param->type IDENTIFIER":
-                return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
-            case "decl_init->type IDENTIFIER OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
-                return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
-            case "type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE":
-                return arrayType(context, head);
-            case "assign_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
-                return requireChild(context, head, 0);
-            case "loc->IDENTIFIER":
-                return identifierReference(context, childAnchor(head, 0));
-            case "loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE":
-                return arrayElement(context, head);
-            case "call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE":
-                return functionCall(context, head);
-            case "bool->bool OPERATOR_LOGICAL_OR join":
-            case "join->join OPERATOR_LOGICAL_AND equality":
-                return booleanBinary(context, head);
-            case "equality->equality OPERATOR_EQUAL rel":
-            case "equality->equality OPERATOR_NOT_EQUAL rel":
-                return equality(context, head);
-            case "rel->expr OPERATOR_LESS expr":
-            case "rel->expr OPERATOR_LESS_EQUAL expr":
-            case "rel->expr OPERATOR_GREATER expr":
-            case "rel->expr OPERATOR_GREATER_EQUAL expr":
-                return relation(context, head);
-            case "expr->expr OPERATOR_PLUS term":
-            case "expr->expr OPERATOR_MINUS term":
-            case "term->term OPERATOR_MULTIPLY unary":
-            case "term->term OPERATOR_DIVIDE unary":
-                return numericBinary(context, head);
-            case "unary->OPERATOR_LOGICAL_NOT unary":
-                return unaryBoolean(context, head);
-            case "unary->OPERATOR_MINUS unary":
-                return unaryNumeric(context, head);
-            case "factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE":
-                return requireChild(context, head, 1);
-            case "factor->CONSTANT_INTEGER":
-            case "factor->CONSTANT_FLOAT":
-            case "factor->CONSTANT_BOOLEAN_TRUE":
-            case "factor->CONSTANT_BOOLEAN_FALSE":
-                return literal(context, childAnchor(head, 0));
-            case "type->TYPE_BOOLEAN":
-            case "type->TYPE_CHARACTER":
-            case "type->TYPE_INT32":
-            case "type->TYPE_FLOAT64":
-            case "type->TYPE_STRING":
-            case "type->TYPE_VOID":
-                return declaredType(context, childAnchor(head, 0));
-            default:
-                if (head.size() == 1 && context.hasType(head.get(0))) {
-                    return child(context, head, 0);
-                }
-                throw new CompilerException("unhandled production in TypeBuildCallback: " + key);
-        }
-    }
-
-    private String normalizeKey(String key) {
-        return key.replace("return_type", "type");
-    }
-
-    private boolean isEpsilonOf(String key, String... heads) {
-        int index = key.indexOf("->");
-        if (index < 0) {
-            return false;
-        }
-        String head = key.substring(0, index);
-        boolean matchesHead = false;
-        for (String candidate : heads) {
-            if (candidate.equals(head)) {
-                matchesHead = true;
-                break;
+    private static TypeRegister forward(ShiftReduceSemanticContext context, HeadNode head) {
+        for (ShiftReduceSyntaxTreeNode child : head) {
+            TypeRegister register = context.getType(child);
+            if (register != null) {
+                return register;
             }
         }
-        if (!matchesHead) {
-            return false;
-        }
-        String body = key.substring(index + 2).trim();
-        return body.isEmpty() || "蔚".equals(body) || "ε".equals(body);
+        return null;
+    }
+
+    private static TypeRegister typeDeclaration(ShiftReduceSemanticContext context, HeadNode head) {
+        return declaredType(context, childAnchor(head, 0));
+    }
+
+    private static TypeRegister declaredIdentifier(ShiftReduceSemanticContext context, HeadNode head) {
+        return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
+    }
+
+    private static TypeRegister literal(ShiftReduceSemanticContext context, HeadNode head) {
+        return literal(context, childAnchor(head, 0));
     }
 
     private static TypeRegister literal(ShiftReduceSemanticContext context, SourceToken token) {
@@ -187,6 +108,22 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         );
     }
 
+    private static TypeRegister assignment(ShiftReduceSemanticContext context, HeadNode head) {
+        return requireChild(context, head, 0);
+    }
+
+    private static TypeRegister identifierReference(ShiftReduceSemanticContext context, HeadNode head) {
+        return identifierReference(context, childAnchor(head, 0));
+    }
+
+    private static TypeRegister identifierReference(ShiftReduceSemanticContext context, SourceToken token) {
+        var record = context.getIdentifier(token);
+        if (record == null) {
+            throw new CompilerException("identifier is not declared in current visible scopes.");
+        }
+        return TypeRegister.simple(record.getDeclaredType(), token);
+    }
+
     private static TypeRegister arrayElement(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType baseType = requireChild(context, head, 0)
                 .requireType("array indexing requires the left operand to have a type.");
@@ -199,6 +136,16 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             throw new CompilerException("array index must be int32.");
         }
         return TypeRegister.simple(baseType.arrayElementType(), childAnchor(head, 0));
+    }
+
+    private static TypeRegister functionCall(ShiftReduceSemanticContext context, HeadNode head) {
+        SourceToken token = childAnchor(head, 0);
+        String name = new String(token.getLexeme(), StandardCharsets.UTF_8);
+        var function = context.getFunction(name);
+        if (function == null) {
+            throw new CompilerException("function is not declared in current visible scope.");
+        }
+        return TypeRegister.simple(function.getSignature().getReturnType(), token);
     }
 
     private static TypeRegister booleanBinary(ShiftReduceSemanticContext context, HeadNode head) {
@@ -258,7 +205,8 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     }
 
     private static TypeRegister unaryBoolean(ShiftReduceSemanticContext context, HeadNode head) {
-        SemanticType operandType = requireChild(context, head, 1).requireType("operator '!' requires a typed operand.");
+        SemanticType operandType = requireChild(context, head, 1)
+                .requireType("operator '!' requires a typed operand.");
         if (operandType.isBooleanScalar()) {
             return TypeRegister.simple(SemanticType.scalar(SemanticType.Kind.BOOLEAN), childAnchor(head, 0));
         }
@@ -278,22 +226,16 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("operator '-' requires a numeric operand.");
     }
 
-    private static TypeRegister identifierReference(ShiftReduceSemanticContext context, SourceToken token) {
-        IdentifierRecord record = context.getIdentifier(token);
-        if (record == null) {
-            throw new CompilerException("identifier is not declared in current visible scopes.");
+    private static TypeRegister voidFunctionHead(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production) {
+        ShiftReduceSyntaxTreeNode first = head.get(0);
+        if (!first.isToken()) {
+            return null;
         }
-        return TypeRegister.simple(record.getDeclaredType(), token);
-    }
-
-    private static TypeRegister functionCall(ShiftReduceSemanticContext context, HeadNode head) {
-        SourceToken token = childAnchor(head, 0);
-        String name = new String(token.getLexeme(), StandardCharsets.UTF_8);
-        var function = context.getFunction(name);
-        if (function == null) {
-            throw new CompilerException("function is not declared in current visible scope.");
+        SemanticType type = context.typeToken(first.toToken().getSource());
+        if (type == null || !type.isVoidScalar()) {
+            return null;
         }
-        return TypeRegister.simple(function.getSignature().getReturnType(), token);
+        return TypeRegister.simple(type, first.toToken().getSource());
     }
 
     private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
@@ -334,10 +276,38 @@ public class TypeBuildCallback implements ShiftReduceCallback {
                 queue.add(child);
             }
         }
-        return null;
+        throw new IllegalStateException("syntax tree node has no token anchor.");
     }
 
     private static TypeRegister withAnchor(TypeRegister register, SourceToken anchor) {
         return new TypeRegister(register.getType(), register.getInstructionType(), anchor);
+    }
+
+    @FunctionalInterface
+    private interface TypeRule {
+        TypeRule UNHANDLED = (context, head, production) -> {
+            throw new CompilerException("unhandled production in TypeBuildCallback: " + production);
+        };
+        TypeRule NONE = (context, head, production) -> null;
+        TypeRule FORWARD = (context, head, production) -> forward(context, head);
+        TypeRule TYPE_DECLARATION = (context, head, production) -> typeDeclaration(context, head);
+        TypeRule ARRAY_TYPE = (context, head, production) -> arrayType(context, head);
+        TypeRule DECLARED_IDENTIFIER = (context, head, production) -> declaredIdentifier(context, head);
+        TypeRule IDENTIFIER_REFERENCE = (context, head, production) -> identifierReference(context, head);
+        TypeRule ARRAY_ACCESS = (context, head, production) -> arrayElement(context, head);
+        TypeRule FUNCTION_CALL = (context, head, production) -> functionCall(context, head);
+        TypeRule LEFT_VALUE = (context, head, production) -> requireChild(context, head, 0);
+        TypeRule LITERAL = (context, head, production) -> literal(context, head);
+        TypeRule PARENTHESIZED = (context, head, production) -> requireChild(context, head, 1);
+        TypeRule UNARY_BOOLEAN = (context, head, production) -> unaryBoolean(context, head);
+        TypeRule UNARY_NUMERIC = (context, head, production) -> unaryNumeric(context, head);
+        TypeRule BOOLEAN_BINARY = (context, head, production) -> booleanBinary(context, head);
+        TypeRule EQUALITY = (context, head, production) -> equality(context, head);
+        TypeRule RELATION = (context, head, production) -> relation(context, head);
+        TypeRule NUMERIC_BINARY = (context, head, production) -> numericBinary(context, head);
+        TypeRule ASSIGNMENT = (context, head, production) -> assignment(context, head);
+        TypeRule VOID_FUNCTION_HEAD = TypeBuildCallback::voidFunctionHead;
+
+        TypeRegister build(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
     }
 }

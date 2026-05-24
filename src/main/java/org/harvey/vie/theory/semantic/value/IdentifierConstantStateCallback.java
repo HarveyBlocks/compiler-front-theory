@@ -41,10 +41,14 @@ public class IdentifierConstantStateCallback implements ShiftReduceCallback {
             return null;
         }
         HeadNode head = locNode.toHead();
-        if (head.size() != 1 || !head.get(0).isToken()) {
+        if (!head.matchTags(ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)) {
             return null;
         }
-        return head.get(0).toToken().getSource();
+        ShiftReduceSyntaxTreeNode tokenNode = head.get(0);
+        if (!tokenNode.isToken()) {
+            throw new IllegalStateException("identifier use production does not start with token.");
+        }
+        return tokenNode.toToken().getSource();
     }
 
     private HeadNode currentReducedHead(ShiftReduceSemanticContext context) {

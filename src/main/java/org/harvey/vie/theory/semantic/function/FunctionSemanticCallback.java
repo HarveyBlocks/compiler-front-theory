@@ -9,7 +9,6 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-import org.harvey.vie.theory.semantic.tree.node.HeadNodes;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -135,7 +134,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             return;
         }
         HeadNode head = node.toHead();
-        if (HeadNodes.matches(head, 2, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)) {
+        if (head.matchTags(ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)) {
             TypeRegister register = context.getType(head.get(0));
             if (register == null) {
                 throw new CompilerException("parameter type is missing.");
@@ -172,15 +171,17 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             return;
         }
         HeadNode head = node.toHead();
-        if (HeadNodes.matchesTags(head, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE)) {
+        if (head.matchTags(ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE)) {
             TypeRegister register = context.getType(head);
             if (register != null) {
                 result.add(register);
             }
             return;
         }
-        for (ShiftReduceSyntaxTreeNode child : head) {
-            collectArgumentTypes0(context, child, result);
+        if (head.containsTag(ProgramSemanticTag.FORWARD)) {
+            for (ShiftReduceSyntaxTreeNode child : head) {
+                collectArgumentTypes0(context, child, result);
+            }
         }
     }
 

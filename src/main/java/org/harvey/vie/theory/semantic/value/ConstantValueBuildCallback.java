@@ -1,146 +1,78 @@
 package org.harvey.vie.theory.semantic.value;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 import java.nio.charset.StandardCharsets;
 
 public class ConstantValueBuildCallback implements ShiftReduceCallback {
+    private static final ProductionTagStrategy<ConstantRule> RULES = new ProductionTagStrategy<>(ConstantRule.NONE)
+            .when(ConstantRule.NONE, ProgramSemanticTag.PROGRAM)
+            .when(ConstantRule.NONE, ProgramSemanticTag.NOOP)
+            .when(ConstantRule.NONE, ProgramSemanticTag.DECLARATION)
+            .when(ConstantRule.NONE, ProgramSemanticTag.RETURN)
+            .when(ConstantRule.NONE, ProgramSemanticTag.LOOP)
+            .when(ConstantRule.NONE, ProgramSemanticTag.CONDITIONAL)
+            .when(ConstantRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.COMMAND)
+            .when(ConstantRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+            .when(ConstantRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(ConstantRule.NONE, ProgramSemanticTag.PARAMETER)
+            .when(ConstantRule.NONE, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
+            .when(ConstantRule.NONE, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
+            .when(ConstantRule.NONE, ProgramSemanticTag.ACCESS)
+            .when(ConstantRule.NONE, ProgramSemanticTag.ASSIGNMENT)
+            .when(ConstantRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+            .when(ConstantRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(ConstantRule.FORWARD, ProgramSemanticTag.FORWARD)
+            .when(ConstantRule.IDENTIFIER, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
+            .when(ConstantRule.LEFT_VALUE, ProgramSemanticTag.LEFT_VALUE)
+            .when(ConstantRule.LITERAL, ProgramSemanticTag.LITERAL)
+            .when(ConstantRule.PARENTHESIZED, ProgramSemanticTag.PARENTHESIZED)
+            .when(ConstantRule.UNARY_MINUS, ProgramSemanticTag.NEGATE)
+            .when(ConstantRule.UNARY_NOT, ProgramSemanticTag.LOGICAL_NOT)
+            .when(ConstantRule.ARITHMETIC, ProgramSemanticTag.PLUS)
+            .when(ConstantRule.ARITHMETIC, ProgramSemanticTag.MINUS)
+            .when(ConstantRule.ARITHMETIC, ProgramSemanticTag.MULTIPLY)
+            .when(ConstantRule.ARITHMETIC, ProgramSemanticTag.DIVIDE)
+            .when(ConstantRule.LOGICAL, ProgramSemanticTag.OR)
+            .when(ConstantRule.LOGICAL, ProgramSemanticTag.AND)
+            .when(ConstantRule.EQUALITY, ProgramSemanticTag.EQUAL)
+            .when(ConstantRule.EQUALITY, ProgramSemanticTag.NOT_EQUAL)
+            .when(ConstantRule.RELATION, ProgramSemanticTag.LESS)
+            .when(ConstantRule.RELATION, ProgramSemanticTag.LESS_EQUAL)
+            .when(ConstantRule.RELATION, ProgramSemanticTag.GREATER)
+            .when(ConstantRule.RELATION, ProgramSemanticTag.GREATER_EQUAL)
+            .when(ConstantRule.ARGUMENT_VALUE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE, ProgramSemanticTag.FORWARD);
+
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
-        ConstantValue value = build(context, normalizeKey(production.toString().trim()), head);
+        ConstantValue value = RULES.resolve(production).build(context, head);
         if (value != null) {
             context.bindConstantValue(head, value);
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
 
-    private ConstantValue build(ShiftReduceSemanticContext context, String key, HeadNode head) {
-        if (isEpsilonOf(key, "param_list", "arg_list", "block_items")) {
-            return null;
-        }
-        switch (key) {
-            case "program->top_item":
-            case "program->top_item program":
-            case "program->block":
-            case "top_item->function_decl":
-            case "top_item->block_item":
-            case "function_decl->function_head block":
-            case "function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
-            case "function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
-            case "param_list->params":
-            case "params->param":
-            case "params->params OPERATOR_COMMA param":
-            case "param->type IDENTIFIER":
-            case "arg_list->args":
-            case "args->bool":
-            case "args->args OPERATOR_COMMA bool":
-            case "call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE":
-            case "expr_stmt->expr OPERATOR_SEMICOLON":
-            case "matched_stmt->assign_stmt":
-            case "matched_stmt->matched_while_stmt":
-            case "matched_stmt->do_while_stmt":
-            case "matched_stmt->expr_stmt":
-            case "matched_stmt->block":
-            case "matched_stmt->empty_stmt":
-            case "matched_stmt->break_stmt":
-            case "matched_stmt->continue_stmt":
-            case "matched_stmt->matched_if_stmt":
-            case "matched_stmt->return_stmt":
-                return null;
-            case "block_items->block_item":
-            case "block_item->decl":
-            case "block_item->stmt":
-            case "stmt->matched_stmt":
-            case "stmt->unmatched_stmt":
-            case "unmatched_stmt->unmatched_if_stmt":
-            case "unmatched_stmt->unmatched_while_stmt":
-            case "block_items->block_items block_item":
-            case "bool->join":
-            case "join->equality":
-            case "equality->rel":
-            case "rel->expr":
-            case "expr->term":
-            case "term->unary":
-            case "unary->factor":
-            case "factor->loc":
-                return child(context, head, 0);
-            case "factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE":
-                return child(context, head, 1);
-            case "loc->IDENTIFIER":
-                return identifierConstant(context, head);
-            case "loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE":
-                return null;
-            case "factor->CONSTANT_INTEGER":
-            case "factor->CONSTANT_FLOAT":
-            case "factor->CONSTANT_BOOLEAN_TRUE":
-            case "factor->CONSTANT_BOOLEAN_FALSE":
-                return literal(context, head.get(0).toToken().getSource());
-            case "unary->OPERATOR_MINUS unary":
-                return unaryMinus(context, head);
-            case "unary->OPERATOR_LOGICAL_NOT unary":
-                return unaryNot(context, head);
-            case "expr->expr OPERATOR_PLUS term":
-                return arithmetic(context, head, "plus");
-            case "expr->expr OPERATOR_MINUS term":
-                return arithmetic(context, head, "minus");
-            case "term->term OPERATOR_MULTIPLY unary":
-                return arithmetic(context, head, "multiply");
-            case "term->term OPERATOR_DIVIDE unary":
-                return arithmetic(context, head, "divide");
-            case "bool->bool OPERATOR_LOGICAL_OR join":
-                return logical(context, head, "or");
-            case "join->join OPERATOR_LOGICAL_AND equality":
-                return logical(context, head, "and");
-            case "equality->equality OPERATOR_EQUAL rel":
-                return equality(context, head, true);
-            case "equality->equality OPERATOR_NOT_EQUAL rel":
-                return equality(context, head, false);
-            case "rel->expr OPERATOR_LESS expr":
-                return relation(context, head, "less");
-            case "rel->expr OPERATOR_LESS_EQUAL expr":
-                return relation(context, head, "less_equal");
-            case "rel->expr OPERATOR_GREATER expr":
-                return relation(context, head, "greater");
-            case "rel->expr OPERATOR_GREATER_EQUAL expr":
-                return relation(context, head, "greater_equal");
-            default:
-                return null;
-        }
-    }
-
-    private String normalizeKey(String key) {
-        return key.replace("return_type", "type");
-    }
-
-    private boolean isEpsilonOf(String key, String... heads) {
-        int index = key.indexOf("->");
-        if (index < 0) {
-            return false;
-        }
-        String head = key.substring(0, index);
-        boolean matchesHead = false;
-        for (String candidate : heads) {
-            if (candidate.equals(head)) {
-                matchesHead = true;
-                break;
+    private static ConstantValue forward(ShiftReduceSemanticContext context, HeadNode head) {
+        for (int i = 0; i < head.size(); i++) {
+            ConstantValue child = child(context, head, i);
+            if (child != null || context.hasConstantValue(head.get(i))) {
+                return child;
             }
         }
-        if (!matchesHead) {
-            return false;
-        }
-        String body = key.substring(index + 2).trim();
-        return body.isEmpty() || "蔚".equals(body) || "ε".equals(body);
+        return null;
     }
 
-    private ConstantValue literal(ShiftReduceSemanticContext context, SourceToken token) {
+    private static ConstantValue literal(ShiftReduceSemanticContext context, HeadNode head) {
+        SourceToken token = head.get(0).toToken().getSource();
         SemanticType type = context.literalType(token);
         String lexeme = new String(token.getLexeme(), StandardCharsets.UTF_8);
         switch (type.getKind()) {
@@ -155,7 +87,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         }
     }
 
-    private ConstantValue unaryMinus(ShiftReduceSemanticContext context, HeadNode head) {
+    private static ConstantValue unaryMinus(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue operand = child(context, head, 1);
         if (operand == null || !operand.getType().isNumericScalar()) {
             return null;
@@ -166,7 +98,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(operand.getType(), -operand.int32());
     }
 
-    private ConstantValue unaryNot(ShiftReduceSemanticContext context, HeadNode head) {
+    private static ConstantValue unaryNot(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue operand = child(context, head, 1);
         if (operand == null || !operand.getType().isBooleanScalar()) {
             return null;
@@ -174,7 +106,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(operand.getType(), !operand.bool());
     }
 
-    private ConstantValue arithmetic(ShiftReduceSemanticContext context, HeadNode head, String operator) {
+    private static ConstantValue arithmetic(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
         if (left == null || right == null || !left.getType().isNumericScalar() || !right.getType().isNumericScalar()) {
@@ -183,31 +115,32 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         SemanticType resultType = context.commonBinaryType(left.getType(), right.getType());
         double leftValue = left.getType().getKind() == SemanticType.Kind.FLOAT64 ? left.float64() : left.int32();
         double rightValue = right.getType().getKind() == SemanticType.Kind.FLOAT64 ? right.float64() : right.int32();
-        switch (operator) {
-            case "plus":
-                return numericResult(resultType, leftValue + rightValue);
-            case "minus":
-                return numericResult(resultType, leftValue - rightValue);
-            case "multiply":
-                return numericResult(resultType, leftValue * rightValue);
-            case "divide":
-                return numericResult(resultType, leftValue / rightValue);
-            default:
-                throw new CompilerException("unsupported arithmetic operator: " + operator);
+        if (head.containsTag(ProgramSemanticTag.PLUS)) {
+            return numericResult(resultType, leftValue + rightValue);
         }
+        if (head.containsTag(ProgramSemanticTag.MINUS)) {
+            return numericResult(resultType, leftValue - rightValue);
+        }
+        if (head.containsTag(ProgramSemanticTag.MULTIPLY)) {
+            return numericResult(resultType, leftValue * rightValue);
+        }
+        if (head.containsTag(ProgramSemanticTag.DIVIDE)) {
+            return numericResult(resultType, leftValue / rightValue);
+        }
+        throw new CompilerException("unsupported arithmetic operator.");
     }
 
-    private ConstantValue logical(ShiftReduceSemanticContext context, HeadNode head, String operator) {
+    private static ConstantValue logical(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
         if (left == null || right == null || !left.getType().isBooleanScalar() || !right.getType().isBooleanScalar()) {
             return null;
         }
-        boolean result = "or".equals(operator) ? left.bool() || right.bool() : left.bool() && right.bool();
+        boolean result = head.containsTag(ProgramSemanticTag.OR) ? left.bool() || right.bool() : left.bool() && right.bool();
         return new ConstantValue(SemanticType.scalar(SemanticType.Kind.BOOLEAN), result);
     }
 
-    private ConstantValue equality(ShiftReduceSemanticContext context, HeadNode head, boolean equal) {
+    private static ConstantValue equality(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
         if (left == null || right == null) {
@@ -223,10 +156,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         } else {
             return null;
         }
-        return new ConstantValue(SemanticType.scalar(SemanticType.Kind.BOOLEAN), equal == result);
+        return new ConstantValue(
+                SemanticType.scalar(SemanticType.Kind.BOOLEAN),
+                head.containsTag(ProgramSemanticTag.EQUAL) == result
+        );
     }
 
-    private ConstantValue relation(ShiftReduceSemanticContext context, HeadNode head, String operator) {
+    private static ConstantValue relation(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
         if (left == null || right == null || !left.getType().isNumericScalar() || !right.getType().isNumericScalar()) {
@@ -235,46 +171,60 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         double leftValue = left.getType().getKind() == SemanticType.Kind.FLOAT64 ? left.float64() : left.int32();
         double rightValue = right.getType().getKind() == SemanticType.Kind.FLOAT64 ? right.float64() : right.int32();
         boolean result;
-        switch (operator) {
-            case "less":
-                result = leftValue < rightValue;
-                break;
-            case "less_equal":
-                result = leftValue <= rightValue;
-                break;
-            case "greater":
-                result = leftValue > rightValue;
-                break;
-            case "greater_equal":
-                result = leftValue >= rightValue;
-                break;
-            default:
-                throw new CompilerException("unsupported relational operator: " + operator);
+        if (head.containsTag(ProgramSemanticTag.LESS)) {
+            result = leftValue < rightValue;
+        } else if (head.containsTag(ProgramSemanticTag.LESS_EQUAL)) {
+            result = leftValue <= rightValue;
+        } else if (head.containsTag(ProgramSemanticTag.GREATER)) {
+            result = leftValue > rightValue;
+        } else if (head.containsTag(ProgramSemanticTag.GREATER_EQUAL)) {
+            result = leftValue >= rightValue;
+        } else {
+            throw new CompilerException("unsupported relational operator.");
         }
         return new ConstantValue(SemanticType.scalar(SemanticType.Kind.BOOLEAN), result);
     }
 
-    private ConstantValue numericResult(SemanticType type, double value) {
+    private static ConstantValue numericResult(SemanticType type, double value) {
         if (type.getKind() == SemanticType.Kind.FLOAT64) {
             return new ConstantValue(type, value);
         }
         return new ConstantValue(type, (int) value);
     }
 
-    private ConstantValue identifierConstant(ShiftReduceSemanticContext context, HeadNode head) {
+    private static ConstantValue identifierConstant(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = head.get(0).toToken().getSource();
         var record = context.getIdentifier(token);
         return record == null ? null : record.getConstantValue();
     }
 
-    private ConstantValue child(ShiftReduceSemanticContext context, HeadNode head, int index) {
+    private static ConstantValue child(ShiftReduceSemanticContext context, HeadNode head, int index) {
         return context.getConstantValue(head.get(index));
     }
 
-    private HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
+    private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             throw new IllegalStateException("current reduced head is not available");
         }
         return context.getTreeContext().peek().toHead();
+    }
+
+    @FunctionalInterface
+    private interface ConstantRule {
+        ConstantRule NONE = (context, head) -> null;
+        ConstantRule FORWARD = ConstantValueBuildCallback::forward;
+        ConstantRule IDENTIFIER = ConstantValueBuildCallback::identifierConstant;
+        ConstantRule LEFT_VALUE = (context, head) -> child(context, head, 0);
+        ConstantRule LITERAL = ConstantValueBuildCallback::literal;
+        ConstantRule PARENTHESIZED = (context, head) -> child(context, head, 1);
+        ConstantRule UNARY_MINUS = ConstantValueBuildCallback::unaryMinus;
+        ConstantRule UNARY_NOT = ConstantValueBuildCallback::unaryNot;
+        ConstantRule ARITHMETIC = ConstantValueBuildCallback::arithmetic;
+        ConstantRule LOGICAL = ConstantValueBuildCallback::logical;
+        ConstantRule EQUALITY = ConstantValueBuildCallback::equality;
+        ConstantRule RELATION = ConstantValueBuildCallback::relation;
+        ConstantRule ARGUMENT_VALUE = ConstantValueBuildCallback::forward;
+
+        ConstantValue build(ShiftReduceSemanticContext context, HeadNode head);
     }
 }

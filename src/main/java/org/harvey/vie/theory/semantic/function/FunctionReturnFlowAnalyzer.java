@@ -1,11 +1,30 @@
 package org.harvey.vie.theory.semantic.function;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 public final class FunctionReturnFlowAnalyzer {
+    private static final ProductionTagStrategy<ReturnRule> RULES = new ProductionTagStrategy<>(ReturnRule.NEVER)
+            .when(ReturnRule.BLOCK, ProgramSemanticTag.BLOCK, ProgramSemanticTag.COMMAND)
+            .when(ReturnRule.BLOCK_ITEMS_EMPTY,
+                    ProgramSemanticTag.BLOCK,
+                    ProgramSemanticTag.LIST,
+                    ProgramSemanticTag.EMPTY
+            )
+            .when(ReturnRule.BLOCK_ITEMS_SEQUENCE,
+                    ProgramSemanticTag.BLOCK,
+                    ProgramSemanticTag.LIST,
+                    ProgramSemanticTag.SEQUENCE
+            )
+            .when(ReturnRule.FORWARD, ProgramSemanticTag.FORWARD)
+            .when(ReturnRule.RETURN, ProgramSemanticTag.RETURN)
+            .when(ReturnRule.MATCHED_IF, ProgramSemanticTag.CONDITIONAL, ProgramSemanticTag.ELSE_BRANCH);
+
     private FunctionReturnFlowAnalyzer() {
     }
 
@@ -14,68 +33,28 @@ public final class FunctionReturnFlowAnalyzer {
             return false;
         }
         HeadNode head = node.toHead();
-        String symbol = head.getSymbol().toString();
-        switch (symbol) {
-            case "block":
-                return blockGuaranteesReturn(context, head);
-            case "block_items":
-                return blockItemsGuaranteeReturn(context, head);
-            case "block_item":
-                return head.size() > 0 && guaranteesReturn(context, head.get(0));
-            case "stmt":
-            case "matched_stmt":
-            case "unmatched_stmt":
-                return statementGuaranteesReturn(context, head);
-            case "return_stmt":
-                return true;
-            case "matched_if_stmt":
-                return matchedIfGuaranteesReturn(context, head);
-            default:
-                return false;
-        }
+        return RULES.resolve(head.getProduction()).test(context, head);
     }
 
     private static boolean blockGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
-        if (head.size() < 2) {
-            return false;
-        }
         return guaranteesReturn(context, head.get(1));
     }
 
-    private static boolean blockItemsGuaranteeReturn(ShiftReduceSemanticContext context, HeadNode head) {
-        if (head.size() == 0) {
-            return false;
-        }
-        if (head.size() == 1) {
-            return guaranteesReturn(context, head.get(0));
-        }
+    private static boolean blockItemsSequenceGuaranteesReturn(
+            ShiftReduceSemanticContext context, HeadNode head) {
         return guaranteesReturn(context, head.get(0)) || guaranteesReturn(context, head.get(1));
     }
 
-    private static boolean statementGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
-        String symbol = head.getSymbol().toString();
-        if ("matched_stmt".equals(symbol) && head.size() == 1 && head.get(0).isHead()) {
-            HeadNode child = head.get(0).toHead();
-            if ("return_stmt".equals(child.getSymbol().toString())) {
+    private static boolean forwardGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
+        for (ShiftReduceSyntaxTreeNode child : head) {
+            if (guaranteesReturn(context, child)) {
                 return true;
             }
-            if ("matched_if_stmt".equals(child.getSymbol().toString())) {
-                return matchedIfGuaranteesReturn(context, child);
-            }
-            if ("block".equals(child.getSymbol().toString())) {
-                return blockGuaranteesReturn(context, child);
-            }
-        }
-        if (head.size() == 1) {
-            return guaranteesReturn(context, head.get(0));
         }
         return false;
     }
 
     private static boolean matchedIfGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
-        if (head.size() != 7) {
-            return false;
-        }
         Boolean condition = constantBoolean(context, head.get(2));
         if (Boolean.TRUE.equals(condition)) {
             return guaranteesReturn(context, head.get(4));
@@ -92,5 +71,18 @@ public final class FunctionReturnFlowAnalyzer {
             return null;
         }
         return value.bool();
+    }
+
+    @FunctionalInterface
+    private interface ReturnRule {
+        ReturnRule NEVER = (context, head) -> false;
+        ReturnRule RETURN = (context, head) -> true;
+        ReturnRule BLOCK = FunctionReturnFlowAnalyzer::blockGuaranteesReturn;
+        ReturnRule BLOCK_ITEMS_EMPTY = NEVER;
+        ReturnRule BLOCK_ITEMS_SEQUENCE = FunctionReturnFlowAnalyzer::blockItemsSequenceGuaranteesReturn;
+        ReturnRule FORWARD = FunctionReturnFlowAnalyzer::forwardGuaranteesReturn;
+        ReturnRule MATCHED_IF = FunctionReturnFlowAnalyzer::matchedIfGuaranteesReturn;
+
+        boolean test(ShiftReduceSemanticContext context, HeadNode head);
     }
 }

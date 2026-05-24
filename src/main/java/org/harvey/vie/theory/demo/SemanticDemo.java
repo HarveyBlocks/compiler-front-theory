@@ -248,7 +248,7 @@ public class SemanticDemo {
 
                     @Override
                     public boolean initialized(HeadNode declarationReducedNode) {
-                        return declarationReducedNode.size() > 3;
+                        return declarationReducedNode.containsTag(ProgramSemanticTag.INITIALIZED);
                     }
 
                     @Override
@@ -260,7 +260,7 @@ public class SemanticDemo {
                     public org.harvey.vie.theory.semantic.value.ConstantValue initializerValue(
                             org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
                             HeadNode declarationReducedNode) {
-                        if (declarationReducedNode.size() <= 3) {
+                        if (!declarationReducedNode.containsTag(ProgramSemanticTag.INITIALIZED)) {
                             return null;
                         }
                         return context.getConstantValue(declarationReducedNode.get(3).toHead());

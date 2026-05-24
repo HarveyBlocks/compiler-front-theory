@@ -77,6 +77,6 @@ public final class TypeAttributes {
                 queue.add(child);
             }
         }
-        return null;
+        throw new IllegalStateException("syntax tree node has no token anchor.");
     }
 }

@@ -78,7 +78,11 @@ public class HeadNode implements ShiftReduceSyntaxTreeNode, IRandomAccess<ShiftR
         children[i] = mapper.apply(children[i]);
     }
 
-    public boolean matchTags(SemanticTag[] expected) {
+    public boolean matchTags(SemanticTag... expected) {
         return production.matchTags(expected);
+    }
+
+    public boolean containsTag(SemanticTag tag) {
+        return production.containsTag(tag);
     }
 }
