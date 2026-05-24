@@ -4,13 +4,10 @@ import lombok.Getter;
 import org.harvey.vie.theory.error.SemanticErrorMessage;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
-import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.TypeConversionRule;
-import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.function.FunctionBodyState;
 import org.harvey.vie.theory.semantic.function.FunctionContext;
@@ -21,16 +18,16 @@ import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
-import org.harvey.vie.theory.semantic.type.TypeContext;
-import org.harvey.vie.theory.semantic.type.TypeRegister;
+import org.harvey.vie.theory.semantic.type.*;
+import org.harvey.vie.theory.semantic.value.ConstantResolver;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.semantic.value.ConstantValueContext;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaseContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.AlterableSymbol;
 
-import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
@@ -61,7 +58,8 @@ public class ShiftReduceSemanticContext {
     private final TypeContext typeContext = new TypeContext();
     @Getter
     private final ConstantValueContext constantValueContext = new ConstantValueContext();
-    private final TypeResolver typeResolver = new TypeResolver();
+    private final TypeResolver typeResolver;
+    private final ConstantResolver constantResolver;
     private final TypeConversionRule typeConversionRule = new TypeConversionRule();
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
     private final List<IdentifierRecord> identifierRecords = new ArrayList<>();
@@ -69,12 +67,18 @@ public class ShiftReduceSemanticContext {
     private final ArrayDeque<Boolean> blockFunctionFlags = new ArrayDeque<>();
     private FunctionRecord pendingFunction;
 
-    public ShiftReduceSemanticContext(ShiftReduceCallbackRegister register, ShiftReducePhaseContext syntaxContext,
-            CommandFactory commandFactory) {
+    public ShiftReduceSemanticContext(
+            ShiftReduceCallbackRegister register,
+            ShiftReducePhaseContext syntaxContext,
+            CommandFactory commandFactory,
+            TypeResolver typeResolver,
+            ConstantResolver constantResolver) {
         this.register = register;
         this.syntaxContext = syntaxContext;
         callbackIter = register.iterator();
         this.commandFactory = commandFactory;
+        this.typeResolver = typeResolver;
+        this.constantResolver = constantResolver;
     }
 
     // region callback
@@ -185,8 +189,7 @@ public class ShiftReduceSemanticContext {
             SourceToken identifierToken,
             boolean initialized,
             ConstantValue constantValue) {
-        identifierRecords.add(identifierTableBuilder.registerIdentifier(
-                typeHeadNode,
+        identifierRecords.add(identifierTableBuilder.registerIdentifier(typeHeadNode,
                 declaredType,
                 identifierToken,
                 initialized,
@@ -305,7 +308,7 @@ public class ShiftReduceSemanticContext {
     }
 
     public int integerLiteral(SourceToken token) {
-        return typeResolver.integerLiteral(token);
+        return constantResolver.integerLiteral(token);
     }
 
     public boolean canImplicitlyConvert(SemanticType from, SemanticType to) {

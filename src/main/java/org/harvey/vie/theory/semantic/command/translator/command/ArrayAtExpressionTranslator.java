@@ -2,9 +2,8 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -36,10 +35,10 @@ public class ArrayAtExpressionTranslator implements CommandTranslator {
         SemanticType baseType = TypeAttributes.childType(context, 0);
         SemanticType indexType = TypeAttributes.childType(context, 2);
         if (!baseType.isArray()) {
-            SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "subscript operator requires an array operand.");
+            SemanticDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "subscript operator requires an array operand.");
         }
         if (!SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
-            SemanticTypeDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "array index must be int32.");
+            SemanticDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "array index must be int32.");
         }
         SemanticType resultType = baseType.arrayElementType();
         thisBuilder.add(new TerminalNode(context.getCommandFactory().biasFromStTopToRef(resultType)));

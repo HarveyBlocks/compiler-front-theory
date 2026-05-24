@@ -4,7 +4,7 @@ import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
@@ -52,7 +52,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken nameToken = head.get(1).toToken().getSource();
         if (context.existFunction(nameToken)) {
-            SemanticTypeDiagnostics.reject(context, nameToken, "duplicate function declaration is not allowed.");
+            SemanticDiagnostics.reject(context, nameToken, "duplicate function declaration is not allowed.");
         }
         TypeRegister returnTypeRegister = context.getType(head.get(0));
         if (returnTypeRegister == null) {
@@ -71,7 +71,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
     private void validateReturnValue(ShiftReduceSemanticContext context, HeadNode head, boolean hasValue) {
         SourceToken returnToken = head.get(0).toToken().getSource();
         if (!context.insideFunction()) {
-            SemanticTypeDiagnostics.reject(context, returnToken, "return is only allowed inside function body.");
+            SemanticDiagnostics.reject(context, returnToken, "return is only allowed inside function body.");
         }
         SemanticType returnType = context.currentFunctionReturnType();
         if (returnType == null) {
@@ -79,18 +79,18 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
         if (!hasValue) {
             if (!returnType.isVoidScalar()) {
-                SemanticTypeDiagnostics.reject(context, returnToken, "non-void function must return a value.");
+                SemanticDiagnostics.reject(context, returnToken, "non-void function must return a value.");
             }
             return;
         }
         if (returnType.isVoidScalar()) {
-            SemanticTypeDiagnostics.reject(context, returnToken, "void function cannot return a value.");
+            SemanticDiagnostics.reject(context, returnToken, "void function cannot return a value.");
         }
         TypeRegister valueType = context.getType(head.get(1));
         if (valueType == null) {
             throw new CompilerException("return value type is missing.");
         }
-        SemanticTypeDiagnostics.requireAssignable(context,
+        SemanticDiagnostics.requireAssignable(context,
                 valueType.requireType("return value type is required."),
                 returnType,
                 returnToken,
@@ -102,17 +102,17 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         SourceToken nameToken = head.get(0).toToken().getSource();
         FunctionRecord record = context.getFunction(nameToken);
         if (record == null) {
-            SemanticTypeDiagnostics.reject(context, nameToken, "function must be defined before it is called.");
+            SemanticDiagnostics.reject(context, nameToken, "function must be defined before it is called.");
             return;
         }
         List<TypeRegister> args = collectArgumentTypes(context, head.get(2));
         if (args.size() != record.getParameters().size()) {
-            SemanticTypeDiagnostics.reject(context, nameToken, "function argument count does not match.");
+            SemanticDiagnostics.reject(context, nameToken, "function argument count does not match.");
         }
         for (int i = 0; i < args.size(); i++) {
             SemanticType sourceType = args.get(i).requireType("argument type is required.");
             SemanticType targetType = record.getParameters().get(i).getType();
-            SemanticTypeDiagnostics.requireAssignable(context,
+            SemanticDiagnostics.requireAssignable(context,
                     sourceType,
                     targetType,
                     nameToken,
@@ -141,10 +141,10 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             }
             SemanticType type = register.requireType("parameter type is required.");
             SourceToken nameToken = head.get(1).toToken().getSource();
-            SemanticTypeDiagnostics.requireNotVoid(context, type, nameToken, "void cannot be used as parameter type.");
+            SemanticDiagnostics.requireNotVoid(context, type, nameToken, "void cannot be used as parameter type.");
             for (FunctionParameter parameter : result) {
                 if (parameter.isNamed(nameToken)) {
-                    SemanticTypeDiagnostics.reject(context,
+                    SemanticDiagnostics.reject(context,
                             nameToken,
                             "duplicate parameter declaration is not allowed."
                     );

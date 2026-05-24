@@ -1,8 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
-import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -45,7 +44,7 @@ public class WhileStatementTranslator implements CommandTranslator {
         if (Boolean.FALSE.equals(constantCondition)) {
             return new PlaceholderNodeRegister();
         }
-        SemanticTypeDiagnostics.requireBoolean(
+        SemanticDiagnostics.requireBoolean(
                 context,
                 TypeAttributes.childType(context, 2),
                 TypeAttributes.childAnchor(context, 0),

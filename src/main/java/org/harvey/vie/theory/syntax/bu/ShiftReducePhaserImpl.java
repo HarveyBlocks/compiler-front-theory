@@ -5,11 +5,13 @@ import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.TokenFilterPredict;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
 import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
-import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
+import org.harvey.vie.theory.semantic.type.TypeResolver;
+import org.harvey.vie.theory.semantic.value.ConstantResolver;
 import org.harvey.vie.theory.syntax.SyntaxParsingContext;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
@@ -30,24 +32,32 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     private final TokenFilterPredict tokenFilterPredict;
     private final CommandFactory commandFactory;
     private final boolean traceSteps;
+    private final TypeResolver typeResolver;
+    private final ConstantResolver constantResolver;
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
             TokenFilterPredict tokenFilterPredict,
-            ShiftReduceCallbackRegister register, CommandFactory commandFactory) {
-        this(table, tokenFilterPredict, register, commandFactory, false);
+            ShiftReduceCallbackRegister register,
+            CommandFactory commandFactory,
+            TypeResolver typeResolver, ConstantResolver constantResolver) {
+        this(table, tokenFilterPredict, register, commandFactory, typeResolver, constantResolver, false);
     }
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
             TokenFilterPredict tokenFilterPredict,
             ShiftReduceCallbackRegister register,
-            CommandFactory commandFactory, boolean traceSteps) {
+            CommandFactory commandFactory,
+            TypeResolver typeResolver,
+            ConstantResolver constantResolver, boolean traceSteps) {
         this.tokenFilterPredict = tokenFilterPredict;
         this.table = table;
         this.register = register;
         this.commandFactory = commandFactory;
+        this.constantResolver = constantResolver;
         this.traceSteps = traceSteps;
+        this.typeResolver = typeResolver;
     }
 
     /**
@@ -76,15 +86,13 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
      */
     @Override
     public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
-        ShiftReducePhaseContext ctx = new ShiftReducePhaseContext(
-                table,
-                iterator,
-                tokenFilterPredict,
-                errorContext
-        );
+        ShiftReducePhaseContext ctx = new ShiftReducePhaseContext(table, iterator, tokenFilterPredict, errorContext);
         ShiftReduceSemanticContext context = new ShiftReduceSemanticContext(
-                register, ctx,
-                commandFactory
+                register,
+                ctx,
+                commandFactory,
+                typeResolver,
+                constantResolver
         );
         context.onStart();
         while (true) {

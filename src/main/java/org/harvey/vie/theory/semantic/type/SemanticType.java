@@ -15,7 +15,6 @@ import java.util.StringJoiner;
 public final class SemanticType {
     public enum Kind {
         BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID;
-
     }
 
     private final Kind kind;
@@ -79,14 +78,14 @@ public final class SemanticType {
 
     public boolean canImplicitlyCastTo(SemanticType target) {
         return equals(target) || isNumericScalar() && target.isNumericScalar();
-
     }
+
 
 
     @Override
     public String toString() {
         StringJoiner joiner = new StringJoiner(" ");
-        joiner.add(kind.name());
+        joiner.add(kind.name().toLowerCase());
         for (Integer dimension : dimensions) {
             joiner.add("[");
             joiner.add(String.valueOf(dimension));

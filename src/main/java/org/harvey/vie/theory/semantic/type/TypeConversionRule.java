@@ -1,6 +1,6 @@
 package org.harvey.vie.theory.semantic.type;
 
-// TODO 意义不明, 为什么要专门写? 意义呢? 专门用来干嘛的? 说清楚了吗?
+
 /**
  * @author Temper
  */

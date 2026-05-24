@@ -2,9 +2,8 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -45,7 +44,7 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         SemanticType operandType = TypeAttributes.childType(context, 1);
         SemanticType instructionType;
         if (operatorType == ProgramTokenType.OPERATOR_LOGICAL_NOT) {
-            SemanticTypeDiagnostics.requireBoolean(
+            SemanticDiagnostics.requireBoolean(
                     context,
                     operandType,
                     TypeAttributes.childAnchor(context, 0),
@@ -53,7 +52,7 @@ public class UnaryExpressionTranslator implements CommandTranslator {
             );
             instructionType = SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         } else if (operatorType == ProgramTokenType.OPERATOR_MINUS) {
-            SemanticTypeDiagnostics.requireNumeric(
+            SemanticDiagnostics.requireNumeric(
                     context,
                     operandType,
                     TypeAttributes.childAnchor(context, 0),

@@ -148,7 +148,10 @@ public final class ProgramSyntaxTestRunner {
                 shiftReduceParsingTable,
                 t -> !ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(t.getType()),
                 SemanticDemo.buildShiftReduceTestRegister(),
-                SyntaxDemo.STRING_COMMAND_FACTORY, Boolean.getBoolean(TRACE_STEPS_PROPERTY)
+                SyntaxDemo.STRING_COMMAND_FACTORY,
+                ProgramSyntaxDemo.TYPE_RESOLVER,
+                ProgramSyntaxDemo.CONSTANT_RESOLVER,
+                Boolean.getBoolean(TRACE_STEPS_PROPERTY)
         );
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
             SemanticResult result = phaser.phase(iterator, errorContext);

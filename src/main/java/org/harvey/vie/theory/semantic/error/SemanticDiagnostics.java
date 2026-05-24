@@ -1,16 +1,17 @@
-package org.harvey.vie.theory.semantic.type;
+package org.harvey.vie.theory.semantic.error;
 
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 
 /**
  * Shared semantic type validations used by translators.
  *
  * @author Temper
  */
-public final class SemanticTypeDiagnostics {
-    private SemanticTypeDiagnostics() {
+public final class SemanticDiagnostics {
+    private SemanticDiagnostics() {
     }
 
     public static void requireBoolean(

@@ -8,9 +8,13 @@ import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.io.resource.AsciiStringResource;
 import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
+import org.harvey.vie.theory.semantic.type.TypeResolver;
+import org.harvey.vie.theory.semantic.value.ConstantResolver;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
@@ -48,6 +52,13 @@ public class ProgramSyntaxDemo {
             return ((ProgramSemanticTag) o1).compareTo((ProgramSemanticTag) o2);
         }
         throw new IllegalStateException("Can not compare on different semantic tag system. ");
+    };
+    public static final TypeResolver TYPE_RESOLVER = new ProgramTypeResolver();
+    public  static final ConstantResolver CONSTANT_RESOLVER =  new ConstantResolver() {
+        @Override
+        public int integerLiteral(SourceToken token) {
+            return Integer.parseInt(SourceTokenStringMapping.utf8(token));
+        }
     };
 
     public static void main(String[] args) {
@@ -123,7 +134,9 @@ public class ProgramSyntaxDemo {
             ShiftReducePhaser phaser = new ShiftReducePhaserImpl(shiftReduceParsingTable,
                     t -> !SHOULD_BE_FILTERED.contains(t.getType()),
                     SemanticDemo.buildShiftReduceRegister(),
-                    SyntaxDemo.STRING_COMMAND_FACTORY
+                    SyntaxDemo.STRING_COMMAND_FACTORY,
+                    TYPE_RESOLVER,
+                    CONSTANT_RESOLVER
             );
             return phaser.phase(iter, errCtx);
         });

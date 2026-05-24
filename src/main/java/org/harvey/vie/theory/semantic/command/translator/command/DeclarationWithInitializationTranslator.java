@@ -2,9 +2,8 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -33,7 +32,7 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
         }
         SemanticType targetType = TypeAttributes.childType(context, 0);
         SemanticType sourceType = TypeAttributes.childType(context, 3);
-        SemanticTypeDiagnostics.requireAssignable(
+        SemanticDiagnostics.requireAssignable(
                 context,
                 sourceType,
                 targetType,

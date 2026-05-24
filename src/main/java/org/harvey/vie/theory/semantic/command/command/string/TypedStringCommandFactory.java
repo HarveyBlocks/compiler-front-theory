@@ -18,7 +18,10 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
  * @date 2026-05-24 23:04
  */
 public class TypedStringCommandFactory implements TypedCommandFactory {
-    private final TypeResolver typeResolver = new TypeResolver();
+    private final TypeResolver typeResolver;
+
+    public TypedStringCommandFactory(TypeResolver typeResolver) {this.typeResolver = typeResolver;}
+
 
     @Override
     public SemanticCommand loadLiteral(SourceToken token) {

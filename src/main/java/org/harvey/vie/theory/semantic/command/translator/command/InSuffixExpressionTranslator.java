@@ -3,9 +3,8 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.SemanticTypeDiagnostics;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -58,26 +57,26 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
             SourceToken token) {
         String operator = operatorFactor.toString();
         if ("logical_or".equals(operator) || "logical_and".equals(operator)) {
-            SemanticTypeDiagnostics.requireBoolean(context, leftType, token, "logical operator requires boolean operands.");
-            SemanticTypeDiagnostics.requireBoolean(context, rightType, token, "logical operator requires boolean operands.");
+            SemanticDiagnostics.requireBoolean(context, leftType, token, "logical operator requires boolean operands.");
+            SemanticDiagnostics.requireBoolean(context, rightType, token, "logical operator requires boolean operands.");
             return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
         }
         if ("equal".equals(operator) || "not_equal".equals(operator)) {
             boolean sameType = leftType.equals(rightType);
             boolean numericComparable = leftType.isNumericScalar() && rightType.isNumericScalar();
             if (!sameType && !numericComparable) {
-                SemanticTypeDiagnostics.reject(context, token, "equality operator requires identical types or comparable numeric types.");
+                SemanticDiagnostics.reject(context, token, "equality operator requires identical types or comparable numeric types.");
             }
             return numericComparable ? context.commonBinaryType(leftType, rightType) : leftType;
         }
         if ("less".equals(operator) || "less_equal".equals(operator)
                 || "greater".equals(operator) || "greater_equal".equals(operator)) {
-            SemanticTypeDiagnostics.requireNumeric(context, leftType, token, "relational operator requires numeric operands.");
-            SemanticTypeDiagnostics.requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
+            SemanticDiagnostics.requireNumeric(context, leftType, token, "relational operator requires numeric operands.");
+            SemanticDiagnostics.requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
             return context.commonBinaryType(leftType, rightType);
         }
-        SemanticTypeDiagnostics.requireNumeric(context, leftType, token, "arithmetic operator requires numeric operands.");
-        SemanticTypeDiagnostics.requireNumeric(context, rightType, token, "arithmetic operator requires numeric operands.");
+        SemanticDiagnostics.requireNumeric(context, leftType, token, "arithmetic operator requires numeric operands.");
+        SemanticDiagnostics.requireNumeric(context, rightType, token, "arithmetic operator requires numeric operands.");
         return context.commonBinaryType(leftType, rightType);
     }
 }
