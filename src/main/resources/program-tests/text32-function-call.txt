@@ -1,0 +1,7 @@
+int32 inc(int32 x) {
+    return x + 1;
+}
+{
+    int32 a;
+    a = inc(2);
+}

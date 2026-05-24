@@ -7,6 +7,8 @@ import org.harvey.vie.theory.semantic.callback.bu.ReducePredicate;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftPredicate;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.function.FunctionBodyState;
+import org.harvey.vie.theory.semantic.function.FunctionReturnFlowAnalyzer;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
@@ -28,7 +30,7 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
     public void onShift(ShiftReduceSemanticContext context, int nextStatus, SourceToken token) {
         // token
         if (scopeIntoPredicate.test(token)) {
-            context.scopeInto();
+            context.scopeIntoBlock();
         }
         ShiftReduceCallback.super.onShift(context, nextStatus, token);
     }
@@ -54,7 +56,17 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
         if (treeContext.isEmpty() || !treeContext.peek().isHead()) {
             return;
         }
-        IdentifierRecord[] scope = context.scopeExist();
+        IdentifierRecord[] scope = context.scopeExistBlock();
+        if (production.toString().trim().equals("block->OPERATOR_BRACE_OPEN block_items OPERATOR_BRACE_CLOSE")
+                && context.isCurrentBlockFunctionBody()) {
+            FunctionBodyState bodyState = context.currentFunctionBodyState();
+            if (bodyState != null
+                    && !FunctionReturnFlowAnalyzer.guaranteesReturn(context, treeContext.peek())
+                    && !bodyState.getFunction().getSignature().getReturnType().isVoidScalar()) {
+                throw new CompileException("non-void function must return a value.");
+            }
+        }
+        context.finishBlockScope();
         treeContext.resetTop(top -> {
             ShiftReduceSyntaxTreeNode replaced = top.toHead().instanceBlock(scope);
             context.moveTypeBinding(top, replaced);

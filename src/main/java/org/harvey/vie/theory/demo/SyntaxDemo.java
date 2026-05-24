@@ -140,7 +140,7 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    private static final boolean FLUSH_TABLE = false;
+    private static final boolean FLUSH_TABLE = Boolean.getBoolean("syntax.flushTable");
     private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(

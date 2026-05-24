@@ -56,14 +56,10 @@ public class ProgramLexicalDemo {
     private static final RegexCharSet ANY = RegexCharSet.unionAll(
             DIGIT, WHITESPACE, LOWER_LETTER, UPPER_LETTER, OPERATOR, OTHER
     );
-    private static final boolean FLUSH_TABLE = false;
+    private static final boolean FLUSH_TABLE = Boolean.getBoolean("lexical.flushTable");
     private static volatile LexicalAnalyzer cachedAnalyzer;
 
     private static final List<LexicalPattern> REGEX_PATTERNS = List.of(
-            new LexicalPattern("" +
-                               RegexCharSet.unionAll(UPPER_LETTER, LOWER_LETTER, RegexCharSet.of("_")) +
-                               RegexCharSet.unionAll(UPPER_LETTER, LOWER_LETTER, DIGIT, RegexCharSet.of("_")) +
-                               "*", ProgramTokenType.IDENTIFIER),
             new LexicalPattern(WHITESPACE + "" + WHITESPACE + "*", ProgramTokenType.SPACE),
             new LexicalPattern(
                     "/\\*(" + ANY.exclude("\\*") + "|\\*" + ANY.exclude("/") + ")*\\**\\*/",
@@ -90,6 +86,7 @@ public class ProgramLexicalDemo {
             new LexicalPattern("int32", ProgramTokenType.TYPE_INT32),
             new LexicalPattern("float64", ProgramTokenType.TYPE_FLOAT64),
             new LexicalPattern("string", ProgramTokenType.TYPE_STRING),
+            new LexicalPattern("void", ProgramTokenType.TYPE_VOID),
             new LexicalPattern("&&", ProgramTokenType.OPERATOR_LOGICAL_AND),
             new LexicalPattern("\\|\\|", ProgramTokenType.OPERATOR_LOGICAL_OR),
             new LexicalPattern("==", ProgramTokenType.OPERATOR_EQUAL),
@@ -107,6 +104,7 @@ public class ProgramLexicalDemo {
             new LexicalPattern("\\)", ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE),
             new LexicalPattern("=", ProgramTokenType.OPERATOR_ASSIGN),
             new LexicalPattern(";", ProgramTokenType.OPERATOR_SEMICOLON),
+            new LexicalPattern(",", ProgramTokenType.OPERATOR_COMMA),
             new LexicalPattern("[", ProgramTokenType.OPERATOR_SQUARE_OPEN),
             new LexicalPattern("]", ProgramTokenType.OPERATOR_SQUARE_CLOSE),
             new LexicalPattern("{", ProgramTokenType.OPERATOR_BRACE_OPEN),
@@ -116,7 +114,12 @@ public class ProgramLexicalDemo {
             new LexicalPattern("while", ProgramTokenType.CONTROL_STRUCTURES_WHILE),
             new LexicalPattern("do", ProgramTokenType.CONTROL_STRUCTURES_DO),
             new LexicalPattern("break", ProgramTokenType.CONTROL_STRUCTURES_BREAK),
-            new LexicalPattern("continue", ProgramTokenType.CONTROL_STRUCTURES_CONTINUE)
+            new LexicalPattern("continue", ProgramTokenType.CONTROL_STRUCTURES_CONTINUE),
+            new LexicalPattern("return", ProgramTokenType.CONTROL_STRUCTURES_RETURN),
+            new LexicalPattern("" +
+                               RegexCharSet.unionAll(UPPER_LETTER, LOWER_LETTER, RegexCharSet.of("_")) +
+                               RegexCharSet.unionAll(UPPER_LETTER, LOWER_LETTER, DIGIT, RegexCharSet.of("_")) +
+                               "*", ProgramTokenType.IDENTIFIER)
     );
 
     public static void main(String[] args) {

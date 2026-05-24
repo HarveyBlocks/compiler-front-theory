@@ -59,7 +59,10 @@ public enum ProgramTokenType implements TokenType {
     OPERATOR_LESS(3),
     OPERATOR_LESS_EQUAL(3),
     OPERATOR_GREATER(3),
-    OPERATOR_GREATER_EQUAL(3);
+    OPERATOR_GREATER_EQUAL(3),
+    TYPE_VOID(4),
+    OPERATOR_COMMA(3),
+    CONTROL_STRUCTURES_RETURN(2);
 
     private final int priority;
 

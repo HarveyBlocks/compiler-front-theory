@@ -38,6 +38,8 @@ public class TypeResolver {
                 return SemanticType.scalar(SemanticType.Kind.FLOAT64);
             case TYPE_STRING:
                 return SemanticType.scalar(SemanticType.Kind.STRING);
+            case TYPE_VOID:
+                return SemanticType.scalar(SemanticType.Kind.VOID);
             default:
                 throw new IllegalArgumentException("token does not represent a declared type: " + tokenType);
         }

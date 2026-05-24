@@ -1,0 +1,6 @@
+{
+int32 a;
+a = 1;
+while (false) a = 2;
+a = 3;
+}

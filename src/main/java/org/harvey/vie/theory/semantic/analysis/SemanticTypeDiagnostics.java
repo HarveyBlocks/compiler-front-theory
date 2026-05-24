@@ -42,6 +42,16 @@ public final class SemanticTypeDiagnostics {
         }
     }
 
+    public static void requireNotVoid(
+            ShiftReduceSemanticContext context,
+            SemanticType type,
+            SourceToken token,
+            String message) {
+        if (type != null && type.isVoidScalar()) {
+            reject(context, token, message);
+        }
+    }
+
     public static void reject(
             ShiftReduceSemanticContext context,
             SourceToken token,

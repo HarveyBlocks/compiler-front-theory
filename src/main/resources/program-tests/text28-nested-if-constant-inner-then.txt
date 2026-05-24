@@ -1,0 +1,8 @@
+{
+int32 a;
+if (true) {
+    if (true) a = 1; else a = 2;
+} else {
+    a = 3;
+}
+}

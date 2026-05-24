@@ -10,57 +10,48 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-/**
- * Builds type attributes only for syntax nodes that semantically have values.
- */
 public class TypeBuildCallback implements ShiftReduceCallback {
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
-        TypeRegister result = build(context, production, head);
+        TypeRegister result = build(context, normalizeKey(production.toString().trim()), head);
         if (result != null) {
             context.bindType(head, result);
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
 
-    private TypeRegister build(
-            ShiftReduceSemanticContext context,
-            SimpleGrammarProduction production,
-            HeadNode head) {
-        String key = production.toString().trim();
+    private TypeRegister build(ShiftReduceSemanticContext context, String key, HeadNode head) {
+        if (isEpsilonOf(key, "param_list", "arg_list", "block_items")) {
+            return null;
+        }
         switch (key) {
-            case "block_items->ε":
+            case "program->top_item":
+            case "program->top_item program":
+            case "top_item->function_decl":
+            case "top_item->block_item":
+            case "function_decl->function_head block":
+                return null;
+            case "function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
+            case "function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
+                return null;
+            case "param_list->params":
             case "block_items->block_item":
-            case "block_items->block_items block_item":
-            case "block->OPERATOR_BRACE_OPEN block_items OPERATOR_BRACE_CLOSE":
             case "block_item->decl":
             case "block_item->stmt":
             case "decl->decl_plain":
             case "decl->decl_init":
-            case "break_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
-            case "continue_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON":
-            case "matched_stmt->break_stmt":
-            case "matched_stmt->continue_stmt":
-            case "matched_stmt->do_while_stmt":
-            case "matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt":
-            case "unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt":
-            case "matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt":
-            case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt":
-            case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt":
-            case "do_while_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON":
-                return null;
-            case "program->block":
             case "stmt->matched_stmt":
             case "stmt->unmatched_stmt":
-            case "stmt->assign_stmt":
             case "matched_stmt->matched_while_stmt":
             case "matched_stmt->block":
             case "matched_stmt->matched_if_stmt":
             case "matched_stmt->assign_stmt":
+            case "matched_stmt->expr_stmt":
             case "unmatched_stmt->unmatched_if_stmt":
             case "unmatched_stmt->unmatched_while_stmt":
             case "bool->join":
@@ -71,8 +62,33 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             case "term->unary":
             case "unary->factor":
             case "factor->loc":
+            case "factor->call_expr":
                 return child(context, head, 0);
+            case "params->param":
+            case "params->params OPERATOR_COMMA param":
+            case "arg_list->args":
+            case "args->bool":
+            case "args->args OPERATOR_COMMA bool":
+            case "expr_stmt->expr OPERATOR_SEMICOLON":
+            case "matched_stmt->return_stmt":
+            case "matched_stmt->break_stmt":
+            case "matched_stmt->continue_stmt":
+            case "matched_stmt->do_while_stmt":
+            case "block_items->block_items block_item":
+            case "block->OPERATOR_BRACE_OPEN block_items OPERATOR_BRACE_CLOSE":
+            case "break_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON":
+            case "continue_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON":
+            case "return_stmt->CONTROL_STRUCTURES_RETURN bool OPERATOR_SEMICOLON":
+            case "return_stmt->CONTROL_STRUCTURES_RETURN OPERATOR_SEMICOLON":
+            case "matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt":
+            case "unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt":
+            case "matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt":
+            case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt":
+            case "unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt":
+            case "do_while_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON":
+                return null;
             case "decl_plain->type IDENTIFIER OPERATOR_SEMICOLON":
+            case "param->type IDENTIFIER":
                 return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
             case "decl_init->type IDENTIFIER OPERATOR_ASSIGN bool OPERATOR_SEMICOLON":
                 return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
@@ -84,6 +100,8 @@ public class TypeBuildCallback implements ShiftReduceCallback {
                 return identifierReference(context, childAnchor(head, 0));
             case "loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE":
                 return arrayElement(context, head);
+            case "call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE":
+                return functionCall(context, head);
             case "bool->bool OPERATOR_LOGICAL_OR join":
             case "join->join OPERATOR_LOGICAL_AND equality":
                 return booleanBinary(context, head);
@@ -116,6 +134,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             case "type->TYPE_INT32":
             case "type->TYPE_FLOAT64":
             case "type->TYPE_STRING":
+            case "type->TYPE_VOID":
                 return declaredType(context, childAnchor(head, 0));
             default:
                 if (head.size() == 1 && context.hasType(head.get(0))) {
@@ -123,6 +142,30 @@ public class TypeBuildCallback implements ShiftReduceCallback {
                 }
                 throw new CompilerException("unhandled production in TypeBuildCallback: " + key);
         }
+    }
+
+    private String normalizeKey(String key) {
+        return key.replace("return_type", "type");
+    }
+
+    private boolean isEpsilonOf(String key, String... heads) {
+        int index = key.indexOf("->");
+        if (index < 0) {
+            return false;
+        }
+        String head = key.substring(0, index);
+        boolean matchesHead = false;
+        for (String candidate : heads) {
+            if (candidate.equals(head)) {
+                matchesHead = true;
+                break;
+            }
+        }
+        if (!matchesHead) {
+            return false;
+        }
+        String body = key.substring(index + 2).trim();
+        return body.isEmpty() || "蔚".equals(body) || "ε".equals(body);
     }
 
     private static TypeRegister literal(ShiftReduceSemanticContext context, SourceToken token) {
@@ -243,6 +286,16 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.simple(record.getDeclaredType(), token);
     }
 
+    private static TypeRegister functionCall(ShiftReduceSemanticContext context, HeadNode head) {
+        SourceToken token = childAnchor(head, 0);
+        String name = new String(token.getLexeme(), StandardCharsets.UTF_8);
+        var function = context.getFunction(name);
+        if (function == null) {
+            throw new CompilerException("function is not declared in current visible scope.");
+        }
+        return TypeRegister.simple(function.getSignature().getReturnType(), token);
+    }
+
     private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             throw new IllegalStateException("current reduced head is not available");
@@ -267,8 +320,6 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     }
 
     private static SourceToken anchorOf(ShiftReduceSyntaxTreeNode node) {
-        // 需要一个Token用来定位, 比如报错需要一个token定位
-        // 因此这里采用了广度优先, 拿到合适的token
         Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
         queue.add(node);
         while (!queue.isEmpty()) {

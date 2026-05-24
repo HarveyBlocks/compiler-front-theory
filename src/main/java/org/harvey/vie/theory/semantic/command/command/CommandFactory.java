@@ -68,6 +68,14 @@ public class CommandFactory {
         return TYPED.gotoCommand(label);
     }
 
+    public static SemanticCommand callFunction(String name) {
+        return new StringCommand("call " + name);
+    }
+
+    public static SemanticCommand returnCommand() {
+        return new StringCommand("return");
+    }
+
 
     public static UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token) {
         return TYPED.gotoCommandUncertainLabel(token);
