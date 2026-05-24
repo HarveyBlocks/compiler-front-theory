@@ -16,6 +16,7 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTagComparator;
 import org.harvey.vie.theory.util.CollectionUtil;
 
 import java.util.*;
@@ -31,11 +32,13 @@ import java.util.stream.Stream;
  */
 public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTableFactory {
 
-
     private final TerminalMatcherFactory terminalMatcherFactory;
+    private final SemanticTagComparator<? super SemanticTag> tagComparator;
 
-    public ShiftReduceParsingTableFactoryImpl(TerminalMatcherFactory terminalMatcherFactory) {
+    public ShiftReduceParsingTableFactoryImpl(TerminalMatcherFactory terminalMatcherFactory,
+            SemanticTagComparator<? super SemanticTag> tagComparator) {
         this.terminalMatcherFactory = terminalMatcherFactory;
+        this.tagComparator = tagComparator;
     }
 
     @Override
@@ -45,7 +48,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             FirstMap firstMap,
             ItemSetFamily family,
             LookaheadMap[] lookaheadMaps) {
-        ParsingContext pc = new ParsingContext(startHead, context, firstMap, family, lookaheadMaps);
+        ParsingContext pc = new ParsingContext(startHead, context, firstMap, family, lookaheadMaps, tagComparator);
         ActiveTable activeTable = active(pc);
         int[][] gotoTable = gotoTable(pc);
         return pc.build(activeTable.table, gotoTable, activeTable.accept, terminalMatcherFactory);
@@ -137,7 +140,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
     }
 
     private static class ParsingContext {
-
+        private final SemanticTagComparator<? super  SemanticTag> tagComparator;
         private final ProductionSetContext context;
         private final FirstMap firstMap;
         private final ItemSetFamily family;
@@ -152,7 +155,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                 ProductionSetContext context,
                 FirstMap firstMap,
                 ItemSetFamily family,
-                LookaheadMap[] lookaheadMaps) {
+                LookaheadMap[] lookaheadMaps, SemanticTagComparator<? super SemanticTag> tagComparator) {
             this.context = context;
             this.firstMap = firstMap;
             this.family = family;
@@ -161,6 +164,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             this.terminalSymbols = terminalSymbolsWithEndMark();
             this.headSymbols = headSymbolsFilterHead();
             this.productionDict = new HashMap<>();
+            this.tagComparator = tagComparator;
         }
 
         private TerminalSymbol[] terminalSymbolsWithEndMark() {
@@ -247,6 +251,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
 
             SemanticTag[] tags = Stream.concat(Arrays.stream(head.getTags()), Arrays.stream(body.getTags()))
                     .distinct()
+                    .sorted(tagComparator)
                     .toArray(SemanticTag[]::new);
             return productionDict.computeIfAbsent(
                     new DefineSimpleGrammarProduction(head.toDefine(), body, tags),

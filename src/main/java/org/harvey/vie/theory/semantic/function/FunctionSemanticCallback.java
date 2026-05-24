@@ -1,11 +1,13 @@
 package org.harvey.vie.theory.semantic.function;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.analysis.SemanticTypeDiagnostics;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
@@ -16,42 +18,34 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FunctionSemanticCallback implements ShiftReduceCallback {
+    private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP)
+            .when((context, head, production) -> prepareFunction(context, head),
+                    ProgramSemanticTag.FUNCTION,
+                    ProgramSemanticTag.HEAD)
+            .when((context, head, production) -> validateReturnValue(
+                            context,
+                            head,
+                            org.harvey.vie.theory.semantic.tag.ProductionTags.matches(
+                                    production,
+                                    ProgramSemanticTag.VALUE
+                            )),
+                    ProgramSemanticTag.RETURN)
+            .when((context, head, production) -> validateCall(context, head),
+                    ProgramSemanticTag.FUNCTION,
+                    ProgramSemanticTag.CALL);
+
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        onReduce0(context, normalizeKey(production.toString().trim()));
+        onReduce0(context, production);
         ShiftReduceCallback.super.onReduce(context, production);
     }
 
-    private void onReduce0(ShiftReduceSemanticContext context, String key) {
+    private void onReduce0(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             return;
         }
         HeadNode head = context.getTreeContext().peek().toHead();
-        switch (key) {
-            case "function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
-            case "function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE":
-                prepareFunction(context, head);
-                return;
-            case "function_decl->function_head block":
-            case "top_item->function_decl":
-            case "arg_list->蔚":
-            case "arg_list->ε":
-                return;
-            case "return_stmt->CONTROL_STRUCTURES_RETURN bool OPERATOR_SEMICOLON":
-                validateReturnValue(context, head, true);
-                return;
-            case "return_stmt->CONTROL_STRUCTURES_RETURN OPERATOR_SEMICOLON":
-                validateReturnValue(context, head, false);
-                return;
-            case "call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE":
-                validateCall(context, head);
-                return;
-            default:
-        }
-    }
-
-    private String normalizeKey(String key) {
-        return key.replace("return_type", "type");
+        reduceStrategy.resolve(production).accept(context, head, production);
     }
 
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
@@ -112,6 +106,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         FunctionRecord record = context.getFunction(name);
         if (record == null) {
             SemanticTypeDiagnostics.reject(context, nameToken, "function must be defined before it is called.");
+            return;
         }
         List<TypeRegister> args = collectArgumentTypes(context, head.get(2));
         if (args.size() != record.getParameters().size()) {
@@ -189,5 +184,13 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         for (ShiftReduceSyntaxTreeNode child : head) {
             collectArgumentTypes0(context, child, result);
         }
+    }
+
+    @FunctionalInterface
+    private interface ReduceAction {
+        ReduceAction NOOP = (context, head, production) -> {
+        };
+
+        void accept(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
     }
 }

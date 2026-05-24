@@ -33,6 +33,7 @@ import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMANTIC_TAG_COMPARATOR;
 import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMANTIC_TAG_LOADER;
 
 public final class ProgramSyntaxTestRunner {
@@ -135,7 +136,8 @@ public final class ProgramSyntaxTestRunner {
                 "compilation_unit",
                 ProgramSyntaxDemo.buildGrammar0(),
                 SERIAL_SYNTAX_TABLE,
-                PROGRAM_SEMANTIC_TAG_LOADER
+                PROGRAM_SEMANTIC_TAG_LOADER,
+                PROGRAM_SEMANTIC_TAG_COMPARATOR
         );
         ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                 shiftReduceParsingTable,

@@ -9,5 +9,5 @@ import java.util.Comparator;
  * @version 1.0
  * @date 2026-05-24 16:28
  */
-public interface SemanticTagComparator<T extends SemanticTagComparator<T>> extends Comparator<T> {
+public interface SemanticTagComparator<T extends SemanticTag> extends Comparator<T> {
 }

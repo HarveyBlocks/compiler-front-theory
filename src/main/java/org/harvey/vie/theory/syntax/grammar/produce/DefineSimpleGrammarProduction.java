@@ -27,6 +27,9 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
 
     private final HeadDefineSymbol head;
     private final AlterableSymbol body;
+    /**
+     * 要求升序
+     */
     private final SemanticTag[] tags;
 
     public HeadDefineSymbol getDefine() {

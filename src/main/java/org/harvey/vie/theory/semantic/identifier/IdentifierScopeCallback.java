@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.identifier;
 
 import lombok.AllArgsConstructor;
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.ReducePredicate;
@@ -9,6 +10,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.function.FunctionBodyState;
 import org.harvey.vie.theory.semantic.function.FunctionReturnFlowAnalyzer;
+import org.harvey.vie.theory.semantic.tag.ProductionTags;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
@@ -25,6 +27,10 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 public class IdentifierScopeCallback implements ShiftReduceCallback {
     private final ShiftPredicate scopeIntoPredicate;
     private final ReducePredicate scopeExistPredicate;
+    private final ReducePredicate functionBodyBlockPredicate = ProductionTags.predicate(
+            ProgramSemanticTag.BLOCK,
+            ProgramSemanticTag.COMMAND
+    );
 
     @Override
     public void onShift(ShiftReduceSemanticContext context, int nextStatus, SourceToken token) {
@@ -57,7 +63,7 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
             return;
         }
         IdentifierRecord[] scope = context.scopeExistBlock();
-        if (production.toString().trim().equals("block->OPERATOR_BRACE_OPEN block_items OPERATOR_BRACE_CLOSE")
+        if (functionBodyBlockPredicate.test(production)
                 && context.isCurrentBlockFunctionBody()) {
             FunctionBodyState bodyState = context.currentFunctionBodyState();
             if (bodyState != null

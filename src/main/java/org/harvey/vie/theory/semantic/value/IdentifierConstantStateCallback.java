@@ -1,8 +1,10 @@
 package org.harvey.vie.theory.semantic.value;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.tag.ProductionTags;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -14,9 +16,12 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  * variable's propagated compile-time constant, because path-sensitive reassignment is not tracked yet.</p>
  */
 public class IdentifierConstantStateCallback implements ShiftReduceCallback {
+    private final org.harvey.vie.theory.semantic.callback.bu.ReducePredicate assignmentPredicate =
+            ProductionTags.predicate(ProgramSemanticTag.ASSIGNMENT);
+
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        if ("assign_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON".equals(production.toString().trim())) {
+        if (assignmentPredicate.test(production)) {
             invalidateAssignedIdentifier(context);
         }
         ShiftReduceCallback.super.onReduce(context, production);

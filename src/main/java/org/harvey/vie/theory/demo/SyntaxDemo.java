@@ -46,6 +46,7 @@ import org.harvey.vie.theory.syntax.grammar.produce.DefineSimpleGrammarProductio
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTagComparator;
 import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
 import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTableFactory;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
@@ -89,10 +90,12 @@ public class SyntaxDemo {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
                 System.out.println(context);
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S",
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable(
+                        "S",
                         context,
                         "syntax_simple.data",
-                        is -> null /*不是Program的, 不支持Tag*/
+                        is -> null, /*不是Program的, 不支持Tag*/
+                        (t1, t2) -> 0 /*不是Program的, 不支持Tag*/
                 );
                 ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
                         shiftReduceParsingTable,
@@ -151,7 +154,9 @@ public class SyntaxDemo {
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(
             String startHead,
             ProductionSetContext context,
-            String filename, SemanticTag.Loader<?> tagLoader) {
+            String filename,
+            SemanticTag.Loader<?> tagLoader,
+            SemanticTagComparator<? super SemanticTag> tagComparator) {
         if (cachedShiftReduceParsingTable != null) {
             return cachedShiftReduceParsingTable;
         }
@@ -161,7 +166,7 @@ public class SyntaxDemo {
             }
             ShiftReduceParsingTable table;
             if (FLUSH_TABLE) {
-                table = buildShiftReduceParsingTable0(startHead, context);
+                table = buildShiftReduceParsingTable0(startHead, context, tagComparator);
                 try {
                     storeTable(table, filename);
                 } catch (IOException e) {
@@ -181,7 +186,8 @@ public class SyntaxDemo {
         }
     }
 
-    public static ShiftReduceParsingTable loadShiftReduceParsingTable(String filename, SemanticTag.Loader<?> tagLoader) {
+    public static ShiftReduceParsingTable loadShiftReduceParsingTable(
+            String filename, SemanticTag.Loader<?> tagLoader) {
         try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
             ShiftReduceParsingTableImpl.Loader loader = getLoader(tagLoader);
             return loader.load(is);
@@ -191,7 +197,7 @@ public class SyntaxDemo {
     }
 
     private static void storeTable(ShiftReduceParsingTable table, String filename) throws IOException {
-        try (OutputStream os = new FileOutputStream("src/main/resources/serial/"+filename)) {
+        try (OutputStream os = new FileOutputStream("src/main/resources/serial/" + filename)) {
             int store = table.store(os);
             os.flush();
             log.info("store = {}", store);
@@ -215,7 +221,7 @@ public class SyntaxDemo {
     }
 
     private static ShiftReduceParsingTable buildShiftReduceParsingTable0(
-            String startHead, ProductionSetContext context) {
+            String startHead, ProductionSetContext context, SemanticTagComparator<? super SemanticTag> tagComparator) {
         System.out.println("----------first map-------------");
         FirstMapFactory firstMapFactory = new IterativeFixedPointFirstMapFactory();
         FirstMap firstMap = firstMapFactory.first(context);
@@ -233,7 +239,9 @@ public class SyntaxDemo {
         }
         System.out.println("------------shift reduce table-----------");
         ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(
-                MATCHER_FACTORY);
+                MATCHER_FACTORY,
+                tagComparator
+        );
         ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(
                 startHead,
                 context,

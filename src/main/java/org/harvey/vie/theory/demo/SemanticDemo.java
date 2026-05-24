@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.demo;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.demo.semantic.callable.TreeBuilderPredictiveCallback;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
@@ -52,6 +53,8 @@ import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
 import org.harvey.vie.theory.semantic.log.TreeLogCallback;
 import org.harvey.vie.theory.semantic.tree.TreeBuildCallback;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
+import org.harvey.vie.theory.semantic.tag.ProductionTags;
 import org.harvey.vie.theory.semantic.type.TypeBuildCallback;
 import org.harvey.vie.theory.semantic.value.ConstantValueBuildCallback;
 import org.harvey.vie.theory.semantic.value.IdentifierConstantStateCallback;
@@ -131,83 +134,79 @@ public class SemanticDemo {
     }
 
     private static CommandTranslatorStrategy reduceStrategies0() {
-        HashMap<String, CommandTranslator> map = new HashMap<>();
         CommandTranslator doNothing = new DoNotingTranslator();
         CommandTranslator simpleShrink = defaultCommandTranslator;
-
         CommandTranslator programTranslator = new ProgramCommandTranslator();
-        map.put("compilation_unit->program", programTranslator);
-        map.put("program->block", programTranslator);
-        map.put("program->top_item", programTranslator);
-        map.put("program->top_item program", programTranslator);
-        map.put("top_item->function_decl", simpleShrink);
-        map.put("top_item->block_item", simpleShrink);
-        map.put("function_head->type IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE",
-                new FunctionHeadTranslator());
-        map.put("function_head->TYPE_VOID IDENTIFIER OPERATOR_PARENTHESIS_OPEN param_list OPERATOR_PARENTHESIS_CLOSE",
-                new FunctionHeadTranslator());
-        map.put("function_decl->function_head block", simpleShrink);
-        map.put("block_items->蔚", doNothing);
-        map.put("block_items->block_item", simpleShrink);
-        map.put("block_items->block_items block_item", new StatementListTranslator());
-        map.put("block_item->decl", simpleShrink);
-        map.put("block_item->stmt", simpleShrink);
-        map.put("decl->decl_plain", simpleShrink);
-        map.put("decl->decl_init", simpleShrink);
-        map.put("decl_plain->type IDENTIFIER OPERATOR_SEMICOLON", new DeclarationWithoutInitializationTranslator());
-        map.put("decl_init->type IDENTIFIER OPERATOR_ASSIGN bool OPERATOR_SEMICOLON",
-                new DeclarationWithInitializationTranslator());
-        map.put("matched_stmt->expr_stmt", simpleShrink);
-        map.put("break_stmt->CONTROL_STRUCTURES_BREAK OPERATOR_SEMICOLON", simpleShrink);
-        map.put("continue_stmt->CONTROL_STRUCTURES_CONTINUE OPERATOR_SEMICOLON", simpleShrink);
-        map.put("return_stmt->CONTROL_STRUCTURES_RETURN bool OPERATOR_SEMICOLON", new FunctionReturnTranslator());
-        map.put("return_stmt->CONTROL_STRUCTURES_RETURN OPERATOR_SEMICOLON", new FunctionReturnTranslator());
-        map.put("param_list->params", simpleShrink);
-        map.put("param_list->蔚", doNothing);
-        map.put("args->bool", simpleShrink);
-        map.put("args->args OPERATOR_COMMA bool", new StatementListTranslator());
-        map.put("call_expr->IDENTIFIER OPERATOR_PARENTHESIS_OPEN arg_list OPERATOR_PARENTHESIS_CLOSE", new FunctionCallTranslator());
-        map.put("arg_list->args", simpleShrink);
-        map.put("arg_list->蔚", doNothing);
-        map.put("expr_stmt->expr OPERATOR_SEMICOLON", simpleShrink);
-        map.put("type->type OPERATOR_SQUARE_OPEN CONSTANT_INTEGER OPERATOR_SQUARE_CLOSE", new ArrayTypeTranslator());
-        map.put("factor->OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE", new ParenthesizedExpressionTranslator());
-        map.put("factor->loc", new PrimaryProduceLeftValueTranslator());
-        map.put("unary->OPERATOR_LOGICAL_NOT unary",
-                new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT));
-        map.put("unary->OPERATOR_MINUS unary",
-                new UnaryExpressionTranslator(operator("negate"), ProgramTokenType.OPERATOR_MINUS));
-        map.put("assign_stmt->loc OPERATOR_ASSIGN bool OPERATOR_SEMICOLON", new AssignStatementTranslator());
-        map.put("loc->loc OPERATOR_SQUARE_OPEN bool OPERATOR_SQUARE_CLOSE", new ArrayAtExpressionTranslator());
-        map.put("bool->bool OPERATOR_LOGICAL_OR join", new InSuffixExpressionTranslator(operator("logical_or")));
-        map.put("unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE stmt",
-                new IfStatementTranslator());
-        map.put("term->term OPERATOR_DIVIDE unary", new InSuffixExpressionTranslator(operator("divide")));
-        map.put("term->term OPERATOR_MULTIPLY unary", new InSuffixExpressionTranslator(operator("multiply")));
-        map.put("equality->equality OPERATOR_NOT_EQUAL rel", new InSuffixExpressionTranslator(operator("not_equal")));
-        map.put("equality->equality OPERATOR_EQUAL rel", new InSuffixExpressionTranslator(operator("equal")));
-        map.put("join->join OPERATOR_LOGICAL_AND equality", new InSuffixExpressionTranslator(operator("logical_and")));
-        map.put("rel->expr OPERATOR_LESS_EQUAL expr", new InSuffixExpressionTranslator(operator("less_equal")));
-        map.put("rel->expr OPERATOR_LESS expr", new InSuffixExpressionTranslator(operator("less")));
-        map.put("expr->expr OPERATOR_MINUS term", new InSuffixExpressionTranslator(operator("minus")));
-        map.put("rel->expr OPERATOR_GREATER_EQUAL expr", new InSuffixExpressionTranslator(operator("greater_equal")));
-        map.put("rel->expr OPERATOR_GREATER expr", new InSuffixExpressionTranslator(operator("greater")));
-        map.put("expr->expr OPERATOR_PLUS term", new InSuffixExpressionTranslator(operator("plus")));
-        map.put("unmatched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE unmatched_stmt",
-                new WhileStatementTranslator());
-        map.put("matched_while_stmt->CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt",
-                new WhileStatementTranslator());
-        map.put("do_while_stmt->CONTROL_STRUCTURES_DO stmt CONTROL_STRUCTURES_WHILE OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE OPERATOR_SEMICOLON",
-                new DoWhileStatementTranslator());
-        map.put("unmatched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE unmatched_stmt",
-                new IfElseStatementTranslator());
-        map.put("matched_if_stmt->CONTROL_STRUCTURES_IF OPERATOR_PARENTHESIS_OPEN bool OPERATOR_PARENTHESIS_CLOSE matched_stmt CONTROL_STRUCTURES_ELSE matched_stmt",
-                new IfElseStatementTranslator());
-        return production -> map.getOrDefault(productionKey(production), defaultCommandTranslator);
-    }
+        CommandTranslator functionHeadTranslator = new FunctionHeadTranslator();
+        CommandTranslator returnTranslator = new FunctionReturnTranslator();
+        CommandTranslator declarationWithoutInitializationTranslator =
+                new DeclarationWithoutInitializationTranslator();
+        CommandTranslator declarationWithInitializationTranslator =
+                new DeclarationWithInitializationTranslator();
+        CommandTranslator arrayTypeTranslator = new ArrayTypeTranslator();
+        CommandTranslator parenthesizedExpressionTranslator = new ParenthesizedExpressionTranslator();
+        CommandTranslator primaryProduceLeftValueTranslator = new PrimaryProduceLeftValueTranslator();
+        CommandTranslator assignStatementTranslator = new AssignStatementTranslator();
+        CommandTranslator arrayAtExpressionTranslator = new ArrayAtExpressionTranslator();
+        CommandTranslator functionCallTranslator = new FunctionCallTranslator();
+        CommandTranslator ifStatementTranslator = new IfStatementTranslator();
+        CommandTranslator ifElseStatementTranslator = new IfElseStatementTranslator();
+        CommandTranslator whileStatementTranslator = new WhileStatementTranslator();
+        CommandTranslator doWhileStatementTranslator = new DoWhileStatementTranslator();
+        CommandTranslator statementListTranslator = new StatementListTranslator();
+        CommandTranslator logicalNotTranslator =
+                new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT);
+        CommandTranslator negateTranslator =
+                new UnaryExpressionTranslator(operator("negate"), ProgramTokenType.OPERATOR_MINUS);
+        CommandTranslator logicalOrTranslator = new InSuffixExpressionTranslator(operator("logical_or"));
+        CommandTranslator logicalAndTranslator = new InSuffixExpressionTranslator(operator("logical_and"));
+        CommandTranslator equalTranslator = new InSuffixExpressionTranslator(operator("equal"));
+        CommandTranslator notEqualTranslator = new InSuffixExpressionTranslator(operator("not_equal"));
+        CommandTranslator lessTranslator = new InSuffixExpressionTranslator(operator("less"));
+        CommandTranslator lessEqualTranslator = new InSuffixExpressionTranslator(operator("less_equal"));
+        CommandTranslator greaterTranslator = new InSuffixExpressionTranslator(operator("greater"));
+        CommandTranslator greaterEqualTranslator = new InSuffixExpressionTranslator(operator("greater_equal"));
+        CommandTranslator plusTranslator = new InSuffixExpressionTranslator(operator("plus"));
+        CommandTranslator minusTranslator = new InSuffixExpressionTranslator(operator("minus"));
+        CommandTranslator multiplyTranslator = new InSuffixExpressionTranslator(operator("multiply"));
+        CommandTranslator divideTranslator = new InSuffixExpressionTranslator(operator("divide"));
 
-    private static String productionKey(SimpleGrammarProduction production) {
-        return production.toString().trim();
+        ProductionTagStrategy<CommandTranslator> strategy = new ProductionTagStrategy<>(defaultCommandTranslator)
+                .when(programTranslator, ProgramSemanticTag.PROGRAM)
+                .when(functionHeadTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
+                .when(doNothing, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+                .when(statementListTranslator, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+                .when(doNothing, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+                .when(doNothing, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
+                .when(statementListTranslator, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+                .when(declarationWithInitializationTranslator, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.INITIALIZED)
+                .when(declarationWithoutInitializationTranslator, ProgramSemanticTag.DECLARATION)
+                .when(returnTranslator, ProgramSemanticTag.RETURN)
+                .when(functionCallTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
+                .when(arrayTypeTranslator, ProgramSemanticTag.TYPE, ProgramSemanticTag.ARRAY)
+                .when(parenthesizedExpressionTranslator, ProgramSemanticTag.PARENTHESIZED)
+                .when(primaryProduceLeftValueTranslator, ProgramSemanticTag.LEFT_VALUE)
+                .when(logicalNotTranslator, ProgramSemanticTag.LOGICAL_NOT)
+                .when(negateTranslator, ProgramSemanticTag.NEGATE)
+                .when(assignStatementTranslator, ProgramSemanticTag.ASSIGNMENT)
+                .when(arrayAtExpressionTranslator, ProgramSemanticTag.ACCESS)
+                .when(logicalOrTranslator, ProgramSemanticTag.OR)
+                .when(logicalAndTranslator, ProgramSemanticTag.AND)
+                .when(notEqualTranslator, ProgramSemanticTag.NOT_EQUAL)
+                .when(equalTranslator, ProgramSemanticTag.EQUAL)
+                .when(lessEqualTranslator, ProgramSemanticTag.LESS_EQUAL)
+                .when(lessTranslator, ProgramSemanticTag.LESS)
+                .when(greaterEqualTranslator, ProgramSemanticTag.GREATER_EQUAL)
+                .when(greaterTranslator, ProgramSemanticTag.GREATER)
+                .when(plusTranslator, ProgramSemanticTag.PLUS)
+                .when(minusTranslator, ProgramSemanticTag.MINUS)
+                .when(multiplyTranslator, ProgramSemanticTag.MULTIPLY)
+                .when(divideTranslator, ProgramSemanticTag.DIVIDE)
+                .when(ifElseStatementTranslator, ProgramSemanticTag.CONDITIONAL, ProgramSemanticTag.ELSE_BRANCH)
+                .when(ifStatementTranslator, ProgramSemanticTag.CONDITIONAL)
+                .when(doWhileStatementTranslator, ProgramSemanticTag.LOOP, ProgramSemanticTag.DO_LOOP)
+                .when(whileStatementTranslator, ProgramSemanticTag.LOOP);
+        return strategy::resolve;
     }
 
     private static OperatorFactor operator(String name) {
@@ -225,18 +224,19 @@ public class SemanticDemo {
 
     private static ShiftReduceCallback instanceIdentifierScopeCallback() {
         ShiftPredicate scopeIntoPredicate = t -> t.getType() == ProgramTokenType.OPERATOR_BRACE_OPEN;
-        ReducePredicate scopeExistPredicate = p -> p.getHead().isDefine() &&
-                "block".equals(p.getHead().toDefine().getName());
+        ReducePredicate scopeExistPredicate = ProductionTags.predicate(
+                ProgramSemanticTag.BLOCK,
+                ProgramSemanticTag.COMMAND
+        );
         return new IdentifierScopeCallback(scopeIntoPredicate, scopeExistPredicate);
     }
 
     private static ShiftReduceCallback instanceIdentifierTableBuildCallback() {
-        ReducePredicate usingPredicate = p -> "loc->IDENTIFIER".equals(productionKey(p));
-        ReducePredicate declaringPredicate = p -> {
-            String key = productionKey(p);
-            return "decl_plain->type IDENTIFIER OPERATOR_SEMICOLON".equals(key) ||
-                    "decl_init->type IDENTIFIER OPERATOR_ASSIGN bool OPERATOR_SEMICOLON".equals(key);
-        };
+        ReducePredicate usingPredicate = ProductionTags.predicate(
+                ProgramSemanticTag.IDENTIFIER,
+                ProgramSemanticTag.USE
+        );
+        ReducePredicate declaringPredicate = ProductionTags.predicate(ProgramSemanticTag.DECLARATION);
         IdentifierTableBuildCallback.UsingIdentifierSupplier usingIdentifierSupplier =
                 usingIdentifierReducedNode -> usingIdentifierReducedNode.get(0).toToken().getSource();
 
