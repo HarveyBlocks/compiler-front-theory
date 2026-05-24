@@ -20,6 +20,7 @@ public class ProductionTagStrategy<T> {
     }
 
     public T resolve(SimpleGrammarProduction production) {
+        // 有点暴力
         for (Rule<T> rule : rules) {
             if (rule.matches(production)) {
                 return rule.value;

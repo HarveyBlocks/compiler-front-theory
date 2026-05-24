@@ -3,8 +3,6 @@ package org.harvey.vie.theory;
 import org.harvey.vie.theory.demo.SyntaxDemo;
 import org.harvey.vie.theory.demo.program.ProgramLexicalDemo;
 
-import java.util.Objects;
-
 /**
  * 启动类
  *

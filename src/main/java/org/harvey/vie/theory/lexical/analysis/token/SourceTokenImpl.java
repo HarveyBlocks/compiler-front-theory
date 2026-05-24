@@ -35,4 +35,5 @@ public class SourceTokenImpl implements SourceToken {
     public String toString() {
         return hintString();
     }
+
 }

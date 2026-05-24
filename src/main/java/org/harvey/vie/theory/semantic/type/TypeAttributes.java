@@ -6,9 +6,6 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
-import java.util.ArrayDeque;
-import java.util.Queue;
-
 /**
  * Helper for reading semantic type attributes from the current reduced node.
  */
@@ -35,7 +32,7 @@ public final class TypeAttributes {
     }
 
     public static SourceToken childAnchor(ShiftReduceSemanticContext context, int index) {
-        return anchorOf(reducedHead(context).get(index));
+        return reducedHead(context).get(index).anchor();
     }
 
     public static TypeRegister result(ShiftReduceSemanticContext context) {
@@ -52,7 +49,7 @@ public final class TypeAttributes {
     }
 
     public static SourceToken resultAnchor(ShiftReduceSemanticContext context) {
-        return anchorOf(reducedHead(context));
+        return reducedHead(context).anchor();
     }
 
     private static HeadNode reducedHead(ShiftReduceSemanticContext context) {
@@ -60,23 +57,5 @@ public final class TypeAttributes {
             throw new IllegalStateException("current reduced head is not available");
         }
         return context.getTreeContext().peek().toHead();
-    }
-
-    private static SourceToken anchorOf(ShiftReduceSyntaxTreeNode node) {
-        Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
-        queue.add(node);
-        while (!queue.isEmpty()) {
-            ShiftReduceSyntaxTreeNode current = queue.remove();
-            if (current.isToken()) {
-                return current.toToken().getSource();
-            }
-            if (!current.isHead()) {
-                continue;
-            }
-            for (ShiftReduceSyntaxTreeNode child : current.toHead()) {
-                queue.add(child);
-            }
-        }
-        throw new IllegalStateException("syntax tree node has no token anchor.");
     }
 }

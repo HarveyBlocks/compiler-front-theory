@@ -92,10 +92,10 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     public int store(OutputStream os) throws IOException {
         // int start;
         // 第一个是end_mark TerminalSymbol[] terminalSymbols;
-        // HeadSymbol[] headSymbols;
+        // `HeadSymbol[] headSymbols;
         // SimpleGrammarProduction[] productionPool;
         // ActiveTableElement[][] activeTable;
-        // int[][] gotoTable;
+        // int[][] gotoTable;`
         int start = this.start;
         int accept = this.accept;
         int statusCnt = activeTable.length;

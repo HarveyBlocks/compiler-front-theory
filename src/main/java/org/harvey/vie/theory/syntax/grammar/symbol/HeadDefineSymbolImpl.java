@@ -3,7 +3,6 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.harvey.vie.theory.io.ILoader;
 import org.harvey.vie.theory.io.Loaders;
 import org.harvey.vie.theory.io.Storages;
 

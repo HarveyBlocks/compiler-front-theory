@@ -103,8 +103,8 @@ public class SemanticDemo {
         return register;
     }
 
-    static TokenTranslator defaultTokenTranslator = new DoNothingTokenTranslator();
-    static CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
+    static final TokenTranslator defaultTokenTranslator = new DoNothingTokenTranslator();
+    static final CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
 
     private static ShiftReduceCallback instanceSyntaxDirectedTranslationCallback() {
         return new CommandBuildCallback(shiftStrategies(), reduceStrategies0());

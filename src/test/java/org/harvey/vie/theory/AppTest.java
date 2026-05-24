@@ -25,7 +25,7 @@ public class AppTest extends TestCase {
         return suite;
     }
 
-    public void testProgramSemanticCases() throws Exception {
+    public void testProgramSemanticCases() {
         SemanticRunReport runReport = ProgramSyntaxTestRunner.run();
         List<TestCaseResult> failures = runReport.getResults().stream()
                 .filter(result -> !result.isExpectationMatched())

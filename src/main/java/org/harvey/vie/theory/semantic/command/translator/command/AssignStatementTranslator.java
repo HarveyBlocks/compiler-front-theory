@@ -29,9 +29,9 @@ public class AssignStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production, CommandNodeRegister[] children) {
         // lvalue是reference, expr是value, 直接赋值即可
-        // lvalue.command();
-        // expr.command();
-        // CommandFactory.assign_from_st_top_to_ref();
+        //  `lvalue.command();
+        //  expr.command();
+        //  CommandFactory.assign_from_st_top_to_ref();`
         if (children.length != 4) {
             throw new CompilerException("illegal statement on assign statement production.");
         }

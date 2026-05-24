@@ -14,6 +14,8 @@ import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+import java.util.function.Supplier;
+
 /**
  * TODO
  *
@@ -84,15 +86,15 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         context.onStart();
         while (true) {
             SourceToken current = ctx.currentToken();
-            trace("syntax stack: " + ctx.statusStackString());
-            trace("current token: " + current.hintString() + " -> " + new String(current.getLexeme()));
+            // trace(()->"syntax stack: " + ctx.statusStackString());
+            // trace(()->"current token: " + current.hintString() + " -> " + new String(current.getLexeme()));
             if (ctx.isStackEmpty()) {
                 context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;
             }
             int top = ctx.peek();
             ActiveTableElement element = table.activeNext(top, table.matchTerminal(current));
-            trace("action: " + (element == null ? "error" : element));
+            // trace(()->"action: " + (element == null ? "error" : element));
             if (element == null) {
                 // error
                 context.onError(ShiftReduceErrorType.UNDEFINED_ACTION);
@@ -110,9 +112,9 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         return context.getResult();
     }
 
-    private void trace(String message) {
+    private void trace(Supplier<String> message) {
         if (traceSteps) {
-            System.out.println(message);
+            System.out.println(message.get());
         }
     }
 

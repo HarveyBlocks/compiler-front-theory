@@ -6,7 +6,6 @@ import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
-import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 public final class FunctionReturnFlowAnalyzer {
     private static final ProductionTagStrategy<ReturnRule> RULES = new ProductionTagStrategy<>(ReturnRule.NEVER)

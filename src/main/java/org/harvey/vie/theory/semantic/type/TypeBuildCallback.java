@@ -12,8 +12,6 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayDeque;
-import java.util.Queue;
 
 public class TypeBuildCallback implements ShiftReduceCallback {
     private static final ProductionTagStrategy<TypeRule> RULES = new ProductionTagStrategy<>(TypeRule.UNHANDLED)
@@ -55,7 +53,8 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.MULTIPLY)
             .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.DIVIDE)
             .when(TypeRule.ASSIGNMENT, ProgramSemanticTag.ASSIGNMENT)
-            .when(TypeRule.VOID_FUNCTION_HEAD, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD);
+            .when(TypeRule.VOID_FUNCTION_HEAD, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
+            ;
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -258,25 +257,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     }
 
     private static SourceToken childAnchor(HeadNode head, int index) {
-        return anchorOf(head.get(index));
-    }
-
-    private static SourceToken anchorOf(ShiftReduceSyntaxTreeNode node) {
-        Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
-        queue.add(node);
-        while (!queue.isEmpty()) {
-            ShiftReduceSyntaxTreeNode current = queue.remove();
-            if (current.isToken()) {
-                return current.toToken().getSource();
-            }
-            if (!current.isHead()) {
-                continue;
-            }
-            for (ShiftReduceSyntaxTreeNode child : current.toHead()) {
-                queue.add(child);
-            }
-        }
-        throw new IllegalStateException("syntax tree node has no token anchor.");
+        return head.get(index).anchor();
     }
 
     private static TypeRegister withAnchor(TypeRegister register, SourceToken anchor) {

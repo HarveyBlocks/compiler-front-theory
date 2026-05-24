@@ -49,7 +49,7 @@ public class ActiveTableSerializer {
         return table;
     }
 
-    public static interface Factory {
+    public interface Factory {
         ActiveTableElement[][] instance();
     }
 }

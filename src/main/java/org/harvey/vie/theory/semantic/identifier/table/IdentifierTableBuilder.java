@@ -1,8 +1,7 @@
 package org.harvey.vie.theory.semantic.identifier.table;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.extern.slf4j.Slf4j;
+import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.analysis.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
@@ -34,8 +33,7 @@ public class IdentifierTableBuilder {
     }
 
     public IdentifierRecord getIdentifier(SourceToken identifierToken) {
-        byte[] lexeme = identifierToken.getLexeme();
-        IdentifierKey identifierKey = new IdentifierKey(lexeme);
+        IdentifierKey identifierKey = IdentifierKey.generate(identifierToken);
         for (int i = identifierTable.size() - 1; i >= 0; i--) {
             IdentifierRecord identifierRecord = identifierTable.get(i).get(identifierKey);
             if (identifierRecord != null) {
@@ -63,7 +61,7 @@ public class IdentifierTableBuilder {
                 initialized,
                 constantValue
         );
-        last.put(new IdentifierKey(identifierToken.getLexeme()), identifierRecord);
+        last.put(IdentifierKey.generate(identifierToken), identifierRecord);
         log.trace("register identifier: " + identifierRecord);
         log.trace("now identifier table: \n" +
                   identifierTable.stream().map(r -> "\t" + r).collect(Collectors.joining("\n")));
@@ -82,8 +80,7 @@ public class IdentifierTableBuilder {
      */
     public IdentifierRecord[] scopeExist() {
         log.trace("scope exist");
-        return removeLast()
-                .records()
+        return removeLast().records()
                 .stream()
                 .sorted(Comparator.comparingInt(IdentifierRecord::getNo))
                 .toArray(IdentifierRecord[]::new);
@@ -135,10 +132,5 @@ public class IdentifierTableBuilder {
         }
     }
 
-    @EqualsAndHashCode
-    @AllArgsConstructor
-    private static class IdentifierKey {
-        private final byte[] lexeme;
-    }
 
 }

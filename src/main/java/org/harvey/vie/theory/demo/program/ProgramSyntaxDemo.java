@@ -543,8 +543,8 @@ public class ProgramSyntaxDemo {
                 .concatenateDefinitionLast("bool")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
                 .tagLast(ProgramSemanticTag.ACCESS)
-                .alternateTerminal(ProgramTokenType.IDENTIFIER);
-        contextBuilder.define("loc").tagLast(ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE);
+                .alternateTerminal(ProgramTokenType.IDENTIFIER)
+                .tagLast(ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE);
 
         contextBuilder.define("bool")
                 .alternateSelf()

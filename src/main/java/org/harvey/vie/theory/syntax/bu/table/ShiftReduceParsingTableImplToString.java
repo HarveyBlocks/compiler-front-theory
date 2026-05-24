@@ -39,6 +39,8 @@ public class ShiftReduceParsingTableImplToString {
         for (int j = 0; j < termCount; j++) {
             termWidths[j] = terminalSymbols[j].toString().length();
         }
+        // 没必要增强for, 多维数组这样更直观
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < stateCount; i++) {
             for (int j = 0; j < termCount; j++) {
                 String cell = (activeTable[i][j] == null) ? "null" : activeTable[i][j].toString();

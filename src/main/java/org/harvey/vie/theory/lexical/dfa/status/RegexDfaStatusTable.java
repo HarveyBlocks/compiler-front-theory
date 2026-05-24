@@ -97,19 +97,19 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         String zeroPad = "%0" + width + "d";
 
         // 1. 生成原始状态字符串（不带填充）
-        String[] rawStateStrs = new String[nStates];
+        String[] rawStateStrings = new String[nStates];
         for (int i = 0; i < nStates; i++) {
             String stateNum = String.format(zeroPad, i);
             if (accepts[i] != null) {
-                rawStateStrs[i] = stateNum + " " + accepts[i].hint();
+                rawStateStrings[i] = stateNum + " " + accepts[i].hint();
             } else {
-                rawStateStrs[i] = stateNum;
+                rawStateStrings[i] = stateNum;
             }
         }
 
         // 2. 计算状态列需要的最大宽度
         int maxStateColWidth = 0;
-        for (String s : rawStateStrs) {
+        for (String s : rawStateStrings) {
             maxStateColWidth = Math.max(maxStateColWidth, s.length());
         }
 
@@ -118,10 +118,10 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         for (int i = 0; i < nStates; i++) {
             if (accepts[i] != null) {
                 // 接受状态：左对齐，右侧填充空格
-                stateStrings[i] = String.format("%-" + maxStateColWidth + "s", rawStateStrs[i]);
+                stateStrings[i] = String.format("%-" + maxStateColWidth + "s", rawStateStrings[i]);
             } else {
                 // 非接受状态：居中对齐
-                stateStrings[i] = center(rawStateStrs[i], maxStateColWidth);
+                stateStrings[i] = center(rawStateStrings[i], maxStateColWidth);
             }
         }
 

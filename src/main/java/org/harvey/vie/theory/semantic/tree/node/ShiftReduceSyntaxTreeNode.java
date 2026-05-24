@@ -1,5 +1,7 @@
 package org.harvey.vie.theory.semantic.tree.node;
 
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+
 /**
  * TODO
  *
@@ -23,4 +25,6 @@ public interface ShiftReduceSyntaxTreeNode {
     default TokenNode toToken() {
         return (TokenNode) this;
     }
+
+    SourceToken anchor();
 }

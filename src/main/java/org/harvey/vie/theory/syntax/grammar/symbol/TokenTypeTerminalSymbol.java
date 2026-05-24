@@ -2,16 +2,12 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
-import org.harvey.vie.theory.io.ILoader;
-import org.harvey.vie.theory.io.Loaders;
-import org.harvey.vie.theory.io.Storages;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 
 /**
  * TODO 最简单的一种, 直接 TokenType 和 TokenType 相等, 但是需要考虑到和 Lexical 阶段达成规范. 同时也会考验 Lexical 阶段 regex 的设计

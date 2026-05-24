@@ -1,14 +1,9 @@
 package org.harvey.vie.theory.demo;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompileException;
-import org.harvey.vie.theory.io.Loaders;
-import org.harvey.vie.theory.io.Storages;
 import org.harvey.vie.theory.io.resource.AsciiStringResource;
 import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.DefaultLexicalDirector;
@@ -19,18 +14,13 @@ import org.harvey.vie.theory.lexical.alphabet.RegexAlphabetCharacterFactory;
 import org.harvey.vie.theory.lexical.alphabet.SourceAlphabetCharacterAdaptorImpl;
 import org.harvey.vie.theory.lexical.analysis.DefaultLexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
-import org.harvey.vie.theory.lexical.analysis.token.AbstractTokenType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
 
 import java.io.*;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * 词法分析器Demo

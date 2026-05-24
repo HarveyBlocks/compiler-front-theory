@@ -27,6 +27,7 @@ public class IdentifierRecord {
     private final SemanticType declaredType;
     private final byte[] lexeme;
     private final boolean initialized;
+
     @Setter
     private ConstantValue constantValue;
 
@@ -39,4 +40,5 @@ public class IdentifierRecord {
                " initialized=" + initialized +
                " constant=" + (constantValue == null ? "<none>" : constantValue.literalText());
     }
+
 }

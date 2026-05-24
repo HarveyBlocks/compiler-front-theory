@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.semantic.value.ConstantAttributes;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 

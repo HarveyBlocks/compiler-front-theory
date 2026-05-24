@@ -1,10 +1,5 @@
 package org.harvey.vie.theory.syntax.bu.table.element;
 
-import org.harvey.vie.theory.io.Storage;
-
-import java.io.IOException;
-import java.io.OutputStream;
-
 /**
  * TODO
  *

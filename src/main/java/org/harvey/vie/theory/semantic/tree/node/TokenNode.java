@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 
+import java.util.ArrayDeque;
+import java.util.Queue;
+
 /**
  * TODO
  *
@@ -19,6 +22,25 @@ public class TokenNode implements ShiftReduceSyntaxTreeNode {
     @Override
     public boolean isToken() {
         return true;
+    }
+
+    @Override
+    public SourceToken anchor() {
+        Queue<ShiftReduceSyntaxTreeNode> queue = new ArrayDeque<>();
+        queue.add(this);
+        while (!queue.isEmpty()) {
+            ShiftReduceSyntaxTreeNode current = queue.remove();
+            if (current.isToken()) {
+                return current.toToken().getSource();
+            }
+            if (!current.isHead()) {
+                continue;
+            }
+            for (ShiftReduceSyntaxTreeNode child : current.toHead()) {
+                queue.add(child);
+            }
+        }
+        throw new IllegalStateException("syntax tree node has no token anchor.");
     }
 
     @Override

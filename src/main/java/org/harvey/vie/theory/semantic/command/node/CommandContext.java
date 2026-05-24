@@ -1,7 +1,5 @@
 package org.harvey.vie.theory.semantic.command.node;
 
-import lombok.Data;
-import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 
 import java.util.Stack;

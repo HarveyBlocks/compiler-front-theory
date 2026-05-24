@@ -55,7 +55,7 @@ public class WhileStatementTranslator implements CommandTranslator {
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
         thisBuilder.add(new LabelNode(whileStartLabel));
-        children[2].register(thisBuilder); // exor
+        children[2].register(thisBuilder); // expr
         thisBuilder.add(new TerminalNode(CommandFactory.ifnGoto(whileEndLabel))); // ifn_goto L2
         children[4].register(thisBuilder); // matched_stmt|unmatched_stmt
         thisBuilder.add(new TerminalNode(CommandFactory.gotoCommand(whileStartLabel))); // goto L1

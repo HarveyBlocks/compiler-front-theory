@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.callback.bu;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
  * TODO
