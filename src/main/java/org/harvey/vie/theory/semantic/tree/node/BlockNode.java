@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.tree.node;
 
 import lombok.Getter;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 
 /**
@@ -15,8 +16,12 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 public class BlockNode extends HeadNode {
     private final IdentifierRecord[] scope;
 
-    public BlockNode(HeadSymbol symbol, ShiftReduceSyntaxTreeNode[] children, IdentifierRecord[] scope) {
-        super(symbol, children);
+    public BlockNode(
+            HeadSymbol symbol,
+            SimpleGrammarProduction production,
+            ShiftReduceSyntaxTreeNode[] children,
+            IdentifierRecord[] scope) {
+        super(symbol, production, children);
         this.scope = scope;
     }
 

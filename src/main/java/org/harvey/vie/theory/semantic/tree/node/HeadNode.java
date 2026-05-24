@@ -3,7 +3,9 @@ package org.harvey.vie.theory.semantic.tree.node;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
+import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 import org.harvey.vie.theory.util.IRandomAccess;
 
 import java.util.Arrays;
@@ -22,6 +24,7 @@ import java.util.function.Function;
 @Getter
 public class HeadNode implements ShiftReduceSyntaxTreeNode, IRandomAccess<ShiftReduceSyntaxTreeNode> {
     private final HeadSymbol symbol;
+    private final SimpleGrammarProduction production;
     private final ShiftReduceSyntaxTreeNode[] children;
 
     @Override
@@ -68,10 +71,14 @@ public class HeadNode implements ShiftReduceSyntaxTreeNode, IRandomAccess<ShiftR
     // endregion
 
     public ShiftReduceSyntaxTreeNode instanceBlock(IdentifierRecord[] scope) {
-        return new BlockNode(this.symbol, this.children, scope);
+        return new BlockNode(this.symbol, this.production, this.children, scope);
     }
 
     public void set(int i, Function<ShiftReduceSyntaxTreeNode, ShiftReduceSyntaxTreeNode> mapper) {
         children[i] = mapper.apply(children[i]);
+    }
+
+    public boolean matchTags(SemanticTag[] expected) {
+        return production.matchTags(expected);
     }
 }

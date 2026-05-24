@@ -9,6 +9,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.tree.node.HeadNodes;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
@@ -17,22 +18,21 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class FunctionSemanticCallback implements ShiftReduceCallback {
-    private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP)
-            .when((context, head, production) -> prepareFunction(context, head),
+    private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP).when(
+                    (context, head, production) -> prepareFunction(context, head),
                     ProgramSemanticTag.FUNCTION,
-                    ProgramSemanticTag.HEAD)
-            .when((context, head, production) -> validateReturnValue(
-                            context,
-                            head,
-                            org.harvey.vie.theory.semantic.tag.ProductionTags.matches(
-                                    production,
-                                    ProgramSemanticTag.VALUE
-                            )),
-                    ProgramSemanticTag.RETURN)
+                    ProgramSemanticTag.HEAD
+            )
+            .when((context, head, production) -> validateReturnValue(context,
+                    head,
+                    production.containsTag(ProgramSemanticTag.VALUE)
+            ), ProgramSemanticTag.RETURN)
             .when((context, head, production) -> validateCall(context, head),
                     ProgramSemanticTag.FUNCTION,
-                    ProgramSemanticTag.CALL);
+                    ProgramSemanticTag.CALL
+            );
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -60,8 +60,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
         SemanticType returnType = returnTypeRegister.requireType("function return type is required.");
         List<FunctionParameter> parameters = collectParameters(context, head.get(3));
-        FunctionRecord record = new FunctionRecord(
-                new FunctionSignature(name, nameToken, returnType, head),
+        FunctionRecord record = new FunctionRecord(new FunctionSignature(name, nameToken, returnType, head),
                 parameters,
                 head
         );
@@ -91,8 +90,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         if (valueType == null) {
             throw new CompilerException("return value type is missing.");
         }
-        SemanticTypeDiagnostics.requireAssignable(
-                context,
+        SemanticTypeDiagnostics.requireAssignable(context,
                 valueType.requireType("return value type is required."),
                 returnType,
                 returnToken,
@@ -115,8 +113,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         for (int i = 0; i < args.size(); i++) {
             SemanticType sourceType = args.get(i).requireType("argument type is required.");
             SemanticType targetType = record.getParameters().get(i).getType();
-            SemanticTypeDiagnostics.requireAssignable(
-                    context,
+            SemanticTypeDiagnostics.requireAssignable(context,
                     sourceType,
                     targetType,
                     nameToken,
@@ -125,21 +122,20 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
     }
 
-    private List<FunctionParameter> collectParameters(ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
+    private List<FunctionParameter> collectParameters(
+            ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         List<FunctionParameter> result = new ArrayList<>();
         collectParameters0(context, node, result);
         return result;
     }
 
     private void collectParameters0(
-            ShiftReduceSemanticContext context,
-            ShiftReduceSyntaxTreeNode node,
-            List<FunctionParameter> result) {
+            ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node, List<FunctionParameter> result) {
         if (!node.isHead()) {
             return;
         }
         HeadNode head = node.toHead();
-        if ("param".equals(head.getSymbol().toString())) {
+        if (HeadNodes.matches(head, 2, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)) {
             TypeRegister register = context.getType(head.get(0));
             if (register == null) {
                 throw new CompilerException("parameter type is missing.");
@@ -149,7 +145,10 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             SemanticTypeDiagnostics.requireNotVoid(context, type, nameToken, "void cannot be used as parameter type.");
             for (FunctionParameter parameter : result) {
                 if (parameter.isNamed(nameToken)) {
-                    SemanticTypeDiagnostics.reject(context, nameToken, "duplicate parameter declaration is not allowed.");
+                    SemanticTypeDiagnostics.reject(context,
+                            nameToken,
+                            "duplicate parameter declaration is not allowed."
+                    );
                 }
             }
             result.add(new FunctionParameter(nameToken, type, head.get(0).toHead()));
@@ -160,21 +159,20 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
     }
 
-    private List<TypeRegister> collectArgumentTypes(ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
+    private List<TypeRegister> collectArgumentTypes(
+            ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         List<TypeRegister> result = new ArrayList<>();
         collectArgumentTypes0(context, node, result);
         return result;
     }
 
     private void collectArgumentTypes0(
-            ShiftReduceSemanticContext context,
-            ShiftReduceSyntaxTreeNode node,
-            List<TypeRegister> result) {
+            ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node, List<TypeRegister> result) {
         if (!node.isHead()) {
             return;
         }
         HeadNode head = node.toHead();
-        if ("bool".equals(head.getSymbol().toString())) {
+        if (HeadNodes.matchesTags(head, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE)) {
             TypeRegister register = context.getType(head);
             if (register != null) {
                 result.add(register);

@@ -10,7 +10,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.function.FunctionBodyState;
 import org.harvey.vie.theory.semantic.function.FunctionReturnFlowAnalyzer;
-import org.harvey.vie.theory.semantic.tag.ProductionTags;
+import org.harvey.vie.theory.semantic.tag.TagReducePredicateFactory;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
@@ -27,7 +27,7 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 public class IdentifierScopeCallback implements ShiftReduceCallback {
     private final ShiftPredicate scopeIntoPredicate;
     private final ReducePredicate scopeExistPredicate;
-    private final ReducePredicate functionBodyBlockPredicate = ProductionTags.predicate(
+    private final ReducePredicate functionBodyBlockPredicate = TagReducePredicateFactory.predicate(
             ProgramSemanticTag.BLOCK,
             ProgramSemanticTag.COMMAND
     );

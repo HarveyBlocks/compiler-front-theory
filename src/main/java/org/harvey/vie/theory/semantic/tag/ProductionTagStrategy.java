@@ -38,7 +38,7 @@ public class ProductionTagStrategy<T> {
         }
 
         private boolean matches(SimpleGrammarProduction production) {
-            return ProductionTags.matches(production, expected);
+            return production.matchTags(expected);
         }
     }
 }

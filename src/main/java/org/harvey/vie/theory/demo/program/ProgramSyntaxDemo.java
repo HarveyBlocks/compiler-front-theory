@@ -364,7 +364,8 @@ public class ProgramSyntaxDemo {
 
         contextBuilder.define("param", ProgramSemanticTag.PARAMETER)
                 .alternateDefinition("type")
-                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER);
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .tagLast(ProgramSemanticTag.IDENTIFIER);
 
         contextBuilder.define("block", ProgramSemanticTag.BLOCK)
                 .alternateTerminal(ProgramTokenType.OPERATOR_BRACE_OPEN)
@@ -379,21 +380,26 @@ public class ProgramSyntaxDemo {
                 .alternateEpsilon()
                 .tagLast(ProgramSemanticTag.EMPTY);
 
-        contextBuilder.define("block_item").alternateDefinition("decl").alternateDefinition("stmt");
+        contextBuilder.define("block_item", ProgramSemanticTag.ITEM)
+                .alternateDefinition("decl")
+                .alternateDefinition("stmt")
+                .tagLast(ProgramSemanticTag.STATEMENT);
 
         contextBuilder.define("decl").alternateDefinition("decl_plain").alternateDefinition("decl_init");
 
         contextBuilder.define("decl_plain", ProgramSemanticTag.DECLARATION)
                 .alternateDefinition("type")
                 .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .tagLast(ProgramSemanticTag.IDENTIFIER);
 
         contextBuilder.define("decl_init", ProgramSemanticTag.DECLARATION, ProgramSemanticTag.INITIALIZED)
                 .alternateDefinition("type")
                 .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_ASSIGN)
                 .concatenateDefinitionLast("bool")
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .tagLast(ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.VALUE);
 
         contextBuilder.define("type", ProgramSemanticTag.TYPE)
                 .alternateSelf()
@@ -407,9 +413,11 @@ public class ProgramSyntaxDemo {
                 .alternateTerminal(ProgramTokenType.TYPE_FLOAT64)
                 .alternateTerminal(ProgramTokenType.TYPE_STRING);
 
-        contextBuilder.define("stmt").alternateDefinition("matched_stmt").alternateDefinition("unmatched_stmt");
+        contextBuilder.define("stmt", ProgramSemanticTag.STATEMENT)
+                .alternateDefinition("matched_stmt")
+                .alternateDefinition("unmatched_stmt");
 
-        contextBuilder.define("matched_stmt")
+        contextBuilder.define("matched_stmt", ProgramSemanticTag.STATEMENT)
                 .alternateDefinition("assign_stmt")
                 .alternateDefinition("expr_stmt")
                 .alternateDefinition("matched_while_stmt")
@@ -424,7 +432,8 @@ public class ProgramSyntaxDemo {
                 .alternateDefinition("loc")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_ASSIGN)
                 .concatenateDefinitionLast("bool")
-                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .tagLast(ProgramSemanticTag.VALUE);
 
         contextBuilder.define("expr_stmt")
                 .alternateDefinition("expr")
@@ -455,7 +464,7 @@ public class ProgramSyntaxDemo {
                 .alternateTerminal(ProgramTokenType.CONTROL_STRUCTURES_RETURN)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON);
 
-        contextBuilder.define("unmatched_stmt")
+        contextBuilder.define("unmatched_stmt", ProgramSemanticTag.STATEMENT)
                 .alternateDefinition("unmatched_if_stmt")
                 .alternateDefinition("unmatched_while_stmt");
 
@@ -590,9 +599,13 @@ public class ProgramSyntaxDemo {
                 .alternateDefinition("loc")
                 .tagLast(ProgramSemanticTag.LEFT_VALUE)
                 .alternateTerminal(ProgramTokenType.CONSTANT_INTEGER)
+                .tagLast(ProgramSemanticTag.LITERAL)
                 .alternateTerminal(ProgramTokenType.CONSTANT_FLOAT)
+                .tagLast(ProgramSemanticTag.LITERAL)
                 .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_TRUE)
-                .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_FALSE);
+                .tagLast(ProgramSemanticTag.LITERAL)
+                .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_FALSE)
+                .tagLast(ProgramSemanticTag.LITERAL);
 
         contextBuilder.define("call_expr", ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
                 .alternateTerminal(ProgramTokenType.IDENTIFIER)
@@ -602,6 +615,7 @@ public class ProgramSyntaxDemo {
 
         contextBuilder.define("arg_list", ProgramSemanticTag.LIST, ProgramSemanticTag.ARGUMENT)
                 .alternateDefinition("args")
+                .tagLast(ProgramSemanticTag.VALUE)
                 .alternateEpsilon()
                 .tagLast(ProgramSemanticTag.EMPTY);
 
@@ -610,7 +624,8 @@ public class ProgramSyntaxDemo {
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_COMMA)
                 .concatenateDefinitionLast("bool")
                 .tagLast(ProgramSemanticTag.SEQUENCE)
-                .alternateDefinition("bool");
+                .alternateDefinition("bool")
+                .tagLast(ProgramSemanticTag.VALUE);
 
         return contextBuilder.build();
     }

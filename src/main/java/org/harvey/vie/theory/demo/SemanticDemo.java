@@ -54,11 +54,10 @@ import org.harvey.vie.theory.semantic.log.TreeLogCallback;
 import org.harvey.vie.theory.semantic.tree.TreeBuildCallback;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
-import org.harvey.vie.theory.semantic.tag.ProductionTags;
+import org.harvey.vie.theory.semantic.tag.TagReducePredicateFactory;
 import org.harvey.vie.theory.semantic.type.TypeBuildCallback;
 import org.harvey.vie.theory.semantic.value.ConstantValueBuildCallback;
 import org.harvey.vie.theory.semantic.value.IdentifierConstantStateCallback;
-import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.syntax.td.conflict.LexicalConflictResolver;
 
 import java.util.HashMap;
@@ -224,7 +223,7 @@ public class SemanticDemo {
 
     private static ShiftReduceCallback instanceIdentifierScopeCallback() {
         ShiftPredicate scopeIntoPredicate = t -> t.getType() == ProgramTokenType.OPERATOR_BRACE_OPEN;
-        ReducePredicate scopeExistPredicate = ProductionTags.predicate(
+        ReducePredicate scopeExistPredicate = TagReducePredicateFactory.predicate(
                 ProgramSemanticTag.BLOCK,
                 ProgramSemanticTag.COMMAND
         );
@@ -232,11 +231,11 @@ public class SemanticDemo {
     }
 
     private static ShiftReduceCallback instanceIdentifierTableBuildCallback() {
-        ReducePredicate usingPredicate = ProductionTags.predicate(
+        ReducePredicate usingPredicate = TagReducePredicateFactory.predicate(
                 ProgramSemanticTag.IDENTIFIER,
                 ProgramSemanticTag.USE
         );
-        ReducePredicate declaringPredicate = ProductionTags.predicate(ProgramSemanticTag.DECLARATION);
+        ReducePredicate declaringPredicate = TagReducePredicateFactory.predicate(ProgramSemanticTag.DECLARATION);
         IdentifierTableBuildCallback.UsingIdentifierSupplier usingIdentifierSupplier =
                 usingIdentifierReducedNode -> usingIdentifierReducedNode.get(0).toToken().getSource();
 

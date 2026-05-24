@@ -20,6 +20,10 @@ public interface SimpleGrammarProduction extends Storage {
 
     SemanticTag[] getTags();
 
+    boolean containsTag(SemanticTag tag);
+
+    boolean matchTags(SemanticTag... expected);
+
     interface Loader<T extends SimpleGrammarProduction> extends ILoader<T> {
     }
 }

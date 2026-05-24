@@ -40,7 +40,7 @@ public class TreeBuildCallback extends BuildStackContextCallback<ShiftReduceSynt
                     ShiftReduceSemanticContext context,
                     SimpleGrammarProduction production,
                     ShiftReduceSyntaxTreeNode[] children) {
-                return new HeadNode(production.getHead(), children);
+                return new HeadNode(production.getHead(), production, children);
             }
 
             @Override

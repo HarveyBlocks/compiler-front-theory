@@ -11,6 +11,7 @@ import org.harvey.vie.theory.syntax.grammar.tag.SemanticTag;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.BitSet;
 
 /**
@@ -85,6 +86,18 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
         return len;
     }
 
+    @Override
+    public boolean containsTag(SemanticTag tag) {
+        return Arrays.binarySearch(this.tags, tag) >= 0;
+    }
+
+    @Override
+    public boolean matchTags(SemanticTag... expected) {
+        if (expected == null || expected.length == 0) {
+            return true;
+        }
+        return Arrays.stream(expected).allMatch(this::containsTag);
+    }
 
     @AllArgsConstructor
     public static class Loader implements SimpleGrammarProduction.Loader<DefineSimpleGrammarProduction> {
@@ -99,7 +112,7 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
             AlterableSymbol body =
                     size == 0 ? GrammarSymbol.epsilon() : new GrammarConcatenationImpl(loadConcatenation(is, size));
             SemanticTag[] tags = loadTags(is);
-            return new DefineSimpleGrammarProduction(head, body,tags);
+            return new DefineSimpleGrammarProduction(head, body, tags);
         }
 
         private SemanticTag[] loadTags(InputStream is) throws IOException {
