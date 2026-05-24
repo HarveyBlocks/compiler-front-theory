@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
@@ -29,9 +28,6 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         CommandNodeRegister constant = ConstantCommandSupport.constantOrNull(context, production, children);
         if (constant != null) {
             return constant;
-        }
-        if (children.length != 3) {
-            throw new CompilerException("illegal statement on in-suffix expression production.");
         }
         SemanticType leftType = TypeAttributes.childType(context, 0);
         SemanticType rightType = TypeAttributes.childType(context, 2);

@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.value;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 
@@ -10,10 +9,14 @@ import org.harvey.vie.theory.semantic.type.SemanticType;
  * @author Temper
  */
 @Getter
-@AllArgsConstructor
 public class ConstantValue {
     private final SemanticType type;
     private final Object value;
+
+    public ConstantValue(SemanticType type, Object value) {
+        this.type = type;
+        this.value = value;
+    }
 
     public int int32() {
         return (Integer) value;

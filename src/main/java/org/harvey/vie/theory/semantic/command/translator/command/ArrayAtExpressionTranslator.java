@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -26,9 +25,6 @@ public class ArrayAtExpressionTranslator implements CommandTranslator {
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context, SimpleGrammarProduction production, CommandNodeRegister[] children) {
-        if (children.length != 4) {
-            throw new CompilerException("illegal statement on array at expression production.");
-        }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[2].register(thisBuilder);

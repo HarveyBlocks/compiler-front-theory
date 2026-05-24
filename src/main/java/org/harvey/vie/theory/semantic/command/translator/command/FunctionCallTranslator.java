@@ -22,9 +22,6 @@ public class FunctionCallTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
-        if (children.length != 4) {
-            throw new CompilerException("illegal statement on function call production.");
-        }
         CommandNodeBuilder builder = new CommandNodeListBuilder();
         FunctionRecord record = function(context);
         children[2].register(builder);

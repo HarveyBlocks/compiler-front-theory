@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -31,9 +30,6 @@ public class AssignStatementTranslator implements CommandTranslator {
         //  `lvalue.command();
         //  expr.command();
         //  DefaultCommandFactory.assign_from_st_top_to_ref();`
-        if (children.length != 4) {
-            throw new CompilerException("illegal statement on assign statement production.");
-        }
         SemanticType targetType = TypeAttributes.childType(context, 0);
         SemanticType sourceType = TypeAttributes.childType(context, 2);
         SemanticDiagnostics.requireAssignable(

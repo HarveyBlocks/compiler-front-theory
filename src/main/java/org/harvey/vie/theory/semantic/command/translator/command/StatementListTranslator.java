@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
@@ -21,9 +20,6 @@ public class StatementListTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
-        if (children.length != 2) {
-            throw new CompilerException("illegal statement on statement list production.");
-        }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[1].register(thisBuilder);

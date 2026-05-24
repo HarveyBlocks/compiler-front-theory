@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
@@ -36,10 +35,6 @@ public class WhileStatementTranslator implements CommandTranslator {
         //    (matched_stmt|unmatched_stmt).command();
         //    DefaultCommandFactory.goto(L1);
         //    L2:
-
-        if (children.length != 5) {
-            throw new CompilerException("illegal statement on while statement production.");
-        }
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
         if (Boolean.FALSE.equals(constantCondition)) {
             return new PlaceholderNodeRegister();

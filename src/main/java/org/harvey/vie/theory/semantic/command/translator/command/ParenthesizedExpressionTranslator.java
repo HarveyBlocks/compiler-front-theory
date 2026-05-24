@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
@@ -20,9 +19,6 @@ public class ParenthesizedExpressionTranslator implements CommandTranslator {
         CommandNodeRegister constant = ConstantCommandSupport.constantOrNull(context, production, children);
         if (constant != null) {
             return constant;
-        }
-        if (children.length != 3) {
-            throw new CompilerException("illegal statement on parenthesized expression production.");
         }
         CommandNodeBuilder builder = new CommandNodeListBuilder();
         children[1].register(builder);

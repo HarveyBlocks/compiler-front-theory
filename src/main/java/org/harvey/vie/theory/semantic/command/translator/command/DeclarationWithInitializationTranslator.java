@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -27,9 +26,6 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production, CommandNodeRegister[] children) {
-        if (children.length != 5) {
-            throw new CompilerException("illegal statement on declaration with initialization production.");
-        }
         SemanticType targetType = TypeAttributes.childType(context, 0);
         SemanticType sourceType = TypeAttributes.childType(context, 3);
         SemanticDiagnostics.requireAssignable(

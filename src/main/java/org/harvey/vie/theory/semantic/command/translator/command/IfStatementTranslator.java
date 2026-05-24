@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
@@ -35,9 +34,6 @@ public class IfStatementTranslator implements CommandTranslator {
         //    DefaultCommandFactory.ifn_goto(L1);
         //    stmt.command();
         //    L1:
-        if (children.length != 5) {
-            throw new CompilerException("illegal statement on if statement production.");
-        }
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
         if (constantCondition != null) {
             return constantCondition

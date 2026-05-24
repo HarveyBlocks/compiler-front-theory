@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
@@ -32,9 +31,6 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
         // 此时id保存的commend是reference, primary是右值, 因此需要将引用转成值
         // lvalue.command(); 获取到引用
         // DefaultCommandFactory.st_top_ref_to_val();
-        if (children.length != 1) {
-            throw new CompilerException("illegal statement on primary to left value production.");
-        }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopRefToVal(TypeAttributes.childType(context, 0))));

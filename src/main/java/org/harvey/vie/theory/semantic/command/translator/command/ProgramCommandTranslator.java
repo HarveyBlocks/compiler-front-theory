@@ -21,9 +21,6 @@ public class ProgramCommandTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
-        if (children.length != 1 && children.length != 2) {
-            throw new CompilerException("illegal statement on program production.");
-        }
         CommandNodeRegister result = delegate.translate(context, production, children);
         rejectUnresolved(context, result);
         return result;

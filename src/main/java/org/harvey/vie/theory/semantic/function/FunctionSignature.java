@@ -24,7 +24,5 @@ public class FunctionSignature {
         this.returnType = returnType;
         this.declarationNode = declarationNode;
     }
-
-
 }
 

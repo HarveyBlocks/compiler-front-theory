@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
@@ -35,9 +34,6 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         //    expr.command();
         //    DefaultCommandFactory.if_goto(L1);
         //    L3:
-        if (children.length != 7) {
-            throw new CompilerException("illegal statement on do while statement production.");
-        }
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
         if (Boolean.FALSE.equals(constantCondition)) {
             SemanticLabel whileStartLabel = new DefaultSemanticLabel();
