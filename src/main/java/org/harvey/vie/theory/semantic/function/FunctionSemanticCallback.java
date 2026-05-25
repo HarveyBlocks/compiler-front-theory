@@ -3,13 +3,14 @@ package org.harvey.vie.theory.semantic.function;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
+import org.harvey.vie.theory.semantic.sequence.SyntaxTreeListIterator;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -21,8 +22,7 @@ import java.util.List;
  * @author Temper
  */
 public class FunctionSemanticCallback implements ShiftReduceCallback {
-    private final ProductionTagStrategy<ReduceAction> reduceStrategy =
-            new ProductionTagStrategy<>(ReduceAction.NOOP).when(
+    private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP).when(
                     (context, head, production) -> prepareFunction(context, head),
                     ProgramSemanticTag.FUNCTION,
                     ProgramSemanticTag.HEAD
@@ -35,6 +35,8 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
                     ProgramSemanticTag.FUNCTION,
                     ProgramSemanticTag.CALL
             );
+    private final ArgumentStepper argumentStepper = new ArgumentStepper();
+    private final ParameterStepper parameterStepper = new ParameterStepper();
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -125,17 +127,9 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
     private List<FunctionParameter> collectParameters(
             ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         List<FunctionParameter> result = new ArrayList<>();
-        collectParameters0(context, node, result);
-        return result;
-    }
-
-    private void collectParameters0(
-            ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node, List<FunctionParameter> result) {
-        if (!node.isHead()) {
-            return;
-        }
-        HeadNode head = node.toHead();
-        if (head.matchTags(ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)) {
+        SyntaxTreeListIterator<HeadNode> iterator = new SyntaxTreeListIterator<>(node, parameterStepper);
+        while (iterator.hasNext()) {
+            HeadNode head = iterator.next();
             TypeRegister register = context.getType(head.get(0));
             if (register == null) {
                 throw new CompilerException("parameter type is missing.");
@@ -145,46 +139,28 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             SemanticDiagnostics.requireNotVoid(context, type, nameToken, "void cannot be used as parameter type.");
             for (FunctionParameter parameter : result) {
                 if (parameter.isNamed(nameToken)) {
-                    SemanticDiagnostics.reject(context,
-                            nameToken,
-                            "duplicate parameter declaration is not allowed."
-                    );
+                    SemanticDiagnostics.reject(context, nameToken, "duplicate parameter declaration is not allowed.");
                 }
             }
             result.add(new FunctionParameter(nameToken, type, head.get(0).toHead()));
-            return;
         }
-        for (ShiftReduceSyntaxTreeNode child : head) {
-            collectParameters0(context, child, result);
-        }
+        return result;
     }
 
     private List<TypeRegister> collectArgumentTypes(
             ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         List<TypeRegister> result = new ArrayList<>();
-        collectArgumentTypes0(context, node, result);
-        return result;
-    }
-
-    private void collectArgumentTypes0(
-            ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node, List<TypeRegister> result) {
-        if (!node.isHead()) {
-            return;
-        }
-        HeadNode head = node.toHead();
-        if (head.matchTags(ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE)) {
+        SyntaxTreeListIterator<HeadNode> iterator = new SyntaxTreeListIterator<>(node, argumentStepper);
+        while (iterator.hasNext()) {
+            HeadNode head = iterator.next();
             TypeRegister register = context.getType(head);
             if (register != null) {
                 result.add(register);
             }
-            return;
         }
-        if (head.containsTag(ProgramSemanticTag.FORWARD)) {
-            for (ShiftReduceSyntaxTreeNode child : head) {
-                collectArgumentTypes0(context, child, result);
-            }
-        }
+        return result;
     }
+
 
     @FunctionalInterface
     private interface ReduceAction {
