@@ -34,13 +34,13 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     }
 
     @Override
-    public SemanticCommand loadIdentifierReference(SourceToken token) {
-        return new StringCommand("load_st_identifier_reference " + SourceTokenStringMapping.utf8(token));
+    public SemanticCommand loadIdentifierAddress(SourceToken token) {
+        return new StringCommand("load_st_identifier_address " + SourceTokenStringMapping.utf8(token));
     }
 
     @Override
-    public SemanticCommand loadIdentifierReference(IdentifierRecord record) {
-        return new StringCommand("load_st_" + mnemonic(record.getDeclaredType()) + "_reference " + record.getOffset());
+    public SemanticCommand loadIdentifierAddress(IdentifierRecord record) {
+        return new StringCommand("load_st_" + mnemonic(record.getDeclaredType()) + "_address " + record.getOffset());
     }
 
     @Override
@@ -52,8 +52,23 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     }
 
     @Override
+    public SemanticCommand newStruct(SourceToken token) {
+        return new StringCommand("new_struct " + SourceTokenStringMapping.utf8(token));
+    }
+
+    @Override
+    public SemanticCommand newArray(SourceToken token, SemanticType type, int dimensions) {
+        return new StringCommand("new_array " + typeName(token, type) + " " + dimensions);
+    }
+
+    @Override
     public SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType) {
         return new StringCommand("st_" + operatorFactor + "_" + mnemonic(operandType));
+    }
+
+    @Override
+    public SemanticCommand stTopAddrToVal(SemanticType type) {
+        return new StringCommand("st_top_addr_to_val_" + mnemonic(type));
     }
 
     @Override
@@ -62,13 +77,28 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     }
 
     @Override
+    public SemanticCommand assignFromStTopToAddr(SemanticType type) {
+        return new StringCommand("assign_from_st_top_to_addr_" + mnemonic(type));
+    }
+
+    @Override
     public SemanticCommand assignFromStTopToRef(SemanticType type) {
         return new StringCommand("assign_from_st_top_to_ref_" + mnemonic(type));
     }
 
     @Override
+    public SemanticCommand biasFromStTopToAddr(SemanticType elementType) {
+        return new StringCommand("bias_from_st_top_to_addr_" + mnemonic(elementType));
+    }
+
+    @Override
     public SemanticCommand biasFromStTopToRef(SemanticType elementType) {
         return new StringCommand("bias_from_st_top_to_ref_" + mnemonic(elementType));
+    }
+
+    @Override
+    public SemanticCommand biasFromStTopToRef(SemanticType fieldType, int offset) {
+        return new StringCommand("bias_from_st_top_to_ref_" + mnemonic(fieldType) + " " + offset);
     }
 
     @Override
@@ -98,5 +128,12 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
 
     private static String mnemonic(SemanticType type) {
         return type.getKind().name().toLowerCase();
+    }
+
+    private static String typeName(SourceToken token, SemanticType type) {
+        if (type.getNamedTypeKey() != null) {
+            return SourceTokenStringMapping.utf8(token);
+        }
+        return mnemonic(type);
     }
 }

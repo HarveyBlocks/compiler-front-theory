@@ -80,17 +80,17 @@ In-suffix expression: 中缀表达式, 是处理形如 expr -> expr operator ite
     30	: primary->lvalue
         此时id保存的commend是reference, primary是右值, 因此需要将引用转成值
         lvalue.command(); // 获取到引用
-        CommandFactory.st_top_ref_to_val(); // 出栈又入栈, 引用转成值
+        CommandFactory.st_top_addr_to_val(); // 出栈又入栈, address转成值
     42	: assignment_stmt->lvalue = expr ;
         lvalue是reference, expr是value, 直接赋值即可
         lvalue.command();
         expr.command();
-        CommandFactory.assign_from_st_top_to_ref(); // 栈顶出栈, 作为值; 新的栈顶出栈, 作为引用. 值赋值到引用.
+        CommandFactory.assign_from_st_top_to_addr(); // 栈顶出栈, 作为值; 新的栈顶出栈, 作为address. 值赋值到address.
         // 由于此产生式是语句, 因此需要栈为空
     43	: lvalue->lvalue [ expr ]
         lvalue.command();
         expr.command();
-        CommandFactory.bias_from_st_top_to_ref(); // 栈顶出栈, 作为偏移量; 新的栈顶出栈, 作为引用. 偏移量加到引用.
+        CommandFactory.bias_from_st_top_to_addr(); // 栈顶出栈, 作为偏移量; 新的栈顶出栈, 作为address. 偏移量加到address.
 
 45	: unmatched_while_stmt->while ( expr ) unmatched_stmt
 46	: matched_while_stmt->while ( expr ) matched_stmt

@@ -1,5 +1,5 @@
 {
-int32[2][3] matrix;
+int32[][] matrix;
 int32 row;
 int32 col;
 float64 value;

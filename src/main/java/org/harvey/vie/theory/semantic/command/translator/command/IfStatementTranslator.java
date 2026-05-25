@@ -28,6 +28,11 @@ public class IfStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        if (children.length != 5) {
+            throw new org.harvey.vie.theory.exception.CompilerException(
+                    "illegal statement on if statement production."
+            );
+        }
         // if ( expr ) stmt
         // 一般的 if 语句
         //    expr.command();

@@ -3,6 +3,8 @@ package org.harvey.vie.theory.semantic.type;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.array.ArrayCreationDimensions;
+import org.harvey.vie.theory.semantic.command.LocationKind;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
@@ -20,24 +22,42 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.NONE, ProgramSemanticTag.RETURN)
             .when(TypeRule.NONE, ProgramSemanticTag.LOOP)
             .when(TypeRule.NONE, ProgramSemanticTag.CONDITIONAL)
+            .when(TypeRule.NONE, ProgramSemanticTag.EMPTY)
             .when(TypeRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.COMMAND)
             .when(TypeRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
             .when(TypeRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(TypeRule.FORWARD, ProgramSemanticTag.ITEM)
+            .when(TypeRule.FORWARD, ProgramSemanticTag.STATEMENT, ProgramSemanticTag.FORWARD)
             .when(TypeRule.NONE, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
             .when(TypeRule.NONE, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
             .when(TypeRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
             .when(TypeRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
+            .when(TypeRule.NONE, ProgramSemanticTag.STRUCT_DECL)
+            .when(TypeRule.NONE, ProgramSemanticTag.LIST, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.EMPTY)
+            .when(TypeRule.NONE, ProgramSemanticTag.LIST, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.FORWARD)
+            .when(TypeRule.NONE, ProgramSemanticTag.LIST, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.SEQUENCE)
             .when(TypeRule.FORWARD, ProgramSemanticTag.FORWARD)
             .when(TypeRule.ARRAY_TYPE, ProgramSemanticTag.TYPE, ProgramSemanticTag.ARRAY)
+            .when(TypeRule.NAMED_STRUCT_TYPE, ProgramSemanticTag.TYPE, ProgramSemanticTag.STRUCT_TYPE)
+            .when(TypeRule.ARRAY_CREATION_BASE, ProgramSemanticTag.ARRAY_CREATION_BASE, ProgramSemanticTag.STRUCT_TYPE)
+            .when(TypeRule.ARRAY_CREATION_BASE, ProgramSemanticTag.ARRAY_CREATION_BASE)
             .when(TypeRule.TYPE_DECLARATION, ProgramSemanticTag.TYPE)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.IDENTIFIER)
+            .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.IDENTIFIER)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)
             .when(TypeRule.IDENTIFIER_REFERENCE, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
             .when(TypeRule.ARRAY_ACCESS, ProgramSemanticTag.ACCESS)
+            .when(TypeRule.MEMBER_ACCESS, ProgramSemanticTag.MEMBER_ACCESS)
             .when(TypeRule.LEFT_VALUE, ProgramSemanticTag.LEFT_VALUE)
             .when(TypeRule.FUNCTION_CALL, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
             .when(TypeRule.LITERAL, ProgramSemanticTag.LITERAL)
+            .when(TypeRule.LITERAL, ProgramSemanticTag.FORWARD, ProgramSemanticTag.LITERAL)
+            .when(TypeRule.NULL_LITERAL, ProgramSemanticTag.NULL_LITERAL)
+            .when(TypeRule.NULL_LITERAL, ProgramSemanticTag.FORWARD, ProgramSemanticTag.NULL_LITERAL)
+            .when(TypeRule.NEW_STRUCT, ProgramSemanticTag.NEW_STRUCT)
+            .when(TypeRule.NEW_ARRAY, ProgramSemanticTag.NEW_ARRAY)
             .when(TypeRule.PARENTHESIZED, ProgramSemanticTag.PARENTHESIZED)
+            .when(TypeRule.PARENTHESIZED, ProgramSemanticTag.FORWARD, ProgramSemanticTag.PARENTHESIZED)
             .when(TypeRule.UNARY_BOOLEAN, ProgramSemanticTag.LOGICAL_NOT)
             .when(TypeRule.UNARY_NUMERIC, ProgramSemanticTag.NEGATE)
             .when(TypeRule.BOOLEAN_BINARY, ProgramSemanticTag.OR)
@@ -59,6 +79,15 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
+        if (head.getSymbol().isDefine()) {
+            String defineName = head.getSymbol().toDefine().getName();
+            if ("loc".equals(defineName) && head.size() == 1 && head.get(0).isToken()) {
+                TypeRegister result = identifierReference(context, head);
+                context.bindType(head, result);
+                ShiftReduceCallback.super.onReduce(context, production);
+                return;
+            }
+        }
         TypeRegister result = RULES.resolve(production).build(context, head, production);
         if (result != null) {
             context.bindType(head, result);
@@ -81,7 +110,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     }
 
     private static TypeRegister declaredIdentifier(ShiftReduceSemanticContext context, HeadNode head) {
-        return withAnchor(requireChild(context, head, 0), childAnchor(head, 1));
+        return withAnchor(requireChild(context, head, 0), childAnchor(head, 1), LocationKind.ADDRESS);
     }
 
     private static TypeRegister literal(ShiftReduceSemanticContext context, HeadNode head) {
@@ -100,11 +129,23 @@ public class TypeBuildCallback implements ShiftReduceCallback {
 
     private static TypeRegister arrayType(ShiftReduceSemanticContext context, HeadNode head) {
         TypeRegister base = requireChild(context, head, 0);
-        int dimension = context.integerLiteral(childAnchor(head, 2));
         return TypeRegister.simple(
-                base.requireType("array type declaration requires a base type.").withAppendedDimension(dimension),
+                base.requireType("array type declaration requires a base type.").withAppendedDimension(),
                 childAnchor(head, 0)
         );
+    }
+
+    private static TypeRegister namedStructType(ShiftReduceSemanticContext context, HeadNode head) {
+        SourceToken token = childAnchor(head, 0);
+        return TypeRegister.simple(SemanticType.struct(token), token);
+    }
+
+    private static TypeRegister arrayCreationBase(ShiftReduceSemanticContext context, HeadNode head) {
+        SourceToken token = childAnchor(head, 0);
+        if (head.containsTag(ProgramSemanticTag.STRUCT_TYPE)) {
+            return TypeRegister.simple(SemanticType.struct(token), token);
+        }
+        return TypeRegister.simple(context.typeToken(token), token);
     }
 
     private static TypeRegister assignment(ShiftReduceSemanticContext context, HeadNode head) {
@@ -120,7 +161,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         if (record == null) {
             throw new CompilerException("identifier is not declared in current visible scopes.");
         }
-        return TypeRegister.simple(record.getDeclaredType(), token);
+        return TypeRegister.located(record.getDeclaredType(), record.getDeclaredType(), token, LocationKind.ADDRESS);
     }
 
     private static TypeRegister arrayElement(ShiftReduceSemanticContext context, HeadNode head) {
@@ -134,7 +175,25 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         if (!SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
             throw new CompilerException("array index must be int32.");
         }
-        return TypeRegister.simple(baseType.arrayElementType(), childAnchor(head, 0));
+        return TypeRegister.located(baseType.arrayElementType(), baseType.arrayElementType(), childAnchor(head, 0), LocationKind.REFERENCE);
+    }
+
+    private static TypeRegister memberAccess(ShiftReduceSemanticContext context, HeadNode head) {
+        SemanticType baseType = requireChild(context, head, 0)
+                .requireType("member access requires a typed left operand.");
+        if (!baseType.isStruct()) {
+            throw new CompilerException("member access requires a struct operand.");
+        }
+        var struct = context.getStruct(baseType);
+        if (struct == null) {
+            throw new CompilerException("struct type is not declared.");
+        }
+        SourceToken fieldToken = childAnchor(head, 2);
+        var field = struct.field(fieldToken);
+        if (field == null) {
+            throw new CompilerException("struct field does not exist.");
+        }
+        return TypeRegister.located(field.getType(), field.getType(), fieldToken, LocationKind.REFERENCE);
     }
 
     private static TypeRegister functionCall(ShiftReduceSemanticContext context, HeadNode head) {
@@ -144,6 +203,27 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             throw new CompilerException("function is not declared in current visible scope.");
         }
         return TypeRegister.simple(function.getSignature().getReturnType(), token);
+    }
+
+    private static TypeRegister newStruct(ShiftReduceSemanticContext context, HeadNode head) {
+        SourceToken token = childAnchor(head, 1);
+        SemanticType type = SemanticType.struct(token);
+        context.requireDeclaredType(type, token, "struct type is not declared.");
+        return TypeRegister.simple(type, token);
+    }
+
+    private static TypeRegister newArray(ShiftReduceSemanticContext context, HeadNode head) {
+        TypeRegister base = requireChild(context, head, 1);
+        SemanticType type = base.requireType("array creation requires a declared base type.");
+        if (type.isVoidScalar()) {
+            throw new CompilerException("void cannot be used as array element type.");
+        }
+        ArrayCreationDimensions.Summary summary = ArrayCreationDimensions.summarizeAndValidate(context, head.get(2));
+        SemanticType resultType = type;
+        for (int i = 0; i < summary.getTotalDimensions(); i++) {
+            resultType = resultType.withAppendedDimension();
+        }
+        return TypeRegister.located(resultType, resultType, base.getAnchorToken(), LocationKind.REFERENCE);
     }
 
     private static TypeRegister booleanBinary(ShiftReduceSemanticContext context, HeadNode head) {
@@ -259,8 +339,8 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return ShiftReduceSyntaxTreeNode.anchor(head.get(index));
     }
 
-    private static TypeRegister withAnchor(TypeRegister register, SourceToken anchor) {
-        return new TypeRegister(register.getType(), register.getInstructionType(), anchor);
+    private static TypeRegister withAnchor(TypeRegister register, SourceToken anchor, LocationKind locationKind) {
+        return new TypeRegister(register.getType(), register.getInstructionType(), anchor, locationKind);
     }
 
     @FunctionalInterface
@@ -272,12 +352,18 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         TypeRule FORWARD = (context, head, production) -> forward(context, head);
         TypeRule TYPE_DECLARATION = (context, head, production) -> typeDeclaration(context, head);
         TypeRule ARRAY_TYPE = (context, head, production) -> arrayType(context, head);
+        TypeRule NAMED_STRUCT_TYPE = (context, head, production) -> namedStructType(context, head);
+        TypeRule ARRAY_CREATION_BASE = (context, head, production) -> arrayCreationBase(context, head);
         TypeRule DECLARED_IDENTIFIER = (context, head, production) -> declaredIdentifier(context, head);
         TypeRule IDENTIFIER_REFERENCE = (context, head, production) -> identifierReference(context, head);
         TypeRule ARRAY_ACCESS = (context, head, production) -> arrayElement(context, head);
+        TypeRule MEMBER_ACCESS = (context, head, production) -> memberAccess(context, head);
         TypeRule FUNCTION_CALL = (context, head, production) -> functionCall(context, head);
         TypeRule LEFT_VALUE = (context, head, production) -> requireChild(context, head, 0);
         TypeRule LITERAL = (context, head, production) -> literal(context, head);
+        TypeRule NULL_LITERAL = (context, head, production) -> literal(context, head);
+        TypeRule NEW_STRUCT = (context, head, production) -> newStruct(context, head);
+        TypeRule NEW_ARRAY = (context, head, production) -> newArray(context, head);
         TypeRule PARENTHESIZED = (context, head, production) -> requireChild(context, head, 1);
         TypeRule UNARY_BOOLEAN = (context, head, production) -> unaryBoolean(context, head);
         TypeRule UNARY_NUMERIC = (context, head, production) -> unaryNumeric(context, head);

@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -34,11 +33,11 @@ public class FunctionCallTranslator implements CommandTranslator {
             throw new CompilerException("current reduced head is absent for function call.");
         }
         HeadNode head = context.getTreeContext().peek().toHead();
-        ShiftReduceSyntaxTreeNode token = head.get(0);
-        if (!token.isToken()) {
+        ShiftReduceSyntaxTreeNode tokenNode = head.get(0);
+        if (!tokenNode.isToken()) {
             throw new CompilerException("function call name is absent.");
         }
-        FunctionRecord record = context.getFunction(token.toToken().getSource());
+        FunctionRecord record = context.getFunction(tokenNode.toToken().getSource());
         if (record == null) {
             throw new CompilerException("function is not declared in current visible scope.");
         }

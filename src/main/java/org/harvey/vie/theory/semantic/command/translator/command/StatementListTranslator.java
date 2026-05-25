@@ -20,6 +20,12 @@ public class StatementListTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        if (children.length == 0) {
+            return new org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister();
+        }
+        if (children.length == 1) {
+            return children[0];
+        }
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         children[0].register(thisBuilder);
         children[1].register(thisBuilder);

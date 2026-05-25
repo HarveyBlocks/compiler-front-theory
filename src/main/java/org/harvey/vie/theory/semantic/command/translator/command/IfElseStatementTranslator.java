@@ -27,6 +27,11 @@ public class IfElseStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        if (children.length != 7) {
+            throw new org.harvey.vie.theory.exception.CompilerException(
+                    "illegal statement on if-else statement production."
+            );
+        }
         // if ( expr ) stmt else stmt
         // if-else 语句
         //    expr.command();

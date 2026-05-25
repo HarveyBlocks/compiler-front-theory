@@ -3,6 +3,11 @@ package org.harvey.vie.theory.semantic.tag;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
+import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
+import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * TODO
@@ -27,6 +32,9 @@ public class TagStrategyCompose {
         CommandTranslator primaryProduceLeftValueTranslator = new PrimaryProduceLeftValueTranslator();
         CommandTranslator assignStatementTranslator = new AssignStatementTranslator();
         CommandTranslator arrayAtExpressionTranslator = new ArrayAtExpressionTranslator();
+        CommandTranslator memberAccessTranslator = new MemberAccessTranslator();
+        CommandTranslator newStructTranslator = new NewStructTranslator();
+        CommandTranslator newArrayTranslator = new NewArrayTranslator();
         CommandTranslator functionCallTranslator = new FunctionCallTranslator();
         CommandTranslator ifStatementTranslator = new IfStatementTranslator();
         CommandTranslator ifElseStatementTranslator = new IfElseStatementTranslator();
@@ -62,6 +70,8 @@ public class TagStrategyCompose {
                 .when(declarationWithoutInitializationTranslator, ProgramSemanticTag.DECLARATION)
                 .when(returnTranslator, ProgramSemanticTag.RETURN)
                 .when(functionCallTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
+                .when(newStructTranslator, ProgramSemanticTag.NEW_STRUCT)
+                .when(newArrayTranslator, ProgramSemanticTag.NEW_ARRAY)
                 .when(arrayTypeTranslator, ProgramSemanticTag.TYPE, ProgramSemanticTag.ARRAY)
                 .when(parenthesizedExpressionTranslator, ProgramSemanticTag.PARENTHESIZED)
                 .when(primaryProduceLeftValueTranslator, ProgramSemanticTag.LEFT_VALUE)
@@ -69,6 +79,7 @@ public class TagStrategyCompose {
                 .when(negateTranslator, ProgramSemanticTag.NEGATE)
                 .when(assignStatementTranslator, ProgramSemanticTag.ASSIGNMENT)
                 .when(arrayAtExpressionTranslator, ProgramSemanticTag.ACCESS)
+                .when(memberAccessTranslator, ProgramSemanticTag.MEMBER_ACCESS)
                 .when(logicalOrTranslator, ProgramSemanticTag.OR)
                 .when(logicalAndTranslator, ProgramSemanticTag.AND)
                 .when(notEqualTranslator, ProgramSemanticTag.NOT_EQUAL)
@@ -85,6 +96,122 @@ public class TagStrategyCompose {
                 .when(ifStatementTranslator, ProgramSemanticTag.CONDITIONAL)
                 .when(doWhileStatementTranslator, ProgramSemanticTag.LOOP, ProgramSemanticTag.DO_LOOP)
                 .when(whileStatementTranslator, ProgramSemanticTag.LOOP);
+    }
+
+    public static CommandTranslatorStrategy preciseStringCommand() {
+        CommandTranslator doNothing = new DoNotingTranslator();
+        CommandTranslator simpleShrink = new SimpleShrinkTranslator();
+        CommandTranslator primaryProduceLeftValueTranslator = new PrimaryProduceLeftValueTranslator();
+        CommandTranslator arrayAtExpressionTranslator = new ArrayAtExpressionTranslator();
+        CommandTranslator memberAccessTranslator = new MemberAccessTranslator();
+        CommandTranslator parenthesizedExpressionTranslator = new ParenthesizedExpressionTranslator();
+        Map<String, CommandTranslator> exact = new HashMap<>();
+        exact.put("program", new ProgramCommandTranslator());
+        exact.put("function_head", new FunctionHeadTranslator());
+        exact.put("decl_plain", new DeclarationWithoutInitializationTranslator());
+        exact.put("decl_init", new DeclarationWithInitializationTranslator());
+        exact.put("return_stmt", new FunctionReturnTranslator());
+        exact.put("call_expr", new FunctionCallTranslator());
+        exact.put("new_struct_expr", new NewStructTranslator());
+        exact.put("new_array_expr", new NewArrayTranslator());
+        exact.put("type", new ArrayTypeTranslator());
+        exact.put("factor", parenthesizedExpressionTranslator);
+        exact.put("assign_stmt", new AssignStatementTranslator());
+        exact.put("loc", memberAccessTranslator);
+        exact.put("matched_if_stmt", new IfElseStatementTranslator());
+        exact.put("unmatched_if_stmt", new IfStatementTranslator());
+        exact.put("do_while_stmt", new DoWhileStatementTranslator());
+        exact.put("matched_while_stmt", new WhileStatementTranslator());
+        exact.put("unmatched_while_stmt", new WhileStatementTranslator());
+        exact.put("block_items", new StatementListTranslator());
+        exact.put("args", new StatementListTranslator());
+        exact.put("break_stmt", simpleShrink);
+        exact.put("continue_stmt", simpleShrink);
+        exact.put("param_list", doNothing);
+        exact.put("arg_list", doNothing);
+        return production -> {
+            String defineName = production.getHead().isDefine() ? production.getHead().toDefine().getName() : "";
+            CommandTranslator translator = exact.get(defineName);
+            if (translator != null) {
+                if ("type".equals(defineName) && !production.containsTag(ProgramSemanticTag.ARRAY)) {
+                    return simpleShrink;
+                }
+                if ("factor".equals(defineName)) {
+                    if (production.containsTag(ProgramSemanticTag.PARENTHESIZED)) {
+                        return exact.get("factor");
+                    }
+                    if (production.containsTag(ProgramSemanticTag.LEFT_VALUE)) {
+                        return primaryProduceLeftValueTranslator;
+                    }
+                    return simpleShrink;
+                }
+                if ("loc".equals(defineName)) {
+                    if (production.containsTag(ProgramSemanticTag.ACCESS)) {
+                        return arrayAtExpressionTranslator;
+                    }
+                    if (production.containsTag(ProgramSemanticTag.MEMBER_ACCESS)) {
+                        return exact.get("loc");
+                    }
+                    if (production.containsTag(ProgramSemanticTag.IDENTIFIER)) {
+                        return primaryProduceLeftValueTranslator;
+                    }
+                    return simpleShrink;
+                }
+                if ("block_items".equals(defineName) && production.containsTag(ProgramSemanticTag.EMPTY)) {
+                    return doNothing;
+                }
+                if ("args".equals(defineName) && production.containsTag(ProgramSemanticTag.FORWARD)) {
+                    return simpleShrink;
+                }
+                if ("args".equals(defineName) && production.containsTag(ProgramSemanticTag.SEQUENCE)) {
+                    return exact.get("args");
+                }
+                return translator;
+            }
+            if (production.containsTag(ProgramSemanticTag.LOGICAL_NOT)) {
+                return new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT);
+            }
+            if (production.containsTag(ProgramSemanticTag.NEGATE)) {
+                return new UnaryExpressionTranslator(operator("negate"), ProgramTokenType.OPERATOR_MINUS);
+            }
+            if (production.containsTag(ProgramSemanticTag.OR)) {
+                return new InSuffixExpressionTranslator(operator("logical_or"));
+            }
+            if (production.containsTag(ProgramSemanticTag.AND)) {
+                return new InSuffixExpressionTranslator(operator("logical_and"));
+            }
+            if (production.containsTag(ProgramSemanticTag.NOT_EQUAL)) {
+                return new InSuffixExpressionTranslator(operator("not_equal"));
+            }
+            if (production.containsTag(ProgramSemanticTag.EQUAL)) {
+                return new InSuffixExpressionTranslator(operator("equal"));
+            }
+            if (production.containsTag(ProgramSemanticTag.LESS_EQUAL)) {
+                return new InSuffixExpressionTranslator(operator("less_equal"));
+            }
+            if (production.containsTag(ProgramSemanticTag.LESS)) {
+                return new InSuffixExpressionTranslator(operator("less"));
+            }
+            if (production.containsTag(ProgramSemanticTag.GREATER_EQUAL)) {
+                return new InSuffixExpressionTranslator(operator("greater_equal"));
+            }
+            if (production.containsTag(ProgramSemanticTag.GREATER)) {
+                return new InSuffixExpressionTranslator(operator("greater"));
+            }
+            if (production.containsTag(ProgramSemanticTag.PLUS)) {
+                return new InSuffixExpressionTranslator(operator("plus"));
+            }
+            if (production.containsTag(ProgramSemanticTag.MINUS)) {
+                return new InSuffixExpressionTranslator(operator("minus"));
+            }
+            if (production.containsTag(ProgramSemanticTag.MULTIPLY)) {
+                return new InSuffixExpressionTranslator(operator("multiply"));
+            }
+            if (production.containsTag(ProgramSemanticTag.DIVIDE)) {
+                return new InSuffixExpressionTranslator(operator("divide"));
+            }
+            return simpleShrink;
+        };
     }
 
     private static OperatorFactor operator(String name) {

@@ -42,7 +42,7 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
             // TODO 同上
             thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(sourceType, targetType)));
         }
-        thisBuilder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToRef(targetType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToAddr(targetType)));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

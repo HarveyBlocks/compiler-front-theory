@@ -35,13 +35,13 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
     @Override
-    public SemanticCommand loadIdentifierReference(SourceToken token) {
-        return typedCommandFactory.loadIdentifierReference(token);
+    public SemanticCommand loadIdentifierAddress(SourceToken token) {
+        return typedCommandFactory.loadIdentifierAddress(token);
     }
 
     @Override
-    public SemanticCommand loadIdentifierReference(IdentifierRecord record) {
-        return typedCommandFactory.loadIdentifierReference(record);
+    public SemanticCommand loadIdentifierAddress(IdentifierRecord record) {
+        return typedCommandFactory.loadIdentifierAddress(record);
     }
 
     @Override
@@ -50,8 +50,23 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
     @Override
+    public SemanticCommand newStruct(SourceToken token) {
+        return typedCommandFactory.newStruct(token);
+    }
+
+    @Override
+    public SemanticCommand newArray(SourceToken token, SemanticType type, int dimensions) {
+        return typedCommandFactory.newArray(token, type, dimensions);
+    }
+
+    @Override
     public SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType) {
         return typedCommandFactory.stOperator(operatorFactor, operandType);
+    }
+
+    @Override
+    public SemanticCommand stTopAddrToVal(SemanticType type) {
+        return typedCommandFactory.stTopAddrToVal(type);
     }
 
     @Override
@@ -60,13 +75,28 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
     @Override
+    public SemanticCommand assignFromStTopToAddr(SemanticType type) {
+        return typedCommandFactory.assignFromStTopToAddr(type);
+    }
+
+    @Override
     public SemanticCommand assignFromStTopToRef(SemanticType type) {
         return typedCommandFactory.assignFromStTopToRef(type);
     }
 
     @Override
+    public SemanticCommand biasFromStTopToAddr(SemanticType elementType) {
+        return typedCommandFactory.biasFromStTopToAddr(elementType);
+    }
+
+    @Override
     public SemanticCommand biasFromStTopToRef(SemanticType elementType) {
         return typedCommandFactory.biasFromStTopToRef(elementType);
+    }
+
+    @Override
+    public SemanticCommand biasFromStTopToRef(SemanticType fieldType, int offset) {
+        return typedCommandFactory.biasFromStTopToRef(fieldType, offset);
     }
 
     @Override

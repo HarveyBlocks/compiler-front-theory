@@ -26,6 +26,11 @@ public class DoWhileStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        if (children.length != 7) {
+            throw new org.harvey.vie.theory.exception.CompilerException(
+                    "illegal statement on do while statement production."
+            );
+        }
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
         if (Boolean.FALSE.equals(constantCondition)) {
             return onFalseConstantCondition(production, children);

@@ -1,0 +1,8 @@
+struct Point {
+    int32 x;
+}
+{
+Point p;
+p = new Point();
+p.y = 1;
+}

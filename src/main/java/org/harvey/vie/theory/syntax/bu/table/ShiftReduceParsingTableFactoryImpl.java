@@ -73,7 +73,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     if (unitSymbol.isTerminal()) {
                         TerminalSymbol terminal = unitSymbol.toTerminal();
                         int col = CollectionUtil.validIndex(terminalDict, terminal);
-                        setWithoutConflict(raw, col, pc.shift(i, terminal));
+                        setWithoutConflict(raw, col, pc.shift(i, terminal), i, terminal, pc);
                     }
                 } else {
                     // A -> γ·
@@ -85,17 +85,17 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                         // 2.3 accept
                         //  若项目为 [S' -> S·](增广开始符), 则
                         //  ACTION[I, $] = accept
-                        setWithoutConflict(raw, 0, pc.accept(production));
+                        setWithoutConflict(raw, 0, pc.accept(production), i, TerminalSymbol.END_MARK_SYMBOL, pc);
                         acceptStatus = i;
                     } else {
                         // 2.2 reduce
                         //  若项目为 [A -> γ·], 且 A 不是增广开始符，
                         //  则对其 Lookahead 集合中的每个终结符 t(包括 $ 如果存在)：
                         //  ACTION[I, t] = reduce A -> γ
-                        pc.lookahead(i, item)
-                                .stream()
-                                .map(t -> CollectionUtil.validIndex(terminalDict, t))
-                                .forEach(t -> setWithoutConflict(raw, t, pc.reduce(production)));
+                        for (TerminalSymbol terminalSymbol : pc.lookahead(i, item)) {
+                            int t = CollectionUtil.validIndex(terminalDict, terminalSymbol);
+                            setWithoutConflict(raw, t, pc.reduce(production), i, terminalSymbol, pc);
+                        }
                     }
                 }
             }
@@ -109,16 +109,28 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         private final int accept;
     }
 
-    private static void setWithoutConflict(ActiveTableElement[] raw, int col, ActiveTableElement element) {
+    private static void setWithoutConflict(
+            ActiveTableElement[] raw,
+            int col,
+            ActiveTableElement element,
+            int state,
+            TerminalSymbol terminal,
+            ParsingContext pc) {
         if (raw[col] == null) {
             raw[col] = element;
             return;
         }
         if (raw[col].conflict(element)) {
+            String existing = pc.describe(raw[col]);
+            String incoming = pc.describe(element);
             throw new IllegalStateException("The grammar do not fix in LALR for conflict between " +
-                                            raw[col] +
+                                            existing +
                                             " and " +
-                                            element);
+                                            incoming +
+                                            " at state " +
+                                            state +
+                                            " on terminal " +
+                                            terminal);
         }
 
     }
@@ -149,6 +161,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         private final TerminalSymbol[] terminalSymbols;
         private final HeadSymbol[] headSymbols;
         private final Map<SimpleGrammarProduction, Integer> productionDict;
+        private final List<SimpleGrammarProduction> productionList;
 
         public ParsingContext(
                 String startHead,
@@ -164,6 +177,7 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             this.terminalSymbols = terminalSymbolsWithEndMark();
             this.headSymbols = headSymbolsFilterHead();
             this.productionDict = new HashMap<>();
+            this.productionList = new ArrayList<>();
             this.tagComparator = tagComparator;
         }
 
@@ -255,8 +269,32 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     .toArray(SemanticTag[]::new);
             return productionDict.computeIfAbsent(
                     new DefineSimpleGrammarProduction(head.toDefine(), body, tags),
-                    k -> productionDict.size()
+                    k -> {
+                        int id = productionDict.size();
+                        productionList.add(k);
+                        return id;
+                    }
             );
+        }
+
+        public SimpleGrammarProduction getProduction(int id) {
+            return productionList.get(id);
+        }
+
+        public String describe(ActiveTableElement element) {
+            if (element instanceof ReduceTableElementImpl) {
+                ReduceTableElementImpl reduce = (ReduceTableElementImpl) element;
+                return "reduce " + reduce.getProduction() + " (" + getProduction(reduce.getProduction()) + ")";
+            }
+            if (element instanceof AcceptTableElementImpl) {
+                AcceptTableElementImpl accept = (AcceptTableElementImpl) element;
+                return "accept " + accept.getProduction() + " (" + getProduction(accept.getProduction()) + ")";
+            }
+            if (element instanceof ShiftTableElementImpl) {
+                ShiftTableElementImpl shift = (ShiftTableElementImpl) element;
+                return "shift " + shift.nextStatus();
+            }
+            return String.valueOf(element);
         }
 
         public int[][] initGoto() {
@@ -265,6 +303,10 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
 
         public GrammarUnitSymbol headSymbol(int i) {
             return headSymbols[i];
+        }
+
+        public TerminalSymbol terminalSymbol(int i) {
+            return terminalSymbols[i];
         }
 
 

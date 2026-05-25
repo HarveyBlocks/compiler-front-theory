@@ -1,13 +1,11 @@
 package org.harvey.vie.theory.semantic.function;
 
-import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.sequence.SyntaxTreeListIterator;
-import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.type.SemanticType;
@@ -22,19 +20,7 @@ import java.util.List;
  * @author Temper
  */
 public class FunctionSemanticCallback implements ShiftReduceCallback {
-    private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP).when(
-                    (context, head, production) -> prepareFunction(context, head),
-                    ProgramSemanticTag.FUNCTION,
-                    ProgramSemanticTag.HEAD
-            )
-            .when((context, head, production) -> validateReturnValue(context,
-                    head,
-                    production.containsTag(ProgramSemanticTag.VALUE)
-            ), ProgramSemanticTag.RETURN)
-            .when((context, head, production) -> validateCall(context, head),
-                    ProgramSemanticTag.FUNCTION,
-                    ProgramSemanticTag.CALL
-            );
+    private static final boolean DEBUG_FUNCTION = Boolean.getBoolean("semantic.debugFunction");
     private final ArgumentStepper argumentStepper = new ArgumentStepper();
     private final ParameterStepper parameterStepper = new ParameterStepper();
 
@@ -49,15 +35,29 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             return;
         }
         HeadNode head = context.getTreeContext().peek().toHead();
-        reduceStrategy.resolve(production).accept(context, head, production);
+        String defineName = head.getSymbol().isDefine() ? head.getSymbol().toDefine().getName() : "";
+        if ("function_head".equals(defineName)) {
+            prepareFunction(context, head);
+            return;
+        }
+        if ("return_stmt".equals(defineName)) {
+            validateReturnValue(context, head, head.size() == 3);
+            return;
+        }
+        if ("call_expr".equals(defineName)) {
+            validateCall(context, head);
+        }
     }
 
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
-        SourceToken nameToken = head.get(1).toToken().getSource();
+        SourceToken nameToken = tokenAt(head, 1);
+        if (DEBUG_FUNCTION) {
+            System.out.println("[function-debug] prepare function head: " + nameToken);
+        }
         if (context.existFunction(nameToken)) {
             SemanticDiagnostics.reject(context, nameToken, "duplicate function declaration is not allowed.");
         }
-        TypeRegister returnTypeRegister = context.getType(head.get(0));
+        TypeRegister returnTypeRegister = resolveReturnType(context, head);
         if (returnTypeRegister == null) {
             throw new CompilerException("function return type is missing.");
         }
@@ -72,7 +72,11 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
     }
 
     private void validateReturnValue(ShiftReduceSemanticContext context, HeadNode head, boolean hasValue) {
-        SourceToken returnToken = head.get(0).toToken().getSource();
+        SourceToken returnToken = tokenAt(head, 0);
+        if (DEBUG_FUNCTION) {
+            System.out.println("[function-debug] validate return: insideFunction=" + context.insideFunction()
+                    + ", currentBlockIsFunctionBody=" + context.isCurrentBlockFunctionBody());
+        }
         if (!context.insideFunction()) {
             SemanticDiagnostics.reject(context, returnToken, "return is only allowed inside function body.");
         }
@@ -102,7 +106,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
     }
 
     private void validateCall(ShiftReduceSemanticContext context, HeadNode head) {
-        SourceToken nameToken = head.get(0).toToken().getSource();
+        SourceToken nameToken = tokenAt(head, 0);
         FunctionRecord record = context.getFunction(nameToken);
         if (record == null) {
             SemanticDiagnostics.reject(context, nameToken, "function must be defined before it is called.");
@@ -135,7 +139,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
                 throw new CompilerException("parameter type is missing.");
             }
             SemanticType type = register.requireType("parameter type is required.");
-            SourceToken nameToken = head.get(1).toToken().getSource();
+            SourceToken nameToken = tokenAt(head, 1);
             SemanticDiagnostics.requireNotVoid(context, type, nameToken, "void cannot be used as parameter type.");
             for (FunctionParameter parameter : result) {
                 if (parameter.isNamed(nameToken)) {
@@ -145,6 +149,26 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             result.add(new FunctionParameter(nameToken, type, head.get(0).toHead()));
         }
         return result;
+    }
+
+    private static TypeRegister resolveReturnType(ShiftReduceSemanticContext context, HeadNode head) {
+        TypeRegister direct = context.getType(head.get(0));
+        if (direct != null) {
+            return direct;
+        }
+        ShiftReduceSyntaxTreeNode first = head.get(0);
+        if (first.isToken()) {
+            SourceToken token = first.toToken().getSource();
+            SemanticType type = context.typeToken(token);
+            if (type != null) {
+                return TypeRegister.simple(type, token);
+            }
+        }
+        return null;
+    }
+
+    private static SourceToken tokenAt(HeadNode head, int index) {
+        return ShiftReduceSyntaxTreeNode.anchor(head.get(index));
     }
 
     private List<TypeRegister> collectArgumentTypes(
@@ -162,12 +186,5 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
     }
 
 
-    @FunctionalInterface
-    private interface ReduceAction {
-        ReduceAction NOOP = (context, head, production) -> {
-        };
-
-        void accept(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
-    }
 }
 

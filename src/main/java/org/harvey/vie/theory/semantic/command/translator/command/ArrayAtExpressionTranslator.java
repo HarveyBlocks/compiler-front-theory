@@ -30,6 +30,20 @@ public class ArrayAtExpressionTranslator implements CommandTranslator {
         children[2].register(thisBuilder);
         SemanticType baseType = TypeAttributes.childType(context, 0);
         SemanticType indexType = TypeAttributes.childType(context, 2);
+        if (baseType == null) {
+            SemanticDiagnostics.reject(
+                    context,
+                    TypeAttributes.childAnchor(context, 0),
+                    "array access requires a typed left operand."
+            );
+        }
+        if (indexType == null) {
+            SemanticDiagnostics.reject(
+                    context,
+                    TypeAttributes.childAnchor(context, 2),
+                    "array index expression requires a type."
+            );
+        }
         if (!baseType.isArray()) {
             SemanticDiagnostics.reject(context, TypeAttributes.childAnchor(context, 1), "subscript operator requires an array operand.");
         }
