@@ -151,6 +151,7 @@ public final class ProgramSyntaxTestRunner {
                 SyntaxDemo.STRING_COMMAND_FACTORY,
                 ProgramSyntaxDemo.TYPE_RESOLVER,
                 ProgramSyntaxDemo.CONSTANT_RESOLVER,
+                ProgramSyntaxDemo.FUNCTION_MANAGER,
                 Boolean.getBoolean(TRACE_STEPS_PROPERTY)
         );
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
@@ -267,7 +268,7 @@ public final class ProgramSyntaxTestRunner {
                 formatType(record.getType()),
                 SourceTokenStringMapping.utf8(record.getLexeme()),
                 record.isInitialized(),
-                constantValue == null ? "<none>" : constantValue.literalText()
+                constantValue == null ? "<none>" : constantValue.toString()
         );
     }
 

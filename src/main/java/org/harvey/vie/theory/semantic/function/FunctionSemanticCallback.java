@@ -21,7 +21,8 @@ import java.util.List;
  * @author Temper
  */
 public class FunctionSemanticCallback implements ShiftReduceCallback {
-    private final ProductionTagStrategy<ReduceAction> reduceStrategy = new ProductionTagStrategy<>(ReduceAction.NOOP).when(
+    private final ProductionTagStrategy<ReduceAction> reduceStrategy =
+            new ProductionTagStrategy<>(ReduceAction.NOOP).when(
                     (context, head, production) -> prepareFunction(context, head),
                     ProgramSemanticTag.FUNCTION,
                     ProgramSemanticTag.HEAD

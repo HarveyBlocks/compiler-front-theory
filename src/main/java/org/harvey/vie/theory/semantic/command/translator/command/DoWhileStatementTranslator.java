@@ -26,6 +26,23 @@ public class DoWhileStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
+        if (Boolean.FALSE.equals(constantCondition)) {
+            return onFalseConstantCondition(production, children);
+        }
+        return onNormalCondition(context, production, children);
+    }
+
+    private static NormalCommandNodeRegister onNormalCondition(
+            ShiftReduceSemanticContext context,
+            SimpleGrammarProduction production,
+            CommandNodeRegister[] children) {
+        SemanticDiagnostics.requireBoolean(
+                context,
+                TypeAttributes.childType(context, 4),
+                TypeAttributes.childAnchor(context, 2),
+                "do-while condition must be boolean."
+        );
         // do stmt while ( expr ) ;
         // do-while 语句
         //    L1:
@@ -34,23 +51,6 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         //    expr.command();
         //    DefaultCommandFactory.if_goto(L1);
         //    L3:
-        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
-        if (Boolean.FALSE.equals(constantCondition)) {
-            SemanticLabel whileStartLabel = new DefaultSemanticLabel();
-            SemanticLabel whileEndLabel = new DefaultSemanticLabel();
-            CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
-            thisBuilder.add(new LabelNode(whileStartLabel));
-            children[1].register(thisBuilder);
-            thisBuilder.add(new LabelNode(whileEndLabel));
-            WhileStatementTranslator.bindLoopLabels(children[1], whileEndLabel, whileEndLabel);
-            return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
-        }
-        SemanticDiagnostics.requireBoolean(
-                context,
-                TypeAttributes.childType(context, 4),
-                TypeAttributes.childAnchor(context, 2),
-                "do-while condition must be boolean."
-        );
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel beforeTestLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
@@ -62,6 +62,19 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         thisBuilder.add(new TerminalNode(context.getCommandFactory().ifGoto(whileStartLabel)));
         thisBuilder.add(new LabelNode(whileEndLabel));
         WhileStatementTranslator.bindLoopLabels(children[1], beforeTestLabel, whileEndLabel);
+        return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
+
+    private static NormalCommandNodeRegister onFalseConstantCondition(
+            SimpleGrammarProduction production,
+            CommandNodeRegister[] children) {
+        SemanticLabel whileStartLabel = new DefaultSemanticLabel();
+        SemanticLabel whileEndLabel = new DefaultSemanticLabel();
+        CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
+        thisBuilder.add(new LabelNode(whileStartLabel));
+        children[1].register(thisBuilder);
+        thisBuilder.add(new LabelNode(whileEndLabel));
+        WhileStatementTranslator.bindLoopLabels(children[1], whileEndLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

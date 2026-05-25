@@ -51,6 +51,7 @@ import org.harvey.vie.theory.semantic.function.FunctionSemanticCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierScopeCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
 import org.harvey.vie.theory.semantic.log.TreeLogCallback;
+import org.harvey.vie.theory.semantic.tag.TagStrategyCompose;
 import org.harvey.vie.theory.semantic.tree.TreeBuildCallback;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
@@ -136,88 +137,7 @@ public class SemanticDemo {
     }
 
     private static CommandTranslatorStrategy reduceStrategies0() {
-        CommandTranslator doNothing = new DoNotingTranslator();
-        CommandTranslator simpleShrink = defaultCommandTranslator;
-        CommandTranslator programTranslator = new ProgramCommandTranslator();
-        CommandTranslator functionHeadTranslator = new FunctionHeadTranslator();
-        CommandTranslator returnTranslator = new FunctionReturnTranslator();
-        CommandTranslator declarationWithoutInitializationTranslator =
-                new DeclarationWithoutInitializationTranslator();
-        CommandTranslator declarationWithInitializationTranslator =
-                new DeclarationWithInitializationTranslator();
-        CommandTranslator arrayTypeTranslator = new ArrayTypeTranslator();
-        CommandTranslator parenthesizedExpressionTranslator = new ParenthesizedExpressionTranslator();
-        CommandTranslator primaryProduceLeftValueTranslator = new PrimaryProduceLeftValueTranslator();
-        CommandTranslator assignStatementTranslator = new AssignStatementTranslator();
-        CommandTranslator arrayAtExpressionTranslator = new ArrayAtExpressionTranslator();
-        CommandTranslator functionCallTranslator = new FunctionCallTranslator();
-        CommandTranslator ifStatementTranslator = new IfStatementTranslator();
-        CommandTranslator ifElseStatementTranslator = new IfElseStatementTranslator();
-        CommandTranslator whileStatementTranslator = new WhileStatementTranslator();
-        CommandTranslator doWhileStatementTranslator = new DoWhileStatementTranslator();
-        CommandTranslator statementListTranslator = new StatementListTranslator();
-        CommandTranslator logicalNotTranslator =
-                new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT);
-        CommandTranslator negateTranslator =
-                new UnaryExpressionTranslator(operator("negate"), ProgramTokenType.OPERATOR_MINUS);
-        CommandTranslator logicalOrTranslator = new InSuffixExpressionTranslator(operator("logical_or"));
-        CommandTranslator logicalAndTranslator = new InSuffixExpressionTranslator(operator("logical_and"));
-        CommandTranslator equalTranslator = new InSuffixExpressionTranslator(operator("equal"));
-        CommandTranslator notEqualTranslator = new InSuffixExpressionTranslator(operator("not_equal"));
-        CommandTranslator lessTranslator = new InSuffixExpressionTranslator(operator("less"));
-        CommandTranslator lessEqualTranslator = new InSuffixExpressionTranslator(operator("less_equal"));
-        CommandTranslator greaterTranslator = new InSuffixExpressionTranslator(operator("greater"));
-        CommandTranslator greaterEqualTranslator = new InSuffixExpressionTranslator(operator("greater_equal"));
-        CommandTranslator plusTranslator = new InSuffixExpressionTranslator(operator("plus"));
-        CommandTranslator minusTranslator = new InSuffixExpressionTranslator(operator("minus"));
-        CommandTranslator multiplyTranslator = new InSuffixExpressionTranslator(operator("multiply"));
-        CommandTranslator divideTranslator = new InSuffixExpressionTranslator(operator("divide"));
-
-        ProductionTagStrategy<CommandTranslator> strategy = new ProductionTagStrategy<>(defaultCommandTranslator)
-                .when(programTranslator, ProgramSemanticTag.PROGRAM)
-                .when(functionHeadTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
-                .when(doNothing, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
-                .when(statementListTranslator, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
-                .when(doNothing, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
-                .when(doNothing, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
-                .when(statementListTranslator, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
-                .when(declarationWithInitializationTranslator, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.INITIALIZED)
-                .when(declarationWithoutInitializationTranslator, ProgramSemanticTag.DECLARATION)
-                .when(returnTranslator, ProgramSemanticTag.RETURN)
-                .when(functionCallTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
-                .when(arrayTypeTranslator, ProgramSemanticTag.TYPE, ProgramSemanticTag.ARRAY)
-                .when(parenthesizedExpressionTranslator, ProgramSemanticTag.PARENTHESIZED)
-                .when(primaryProduceLeftValueTranslator, ProgramSemanticTag.LEFT_VALUE)
-                .when(logicalNotTranslator, ProgramSemanticTag.LOGICAL_NOT)
-                .when(negateTranslator, ProgramSemanticTag.NEGATE)
-                .when(assignStatementTranslator, ProgramSemanticTag.ASSIGNMENT)
-                .when(arrayAtExpressionTranslator, ProgramSemanticTag.ACCESS)
-                .when(logicalOrTranslator, ProgramSemanticTag.OR)
-                .when(logicalAndTranslator, ProgramSemanticTag.AND)
-                .when(notEqualTranslator, ProgramSemanticTag.NOT_EQUAL)
-                .when(equalTranslator, ProgramSemanticTag.EQUAL)
-                .when(lessEqualTranslator, ProgramSemanticTag.LESS_EQUAL)
-                .when(lessTranslator, ProgramSemanticTag.LESS)
-                .when(greaterEqualTranslator, ProgramSemanticTag.GREATER_EQUAL)
-                .when(greaterTranslator, ProgramSemanticTag.GREATER)
-                .when(plusTranslator, ProgramSemanticTag.PLUS)
-                .when(minusTranslator, ProgramSemanticTag.MINUS)
-                .when(multiplyTranslator, ProgramSemanticTag.MULTIPLY)
-                .when(divideTranslator, ProgramSemanticTag.DIVIDE)
-                .when(ifElseStatementTranslator, ProgramSemanticTag.CONDITIONAL, ProgramSemanticTag.ELSE_BRANCH)
-                .when(ifStatementTranslator, ProgramSemanticTag.CONDITIONAL)
-                .when(doWhileStatementTranslator, ProgramSemanticTag.LOOP, ProgramSemanticTag.DO_LOOP)
-                .when(whileStatementTranslator, ProgramSemanticTag.LOOP);
-        return strategy::resolve;
-    }
-
-    private static OperatorFactor operator(String name) {
-        return new OperatorFactor() {
-            @Override
-            public String toString() {
-                return name;
-            }
-        };
+        return TagStrategyCompose.stringCommand()::resolve;
     }
 
     private static ShiftReduceCallback instanceSemanticCommandPrintCallback() {

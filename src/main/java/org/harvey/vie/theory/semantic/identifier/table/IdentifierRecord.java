@@ -8,7 +8,6 @@ import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
-import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -39,7 +38,7 @@ public class IdentifierRecord {
                " type=" + type.stream().map(Objects::toString).collect(Collectors.joining()) +
                " name=" + SourceTokenStringMapping.utf8(lexeme) +
                " initialized=" + initialized +
-               " constant=" + (constantValue == null ? "<none>" : constantValue.literalText());
+               " constant=" + (constantValue == null ? "<none>" : constantValue.toString());
     }
 
 }

@@ -2,7 +2,9 @@ package org.harvey.vie.theory.semantic.command.command.string;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
-import org.harvey.vie.theory.semantic.command.command.*;
+import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
+import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.command.factory.TypedCommandFactory;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
@@ -46,7 +48,7 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
         return new StringCommand("load_st_" +
                                  mnemonic(constantValue.getType()) +
                                  "_static " +
-                                 constantValue.literalText());
+                                 constantValue);
     }
 
     @Override
@@ -93,6 +95,7 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     public UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token) {
         return new StringUncertainLabelGotoCommand(token);
     }
+
     private static String mnemonic(SemanticType type) {
         return type.getKind().name().toLowerCase();
     }

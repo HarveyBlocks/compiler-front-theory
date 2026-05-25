@@ -10,6 +10,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
 import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.function.FunctionManager;
 import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.value.ConstantResolver;
 import org.harvey.vie.theory.syntax.SyntaxParsingContext;
@@ -34,14 +35,15 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     private final boolean traceSteps;
     private final TypeResolver typeResolver;
     private final ConstantResolver constantResolver;
+    private final FunctionManager functionManager;
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
             TokenFilterPredict tokenFilterPredict,
             ShiftReduceCallbackRegister register,
             CommandFactory commandFactory,
-            TypeResolver typeResolver, ConstantResolver constantResolver) {
-        this(table, tokenFilterPredict, register, commandFactory, typeResolver, constantResolver, false);
+            TypeResolver typeResolver, ConstantResolver constantResolver, FunctionManager functionManager) {
+        this(table, tokenFilterPredict, register, commandFactory, typeResolver, constantResolver, functionManager, false);
     }
 
     public ShiftReducePhaserImpl(
@@ -50,12 +52,13 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
             ShiftReduceCallbackRegister register,
             CommandFactory commandFactory,
             TypeResolver typeResolver,
-            ConstantResolver constantResolver, boolean traceSteps) {
+            ConstantResolver constantResolver, FunctionManager functionManager, boolean traceSteps) {
         this.tokenFilterPredict = tokenFilterPredict;
         this.table = table;
         this.register = register;
         this.commandFactory = commandFactory;
         this.constantResolver = constantResolver;
+        this.functionManager = functionManager;
         this.traceSteps = traceSteps;
         this.typeResolver = typeResolver;
     }
@@ -92,7 +95,8 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
                 ctx,
                 commandFactory,
                 typeResolver,
-                constantResolver
+                constantResolver,
+                functionManager
         );
         context.onStart();
         while (true) {

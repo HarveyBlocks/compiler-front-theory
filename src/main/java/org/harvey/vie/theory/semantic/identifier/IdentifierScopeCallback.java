@@ -67,7 +67,7 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
                 && context.isCurrentBlockFunctionBody()) {
             FunctionBodyState bodyState = context.currentFunctionBodyState();
             if (bodyState != null
-                    && !FunctionReturnFlowAnalyzer.guaranteesReturn(context, treeContext.peek())
+                    && !context.getFunctionManager().guaranteesReturn(context, treeContext.peek())
                     && !bodyState.getFunction().getSignature().getReturnType().isVoidScalar()) {
                 throw new CompileException("non-void function must return a value.");
             }

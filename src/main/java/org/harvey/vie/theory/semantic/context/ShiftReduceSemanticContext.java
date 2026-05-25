@@ -9,10 +9,7 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
 import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
-import org.harvey.vie.theory.semantic.function.FunctionBodyState;
-import org.harvey.vie.theory.semantic.function.FunctionContext;
-import org.harvey.vie.theory.semantic.function.FunctionParameter;
-import org.harvey.vie.theory.semantic.function.FunctionRecord;
+import org.harvey.vie.theory.semantic.function.*;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
@@ -66,19 +63,22 @@ public class ShiftReduceSemanticContext {
     private final FunctionContext functionContext = new FunctionContext();
     private final ArrayDeque<Boolean> blockFunctionFlags = new ArrayDeque<>();
     private FunctionRecord pendingFunction;
+    @Getter
+    private final FunctionManager functionManager;
 
     public ShiftReduceSemanticContext(
             ShiftReduceCallbackRegister register,
             ShiftReducePhaseContext syntaxContext,
             CommandFactory commandFactory,
             TypeResolver typeResolver,
-            ConstantResolver constantResolver) {
+            ConstantResolver constantResolver, FunctionManager functionManager) {
         this.register = register;
         this.syntaxContext = syntaxContext;
         callbackIter = register.iterator();
         this.commandFactory = commandFactory;
         this.typeResolver = typeResolver;
         this.constantResolver = constantResolver;
+        this.functionManager = functionManager;
     }
 
     // region callback
@@ -353,5 +353,6 @@ public class ShiftReduceSemanticContext {
     public boolean hasConstantValue(ShiftReduceSyntaxTreeNode node) {
         return constantValueContext.has(node);
     }
+
     // endregion
 }

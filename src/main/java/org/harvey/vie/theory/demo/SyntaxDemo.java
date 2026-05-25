@@ -4,7 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.demo.grammar.ProductionSetContextBuilds;
 import org.harvey.vie.theory.demo.program.ProgramSyntaxDemo;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
-import org.harvey.vie.theory.demo.program.ProgramTypeResolver;
 import org.harvey.vie.theory.error.DefaultErrorContext;
 import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.exception.CompileException;
@@ -16,7 +15,6 @@ import org.harvey.vie.theory.lexical.alphabet.RegexAlphabetCharacterFactory;
 import org.harvey.vie.theory.lexical.alphabet.SourceAlphabetCharacterAdaptorImpl;
 import org.harvey.vie.theory.lexical.analysis.DefaultLexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
-import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
@@ -25,8 +23,7 @@ import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFact
 import org.harvey.vie.theory.semantic.command.command.string.SimpleStringCommandFactory;
 import org.harvey.vie.theory.semantic.command.command.string.TypedStringCommandFactory;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
-import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.type.TypeResolver;
+import org.harvey.vie.theory.semantic.function.FunctionManager;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
@@ -82,7 +79,8 @@ public class SyntaxDemo {
                 // syntax analyzer
                 PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable("E");
                 GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
-                PredictivePhaserImpl phaser = new PredictivePhaserImpl(start,
+                PredictivePhaserImpl phaser = new PredictivePhaserImpl(
+                        start,
                         predictiveParsingTable,
                         SemanticDemo.buildPredicativeRegister(),
                         t -> true
@@ -103,7 +101,8 @@ public class SyntaxDemo {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
                 System.out.println(context);
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable("S",
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable(
+                        "S",
                         context,
                         "syntax_simple.data",
                         is -> null, /*不是Program的, 不支持Tag*/
@@ -115,7 +114,8 @@ public class SyntaxDemo {
                         SemanticDemo.buildSimpleShiftReduceRegister(),
                         STRING_COMMAND_FACTORY,
                         null, // 未定
-                        ProgramSyntaxDemo.CONSTANT_RESOLVER
+                        ProgramSyntaxDemo.CONSTANT_RESOLVER,
+                        null
                 );
                 return phaser.phase(iter, errCtx);
             });
@@ -222,11 +222,13 @@ public class SyntaxDemo {
     private static ShiftReduceParsingTableImpl.Loader getLoader(SemanticTag.Loader<?> tagLoader) {
         TokenTypeTerminalSymbol.Loader terminalSymbolLoader = new TokenTypeTerminalSymbol.Loader(new ProgramTokenType.Loader());
         HeadDefineSymbolImpl.Loader headSymbolLoader = new HeadDefineSymbolImpl.Loader();
-        DefineSimpleGrammarProduction.Loader productionLoader = new DefineSimpleGrammarProduction.Loader(headSymbolLoader,
+        DefineSimpleGrammarProduction.Loader productionLoader = new DefineSimpleGrammarProduction.Loader(
+                headSymbolLoader,
                 terminalSymbolLoader,
                 tagLoader
         );
-        return new ShiftReduceParsingTableImpl.Loader(terminalSymbolLoader,
+        return new ShiftReduceParsingTableImpl.Loader(
+                terminalSymbolLoader,
                 headSymbolLoader,
                 productionLoader,
                 MATCHER_FACTORY
@@ -251,10 +253,12 @@ public class SyntaxDemo {
             System.out.println("I" + (cur++) + ": " + lookaheadMap);
         }
         System.out.println("------------shift reduce table-----------");
-        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(MATCHER_FACTORY,
+        ShiftReduceParsingTableFactory shiftReduceParsingTableFactory = new ShiftReduceParsingTableFactoryImpl(
+                MATCHER_FACTORY,
                 tagComparator
         );
-        ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(startHead,
+        ShiftReduceParsingTable shiftReduceParsingTable = shiftReduceParsingTableFactory.produce(
+                startHead,
                 context,
                 firstMap,
                 family,

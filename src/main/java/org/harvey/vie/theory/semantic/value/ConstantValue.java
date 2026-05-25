@@ -30,17 +30,9 @@ public class ConstantValue {
         return (Boolean) value;
     }
 
-    public String literalText() {
-        switch (type.getKind()) {
-            case BOOLEAN:
-                return bool() ? "true" : "false";
-            case INT32:
-                return String.valueOf(int32());
-            case FLOAT64:
-                return Double.toString(float64());
-            default:
-                throw new IllegalStateException("unsupported constant literal type: " + type);
-        }
+    @Override
+    public String toString() {
+        return String.valueOf(value);
     }
 }
 

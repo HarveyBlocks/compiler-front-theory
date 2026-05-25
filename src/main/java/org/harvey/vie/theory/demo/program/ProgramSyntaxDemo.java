@@ -13,6 +13,8 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.lexical.analysis.token.TokenType;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
+import org.harvey.vie.theory.semantic.function.FunctionManager;
+import org.harvey.vie.theory.semantic.function.FunctionReturnFlowAnalyzer;
 import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.value.ConstantResolver;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
@@ -60,6 +62,9 @@ public class ProgramSyntaxDemo {
             return Integer.parseInt(SourceTokenStringMapping.utf8(token));
         }
     };
+    public static final FunctionManager FUNCTION_MANAGER = new FunctionManager(
+            new FunctionReturnFlowAnalyzer()
+    );
 
     public static void main(String[] args) {
         if (args.length == 0) {
@@ -136,7 +141,8 @@ public class ProgramSyntaxDemo {
                     SemanticDemo.buildShiftReduceRegister(),
                     SyntaxDemo.STRING_COMMAND_FACTORY,
                     TYPE_RESOLVER,
-                    CONSTANT_RESOLVER
+                    CONSTANT_RESOLVER,
+                    FUNCTION_MANAGER
             );
             return phaser.phase(iter, errCtx);
         });
