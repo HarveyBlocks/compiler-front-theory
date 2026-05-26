@@ -44,7 +44,7 @@ import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMAN
  */
 public final class ProgramSyntaxTestRunner {
     private static final Path TEST_CASE_DIR = Path.of("src/main/resources/program-tests");
-    private static final Path REPORT_DIR = Path.of("run-reports/program-syntax");
+    private static final Path REPORT_ROOT_DIR = Path.of("run-reports/program-syntax");
     private static final DateTimeFormatter RUN_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
     private ProgramSyntaxTestRunner() {
@@ -52,20 +52,22 @@ public final class ProgramSyntaxTestRunner {
 
     public static SemanticRunReport run() {
         try {
-            Files.createDirectories(REPORT_DIR);
+            Files.createDirectories(REPORT_ROOT_DIR);
             List<Path> cases = listTestCases();
             if (cases.isEmpty()) {
                 throw new IllegalStateException("no test cases found in " + TEST_CASE_DIR);
             }
             String runId = LocalDateTime.now().format(RUN_ID_FORMATTER);
+            Path runReportDir = REPORT_ROOT_DIR.resolve(runId);
+            Files.createDirectories(runReportDir);
             List<TestCaseResult> results = cases.stream().map(testCase -> {
                 try {
-                    return runOneTestCase(testCase, runId);
+                    return runOneTestCase(testCase, runReportDir);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             }).collect(Collectors.toList());
-            Path summaryReport = REPORT_DIR.resolve(runId + "-summary.md");
+            Path summaryReport = runReportDir.resolve("summary.md");
             writeSummary(summaryReport, runId, results);
             return new SemanticRunReport(runId, summaryReport, results);
         } catch (IOException e) {
@@ -83,7 +85,7 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
-    private static TestCaseResult runOneTestCase(Path testCase, String runId) throws IOException {
+    private static TestCaseResult runOneTestCase(Path testCase, Path runReportDir) throws IOException {
         String caseName = testCase.getFileName().toString().replaceFirst("\\.txt$", "");
         boolean expectedFailure = caseName.contains("invalid");
         String text = Files.readString(testCase, StandardCharsets.UTF_8);
@@ -101,7 +103,7 @@ public final class ProgramSyntaxTestRunner {
         boolean observedRejected = failure != null || hasErrors;
         boolean observedAccepted = executedSuccessfully && !hasErrors;
         boolean matchedExpectation = expectedFailure ? observedRejected : observedAccepted;
-        Path report = REPORT_DIR.resolve(runId + "-" + caseName + ".md");
+        Path report = runReportDir.resolve(caseName + ".md");
         writeReport(
                 report,
                 caseName,

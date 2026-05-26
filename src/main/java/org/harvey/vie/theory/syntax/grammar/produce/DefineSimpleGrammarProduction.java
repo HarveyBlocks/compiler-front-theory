@@ -88,12 +88,7 @@ public class DefineSimpleGrammarProduction implements SimpleGrammarProduction {
 
     @Override
     public boolean containsTag(SemanticTag tag) {
-        for (SemanticTag current : tags) {
-            if (current == tag) {
-                return true;
-            }
-        }
-        return false;
+        return Arrays.binarySearch(this.tags, tag) >= 0;
     }
 
     @Override

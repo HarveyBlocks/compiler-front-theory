@@ -5,6 +5,18 @@
 The project currently keeps runtime startup properties in one place:
 `org.harvey.vie.theory.util.RuntimeProperties`.
 
+Property sources:
+
+1. JVM system properties
+2. Config file
+
+JVM system properties override the config file.
+
+Config file path sources:
+
+1. JVM system property `config.properteis`
+2. Default path `src/main/resources/config.properteis`
+
 Supported properties:
 
 - `-Dlexical.flushTable=true`
@@ -23,6 +35,7 @@ Typical examples:
 mvn test
 mvn -Dprogram.testCase=text31-function-return test
 mvn -Dlexical.flushTable=true -Dsyntax.flushTable=true test
+mvn -Dconfig.properteis=D:/custom/config.properteis test
 ```
 
 ## IO

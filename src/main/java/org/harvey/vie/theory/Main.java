@@ -1,5 +1,7 @@
 package org.harvey.vie.theory;
 
+import org.harvey.vie.theory.util.RuntimeProperties;
+
 /**
  * 启动类
  *
@@ -10,6 +12,10 @@ package org.harvey.vie.theory;
 public class Main {
     public static void main(String[] args) {
         System.out.println(deal(""));
+        System.out.println(RuntimeProperties.lexicalFlushTable());
+        System.out.println(RuntimeProperties.syntaxFlushTable());
+        System.out.println(RuntimeProperties.programTestCase());
+        System.out.println(RuntimeProperties.configPath());
     }
 
     public static int deal(String s) {
