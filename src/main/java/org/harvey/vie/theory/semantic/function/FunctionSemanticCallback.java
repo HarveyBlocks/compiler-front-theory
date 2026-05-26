@@ -1,11 +1,13 @@
 package org.harvey.vie.theory.semantic.function;
 
+import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.sequence.SyntaxTreeListIterator;
+import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.type.SemanticType;
@@ -20,6 +22,11 @@ import java.util.List;
  * @author Temper
  */
 public class FunctionSemanticCallback implements ShiftReduceCallback {
+    private static final ProductionTagStrategy<ReduceAction> REDUCE_ACTIONS = new ProductionTagStrategy<>(ReduceAction.NOOP)
+            .when(ReduceAction.PREPARE_FUNCTION, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
+            .when(ReduceAction.VALIDATE_RETURN, ProgramSemanticTag.RETURN)
+            .when(ReduceAction.VALIDATE_CALL, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL);
+
     private final ArgumentStepper argumentStepper = new ArgumentStepper();
     private final ParameterStepper parameterStepper = new ParameterStepper();
 
@@ -34,18 +41,7 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             return;
         }
         HeadNode head = context.getTreeContext().peek().toHead();
-        String defineName = head.getSymbol().isDefine() ? head.getSymbol().toDefine().getName() : "";
-        if ("function_head".equals(defineName)) {
-            prepareFunction(context, head);
-            return;
-        }
-        if ("return_stmt".equals(defineName)) {
-            validateReturnValue(context, head, head.size() == 3);
-            return;
-        }
-        if ("call_expr".equals(defineName)) {
-            validateCall(context, head);
-        }
+        REDUCE_ACTIONS.resolve(production).accept(this, context, head);
     }
 
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
@@ -177,6 +173,33 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         return result;
     }
 
+    private enum ReduceAction {
+        NOOP {
+            @Override
+            void accept(FunctionSemanticCallback callback, ShiftReduceSemanticContext context, HeadNode head) {
+            }
+        },
+        PREPARE_FUNCTION {
+            @Override
+            void accept(FunctionSemanticCallback callback, ShiftReduceSemanticContext context, HeadNode head) {
+                callback.prepareFunction(context, head);
+            }
+        },
+        VALIDATE_RETURN {
+            @Override
+            void accept(FunctionSemanticCallback callback, ShiftReduceSemanticContext context, HeadNode head) {
+                callback.validateReturnValue(context, head, head.containsTag(ProgramSemanticTag.VALUE));
+            }
+        },
+        VALIDATE_CALL {
+            @Override
+            void accept(FunctionSemanticCallback callback, ShiftReduceSemanticContext context, HeadNode head) {
+                callback.validateCall(context, head);
+            }
+        };
+
+        abstract void accept(FunctionSemanticCallback callback, ShiftReduceSemanticContext context, HeadNode head);
+    }
 
 }
 

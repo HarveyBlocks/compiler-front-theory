@@ -45,9 +45,9 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.IDENTIFIER)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.IDENTIFIER)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.PARAMETER, ProgramSemanticTag.IDENTIFIER)
-            .when(TypeRule.IDENTIFIER_REFERENCE, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
             .when(TypeRule.ARRAY_ACCESS, ProgramSemanticTag.ACCESS)
             .when(TypeRule.MEMBER_ACCESS, ProgramSemanticTag.MEMBER_ACCESS)
+            .when(TypeRule.IDENTIFIER_REFERENCE, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
             .when(TypeRule.LEFT_VALUE, ProgramSemanticTag.LEFT_VALUE)
             .when(TypeRule.FUNCTION_CALL, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
             .when(TypeRule.LITERAL, ProgramSemanticTag.LITERAL)
@@ -79,15 +79,6 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
-        if (head.getSymbol().isDefine()) {
-            String defineName = head.getSymbol().toDefine().getName();
-            if ("loc".equals(defineName) && head.size() == 1 && head.get(0).isToken()) {
-                TypeRegister result = identifierReference(context, head);
-                context.bindType(head, result);
-                ShiftReduceCallback.super.onReduce(context, production);
-                return;
-            }
-        }
         TypeRegister result = RULES.resolve(production).build(context, head, production);
         if (result != null) {
             context.bindType(head, result);

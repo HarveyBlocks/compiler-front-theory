@@ -1,5 +1,6 @@
 package org.harvey.vie.theory.semantic.structure;
 
+
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
@@ -21,15 +22,16 @@ import java.util.List;
  * @author Temper
  */
 public class StructSemanticCallback implements ShiftReduceCallback {
+    private static final ProductionTagStrategy<ReduceAction> REDUCE_ACTIONS = new ProductionTagStrategy<>(ReduceAction.NOOP)
+            .when(ReduceAction.REGISTER_STRUCT, ProgramSemanticTag.STRUCT_DECL);
+
     private final StructFieldStepper fieldStepper = new StructFieldStepper();
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         if (!context.getTreeContext().isEmpty() && context.getTreeContext().peek().isHead()) {
             HeadNode head = context.getTreeContext().peek().toHead();
-            if (isStructDeclaration(head)) {
-                registerStruct(context, head, production);
-            }
+            REDUCE_ACTIONS.resolve(production).accept(this, context, head, production);
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
@@ -70,15 +72,31 @@ public class StructSemanticCallback implements ShiftReduceCallback {
         return fields;
     }
 
-    private boolean isStructDeclaration(HeadNode head) {
-        return head.getSymbol().isDefine() && "struct_decl".equals(head.getSymbol().toDefine().getName());
-    }
-
-    @FunctionalInterface
-    private interface ReduceAction {
-        ReduceAction NOOP = (context, head, production) -> {
+    private enum ReduceAction {
+        NOOP {
+            @Override
+            void accept(
+                    StructSemanticCallback callback,
+                    ShiftReduceSemanticContext context,
+                    HeadNode head,
+                    SimpleGrammarProduction production) {
+            }
+        },
+        REGISTER_STRUCT {
+            @Override
+            void accept(
+                    StructSemanticCallback callback,
+                    ShiftReduceSemanticContext context,
+                    HeadNode head,
+                    SimpleGrammarProduction production) {
+                callback.registerStruct(context, head, production);
+            }
         };
 
-        void accept(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
+        abstract void accept(
+                StructSemanticCallback callback,
+                ShiftReduceSemanticContext context,
+                HeadNode head,
+                SimpleGrammarProduction production);
     }
 }

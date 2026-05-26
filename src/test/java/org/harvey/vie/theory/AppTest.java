@@ -137,17 +137,19 @@ public class AppTest extends TestCase {
         int outerFalseJump = indexOfPrefix(commands, "ifn_goto ");
         int innerFalseJump = indexOfPrefix(commands, "ifn_goto ", outerFalseJump + 1);
         int thenJoinGoto = indexOfPrefix(commands, "goto ", innerFalseJump + 1);
-        int elseAssign = indexOfCommand(commands, "assign_from_st_top_to_addr_int32", innerFalseJump + 1);
         assertTrue("outer if false branch should jump to final join", outerFalseJump >= 0);
         assertTrue("inner if false branch should jump to else branch start", innerFalseJump >= 0);
         assertTrue("then branch should skip else branch via goto", thenJoinGoto > innerFalseJump);
-        assertTrue("else branch assignment should start at target 25", elseAssign >= 25);
+        assertEquals("outer if false branch should target final join", 32, parseGotoTarget(commands.get(outerFalseJump)));
+        assertEquals("inner if false branch should target else branch start", 25, parseGotoTarget(commands.get(innerFalseJump)));
+        assertEquals("then branch should skip to final join", 32, parseGotoTarget(commands.get(thenJoinGoto)));
     }
 
     private static void assertDoWhileBackEdgeTargetsBody(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text3");
         List<String> commands = result.getSemanticResult().getCommands();
-        int doBodyStart = indexOfCommand(commands, "load_st_int32_address 1", 80);
+        int doWhileExit = indexOfCommand(commands, "goto 15");
+        int doBodyStart = indexOfCommand(commands, "load_st_int32_address 1", doWhileExit + 1);
         int doBackEdge = indexOfPrefix(commands, "if_goto ", doBodyStart);
         assertTrue("do-while body should be present near the loop tail", doBodyStart >= 0);
         assertTrue("do-while condition should jump back to body start", doBackEdge > doBodyStart);
@@ -199,14 +201,14 @@ public class AppTest extends TestCase {
                 .map(AppTest::parseGotoTarget)
                 .collect(Collectors.toList());
         assertTrue("inner break should not reuse outer break target", gotoTargets.stream().distinct().count() >= 2);
-        assertTrue("one break should exit the inner loop", gotoTargets.contains(14));
-        assertTrue("one break should exit the outer loop", gotoTargets.contains(16));
+        assertTrue("one break should exit the inner loop", gotoTargets.contains(12));
+        assertTrue("one break should exit the outer loop", gotoTargets.contains(14));
     }
 
     private static void assertWhileContinueTargetsCondition(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text15-continue-in-while");
         List<String> commands = result.getSemanticResult().getCommands();
-        int conditionStart = indexOfCommand(commands, "load_st_int32_address 0", 8);
+        int conditionStart = indexOfCommand(commands, "load_st_int32_address 0", 6);
         int conditionBranch = indexOfPrefix(commands, "ifn_goto ", conditionStart);
         assertTrue("while condition should be emitted", conditionStart >= 0);
         assertTrue("while condition should end with ifn_goto", conditionBranch > conditionStart);
@@ -219,14 +221,15 @@ public class AppTest extends TestCase {
     private static void assertDoWhileContinueTargetsCondition(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
         List<String> commands = result.getSemanticResult().getCommands();
-        int conditionStart = indexOfCommand(commands, "load_st_int32_address 0", 20);
+        int doBodyStart = indexOfCommand(commands, "load_st_int32_address 0", 6);
+        int conditionStart = indexOfCommand(commands, "load_st_int32_address 0", 19);
         int continueJump = indexOfCommand(commands, "goto " + conditionStart);
         int backEdge = indexOfPrefix(commands, "if_goto ", conditionStart);
         assertTrue("continue in do-while should jump to condition evaluation point", continueJump >= 0);
         assertTrue("do-while should contain a conditional back edge", backEdge > conditionStart);
         assertEquals(
                 "do-while back edge should target body start",
-                8,
+                doBodyStart,
                 parseGotoTarget(commands.get(backEdge))
         );
     }
@@ -234,14 +237,15 @@ public class AppTest extends TestCase {
     private static void assertNestedLoopBinding(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
         List<String> commands = result.getSemanticResult().getCommands();
-        int innerContinue = indexOfPrefix(commands, "goto ", 35);
-        int innerBreak = indexOfPrefix(commands, "goto ", 44);
-        int outerLoopBack = indexOfPrefix(commands, "goto ", 55);
+        int innerContinue = indexOfCommand(commands, "goto 14");
+        int innerBreak = indexOfCommand(commands, "goto 44");
+        int outerLoopBack = indexOfCommand(commands, "goto 6");
         assertTrue("inner continue should jump back to inner loop condition start", innerContinue >= 0);
         assertTrue("inner break should jump to inner loop exit", innerBreak >= 0);
         assertTrue("outer loop back edge should jump to outer condition start", outerLoopBack >= 0);
-        assertTrue("inner continue should target an earlier loop position", parseGotoTarget(commands.get(innerContinue)) < 35);
-        assertTrue("outer loop back edge should target the outer loop condition", parseGotoTarget(commands.get(outerLoopBack)) < 20);
+        assertEquals("inner continue should target the inner loop condition", 14, parseGotoTarget(commands.get(innerContinue)));
+        assertEquals("inner break should target the inner loop exit", 44, parseGotoTarget(commands.get(innerBreak)));
+        assertEquals("outer loop back edge should target the outer loop condition", 6, parseGotoTarget(commands.get(outerLoopBack)));
     }
 
     private static void assertErrorContextCoverage(SemanticRunReport runReport) {

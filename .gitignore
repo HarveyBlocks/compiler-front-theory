@@ -44,7 +44,6 @@ build/
 
 ### data ###
 *.data
-!src/main/resources/serial/*.data
 *.pdf
 
 

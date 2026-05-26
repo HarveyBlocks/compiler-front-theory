@@ -16,47 +16,61 @@ import java.io.OutputStream;
  * @date 2026-05-24 16:19
  */
 public enum ProgramSemanticTag implements SemanticTag {
+    // Root and callable semantics
+    PROGRAM,
     FUNCTION,
     HEAD,
-    STRUCT_DECL,
-    STRUCT_FIELD,
-    DECLARATION,
     CALL,
     RETURN,
-    VALUE,
     PARAMETER,
     ARGUMENT,
-    LIST,
-    EMPTY,
-    ITEM,
-    STATEMENT,
-    BLOCK,
-    IDENTIFIER,
-    USE,
-    INITIALIZED,
-    COMMAND,
-    PROGRAM,
-    NOOP,
-    SEQUENCE,
+
+    // Structure declarations
+    STRUCT_DECL,
+    STRUCT_FIELD,
+
+    // Type construction and declarations
+    DECLARATION,
     TYPE,
     STRUCT_TYPE,
     ARRAY,
     ARRAY_CREATION_BASE,
     ARRAY_CREATION_DIM,
-    FORWARD,
-    PARENTHESIZED,
-    LITERAL,
-    NULL_LITERAL,
-    NEW_STRUCT,
-    NEW_ARRAY,
-    LEFT_VALUE,
-    ASSIGNMENT,
-    ACCESS,
-    MEMBER_ACCESS,
+
+    // Command and control flow
+    BLOCK,
+    ITEM,
+    STATEMENT,
+    COMMAND,
     CONDITIONAL,
     ELSE_BRANCH,
     LOOP,
     DO_LOOP,
+    ASSIGNMENT,
+
+    // Value/category semantics
+    ACCESS,
+    MEMBER_ACCESS,
+    LEFT_VALUE,
+    PARENTHESIZED,
+    NEW_STRUCT,
+    NEW_ARRAY,
+    LITERAL,
+    NULL_LITERAL,
+
+    VALUE,
+    IDENTIFIER,
+    USE,
+    INITIALIZED,
+
+    // Structural helper tags
+    LIST,
+    EMPTY,
+    NOOP,
+    SEQUENCE,
+    FORWARD,
+
+    // Operator semantics
     UNARY,
     BINARY,
     OR,
