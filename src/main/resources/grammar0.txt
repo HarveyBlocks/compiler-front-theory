@@ -1,27 +1,79 @@
-program          ::= block
+compilation_unit ::= program
 
-block            ::= { decls stmts }
+program          ::= top_item
+                   | top_item program
 
-decls            ::= decls decl
+top_item         ::= struct_decl
+                   | function_decl
+                   | block_item
+
+struct_decl      ::= struct id { struct_field_list }
+
+struct_field_list ::= struct_fields
+                    | ε
+
+struct_fields    ::= struct_fields struct_field
+                   | struct_field
+
+struct_field     ::= type id ;
+
+function_decl    ::= function_head block
+
+function_head    ::= type id ( param_list )
+                   | void id ( param_list )
+
+param_list       ::= params
                    | ε
 
-decl             ::= type id ;
+params           ::= params , param
+                   | param
 
-type             ::= type [ num ]
-                   | basic
+param            ::= type id
 
-stmts            ::= stmts stmt
+block            ::= { block_items }
+
+block_items      ::= block_items block_item
                    | ε
+
+block_item       ::= decl
+                   | stmt
+
+decl             ::= decl_plain
+                   | decl_init
+
+decl_plain       ::= type id ;
+
+decl_init        ::= type id = bool ;
+
+type             ::= type [ ]
+                   | type_identifier
+                   | boolean
+                   | character
+                   | int32
+                   | float64
+                   | string
 
 stmt             ::= matched_stmt
                    | unmatched_stmt
 
-matched_stmt     ::= loc = bool ;
+matched_stmt     ::= assign_stmt
+                   | expr_stmt
                    | matched_while_stmt
-                   | do stmt while ( bool ) ;
+                   | do_while_stmt
                    | break ;
+                   | continue ;
+                   | return_stmt
                    | block
                    | matched_if_stmt
+
+assign_stmt      ::= loc = bool ;
+
+expr_stmt        ::= expr ;
+
+do_while_stmt    ::= do stmt while ( bool ) ;
+
+return_stmt      ::= return bool ;
+                   | return ;
 
 unmatched_stmt   ::= unmatched_if_stmt
                    | unmatched_while_stmt
@@ -31,11 +83,12 @@ matched_if_stmt  ::= if ( bool ) matched_stmt else matched_stmt
 unmatched_if_stmt ::= if ( bool ) stmt
                     | if ( bool ) matched_stmt else unmatched_stmt
 
-matched_while_stmt   ::= while ( bool ) matched_stmt
+matched_while_stmt ::= while ( bool ) matched_stmt
 
 unmatched_while_stmt ::= while ( bool ) unmatched_stmt
 
 loc              ::= loc [ bool ]
+                   | loc . id
                    | id
 
 bool             ::= bool || join
@@ -67,8 +120,37 @@ unary            ::= ! unary
                    | factor
 
 factor           ::= ( bool )
+                   | new_struct_expr
+                   | new_array_expr
+                   | call_expr
                    | loc
-                   | num
-                   | real
+                   | integer
+                   | float
                    | true
                    | false
+                   | null
+
+new_struct_expr  ::= new type_identifier ( )
+
+new_array_expr   ::= new array_creation_base array_creation_dims
+
+array_creation_base ::= type_identifier
+                      | boolean
+                      | character
+                      | int32
+                      | float64
+                      | string
+
+array_creation_dims ::= array_creation_dims array_creation_dim
+                      | array_creation_dim
+
+array_creation_dim ::= [ bool ]
+                     | [ ]
+
+call_expr        ::= id ( arg_list )
+
+arg_list         ::= args
+                   | ε
+
+args             ::= args , bool
+                   | bool
