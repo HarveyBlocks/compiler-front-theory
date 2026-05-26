@@ -9,18 +9,15 @@ import org.harvey.vie.theory.error.ErrorContext;
 import org.harvey.vie.theory.io.resource.AsciiStringResource;
 import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
-import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
-import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
-import org.harvey.vie.theory.semantic.function.FunctionParameter;
+import org.harvey.vie.theory.semantic.display.SemanticDisplaySupport;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
-import org.harvey.vie.theory.semantic.value.ConstantValue;
+import org.harvey.vie.theory.semantic.structure.StructField;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
@@ -35,7 +32,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.StringJoiner;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -225,12 +221,19 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
+        builder.append("## Struct Table\n\n");
+        writeStructTable(builder, semanticResult == null ? null : semanticResult.getStructTable());
+        builder.append("\n");
         builder.append("## Global Segment\n\n");
         builder.append("- Kind: Program Entry\n\n");
         builder.append("### Commands\n\n");
         writeCommands(builder, semanticResult == null ? null : semanticResult.getCommands());
         builder.append("\n### Local Variables\n\n");
-        writeIdentifierTable(builder, semanticResult == null ? null : semanticResult.getEntryLocalVariables());
+        writeIdentifierTable(
+                builder,
+                semanticResult == null ? null : semanticResult.getEntryLocalVariables(),
+                semanticResult == null ? List.of() : semanticResult.getStructTable()
+        );
         if (semanticResult != null && !semanticResult.getFunctionSegments().isEmpty()) {
             for (FunctionCommandSegment segment : semanticResult.getFunctionSegments()) {
                 writeFunctionSection(builder, semanticResult, segment);
@@ -265,14 +268,29 @@ public final class ProgramSyntaxTestRunner {
         builder.append("```\n");
     }
 
-    private static void writeIdentifierTable(StringBuilder builder, IdentifierRecord[] records) {
+    private static void writeStructTable(StringBuilder builder, List<StructRecord> records) {
+        if (records == null || records.isEmpty()) {
+            builder.append("_None_\n");
+            return;
+        }
+        builder.append("```text\n");
+        for (StructRecord record : records) {
+            builder.append(SemanticDisplaySupport.formatStructRecord(record, records)).append('\n');
+            for (StructField field : record.getFields()) {
+                builder.append("  ").append(SemanticDisplaySupport.formatStructField(field, records)).append('\n');
+            }
+        }
+        builder.append("```\n");
+    }
+
+    private static void writeIdentifierTable(StringBuilder builder, IdentifierRecord[] records, List<StructRecord> structTable) {
         if (records == null || records.length == 0) {
             builder.append("_None_\n");
             return;
         }
         builder.append("```text\n");
         Arrays.stream(records)
-                .forEach(record -> builder.append(formatRecord(record)).append('\n'));
+                .forEach(record -> builder.append(SemanticDisplaySupport.formatIdentifierRecord(record, structTable)).append('\n'));
         builder.append("```\n");
     }
 
@@ -281,69 +299,21 @@ public final class ProgramSyntaxTestRunner {
             SemanticAnalysisResult semanticResult,
             FunctionCommandSegment segment) {
         FunctionRecord function = segment.getFunction();
-        builder.append("\n## Function Segment: ").append(formatFunctionName(function)).append("\n\n");
+        builder.append("\n## Function Segment: ")
+                .append(SemanticDisplaySupport.formatFunctionName(function))
+                .append("\n\n");
         builder.append("- Function Index: ").append(function.getTableIndex()).append("\n");
-        builder.append("- Signature: ").append(formatFunctionSignature(function)).append("\n\n");
+        builder.append("- Signature: ")
+                .append(SemanticDisplaySupport.formatFunctionSignature(function, semanticResult.getStructTable()))
+                .append("\n\n");
         builder.append("### Commands\n\n");
         writeCommands(builder, new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands()));
         builder.append("\n### Local Variables\n\n");
-        writeIdentifierTable(builder, semanticResult.getFunctionLocalVariables(function));
-    }
-
-    private static String formatFunctionRecord(FunctionRecord function) {
-        return "index=" + function.getTableIndex() + " signature=" + formatFunctionSignature(function);
-    }
-
-    private static String formatFunctionSignature(FunctionRecord function) {
-        StringJoiner joiner = new StringJoiner(", ");
-        for (FunctionParameter parameter : function.getParameters()) {
-            joiner.add(formatType(parameter.getTypeNode()) + " " +
-                       SourceTokenStringMapping.utf8(parameter.getNameToken()));
-        }
-        return String.format("%s %s(%s)", formatFunctionReturnType(function), formatFunctionName(function), joiner);
-    }
-
-    private static String formatFunctionName(FunctionRecord function) {
-        return SourceTokenStringMapping.utf8(function.getSignature().getNameToken());
-    }
-
-    private static String formatFunctionReturnType(FunctionRecord function) {
-        ShiftReduceSyntaxTreeNode node = function.getFunctionHeadNode().get(0);
-        if (node.isToken()) {
-            return SourceTokenStringMapping.utf8(node.toToken().getSource());
-        }
-        return formatType(node.toHead());
-    }
-
-    private static String formatRecord(IdentifierRecord record) {
-        ConstantValue constantValue = record.getConstantValue();
-        return String.format(
-                "record=%d offset=%d type=%s name=%s initialized=%s constant=%s",
-                record.getNo(),
-                record.getOffset(),
-                formatType(record.getType()),
-                SourceTokenStringMapping.utf8(record.getLexeme()),
-                record.isInitialized(),
-                constantValue == null ? "<none>" : constantValue.toString()
+        writeIdentifierTable(
+                builder,
+                semanticResult.getFunctionLocalVariables(function),
+                semanticResult.getStructTable()
         );
-    }
-
-    private static String formatType(HeadNode typeNode) {
-        StringJoiner joiner = new StringJoiner(" ");
-        appendTypeLexemes(typeNode, joiner);
-        String value = joiner.toString().trim();
-        return value.isEmpty() ? typeNode.toString() : value;
-    }
-
-    private static void appendTypeLexemes(ShiftReduceSyntaxTreeNode node, StringJoiner joiner) {
-        if (node.isToken()) {
-            SourceToken token = node.toToken().getSource();
-            joiner.add(SourceTokenStringMapping.utf8(token));
-            return;
-        }
-        for (ShiftReduceSyntaxTreeNode child : node.toHead()) {
-            appendTypeLexemes(child, joiner);
-        }
     }
 
     @Getter

@@ -5,6 +5,7 @@ import org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,13 +17,16 @@ public class SemanticAnalysisResult implements SemanticResult {
     private final IdentifierRecord[] identifierRecords;
     private final List<SemanticCommand> entryCommands;
     private final List<FunctionCommandSegment> functionSegments;
+    private final List<StructRecord> structTable;
 
     public SemanticAnalysisResult(
             List<SemanticCommand> entryCommands,
             List<FunctionCommandSegment> functionSegments,
+            List<StructRecord> structTable,
             IdentifierRecord[] identifierRecords) {
         this.entryCommands = List.copyOf(entryCommands);
         this.functionSegments = List.copyOf(functionSegments);
+        this.structTable = List.copyOf(structTable);
         this.identifierRecords = identifierRecords.clone();
     }
 
@@ -40,6 +44,10 @@ public class SemanticAnalysisResult implements SemanticResult {
 
     public List<FunctionCommandSegment> getFunctionSegments() {
         return List.copyOf(functionSegments);
+    }
+
+    public List<StructRecord> getStructTable() {
+        return List.copyOf(structTable);
     }
 
     public List<FunctionRecord> getFunctionTable() {

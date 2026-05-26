@@ -42,7 +42,7 @@ public class StructSemanticCallback implements ShiftReduceCallback {
             SemanticDiagnostics.reject(context, nameToken, "duplicate struct declaration is not allowed.");
         }
         List<StructField> fields = collectFields(context, head.get(3).toHead());
-        StructRecord record = new StructRecord(nameToken, fields, head);
+        StructRecord record = new StructRecord(context.structTableSize(), nameToken, fields, head);
         context.registerStruct(record);
         for (StructField field : fields) {
             context.requireDeclaredType(field.getType(), field.getNameToken(), "struct field type is not declared.");

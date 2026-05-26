@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command.command.factory;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
@@ -22,7 +23,7 @@ public interface CommandFactory {
 
     SemanticCommand loadConstant(ConstantValue constantValue);
 
-    SemanticCommand newStruct(org.harvey.vie.theory.lexical.analysis.token.SourceToken token);
+    SemanticCommand newStruct(StructRecord record);
 
     SemanticCommand newArray(CommandDataType elementType, int totalDimensions, int specifiedDimensions);
 

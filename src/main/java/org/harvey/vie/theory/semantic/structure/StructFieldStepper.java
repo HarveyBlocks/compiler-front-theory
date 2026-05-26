@@ -23,7 +23,7 @@ public class StructFieldStepper implements Stepper<HeadNode> {
             return SequnceStep.advance(head.get(0));
         }
         if (head.matchTags(ProgramSemanticTag.LIST, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.SEQUENCE)) {
-            return SequnceStep.item(head.get(1).toHead(), head.get(0));
+            return SequnceStep.defer(head.get(1).toHead(), head.get(0));
         }
         return SequnceStep.stop();
     }

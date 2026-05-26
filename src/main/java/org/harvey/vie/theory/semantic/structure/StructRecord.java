@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.structure;
 import lombok.Getter;
 import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 
 import java.util.List;
@@ -14,12 +15,14 @@ import java.util.List;
  */
 @Getter
 public class StructRecord {
+    private final int tableIndex;
     private final SourceToken nameToken;
     private final IdentifierKey nameKey;
     private final List<StructField> fields;
     private final HeadNode declarationNode;
 
-    public StructRecord(SourceToken nameToken, List<StructField> fields, HeadNode declarationNode) {
+    public StructRecord(int tableIndex, SourceToken nameToken, List<StructField> fields, HeadNode declarationNode) {
+        this.tableIndex = tableIndex;
         this.nameToken = nameToken;
         this.nameKey = IdentifierKey.generate(nameToken);
         this.fields = List.copyOf(fields);
@@ -33,5 +36,9 @@ public class StructRecord {
             }
         }
         return null;
+    }
+
+    public String displayName() {
+        return SourceTokenStringMapping.utf8(nameToken);
     }
 }

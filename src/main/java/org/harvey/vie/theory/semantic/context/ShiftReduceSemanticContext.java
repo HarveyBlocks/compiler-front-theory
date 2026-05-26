@@ -371,6 +371,14 @@ public class ShiftReduceSemanticContext {
         structContext.register(record);
     }
 
+    public int structTableSize() {
+        return structContext.size();
+    }
+
+    public List<StructRecord> structRecords() {
+        return List.copyOf(structContext.records());
+    }
+
     public void requireDeclaredType(SemanticType type, SourceToken anchor, String message) {
         if (type != null && type.getNamedTypeKey() != null && getStruct(type) == null) {
             addError(anchor.getOffset(), message);

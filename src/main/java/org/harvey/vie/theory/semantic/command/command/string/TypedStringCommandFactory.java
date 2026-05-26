@@ -9,6 +9,7 @@ import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.command.command.factory.TypedCommandFactory;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
@@ -50,8 +51,8 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     }
 
     @Override
-    public SemanticCommand newStruct(SourceToken token) {
-        return new StringCommand("new_struct " + SourceTokenStringMapping.utf8(token));
+    public SemanticCommand newStruct(StructRecord record) {
+        return new StringCommand("new_struct " + record.getTableIndex());
     }
 
     @Override

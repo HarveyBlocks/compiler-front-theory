@@ -6,6 +6,8 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -19,10 +21,14 @@ public class NewStructTranslator implements CommandTranslator {
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-            CommandNodeRegister[] children) {
+        CommandNodeRegister[] children) {
         HeadNode head = context.getTreeContext().peek().toHead();
         SourceToken nameToken = head.get(1).toToken().getSource();
-        CommandNode node = new TerminalNode(context.getCommandFactory().newStruct(nameToken));
+        StructRecord record = context.getStruct(nameToken);
+        if (record == null) {
+            SemanticDiagnostics.reject(context, nameToken, "struct type is not declared.");
+        }
+        CommandNode node = new TerminalNode(context.getCommandFactory().newStruct(record));
         return new NormalCommandNodeRegister(new CommandNode[]{node}, production, children);
     }
 }

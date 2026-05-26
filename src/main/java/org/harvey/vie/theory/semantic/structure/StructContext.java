@@ -35,6 +35,10 @@ public class StructContext {
         records.put(record.getNameKey(), record);
     }
 
+    public int size() {
+        return records.size();
+    }
+
     public Collection<StructRecord> records() {
         return records.values();
     }

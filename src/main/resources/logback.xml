@@ -49,6 +49,6 @@
         <appender-ref ref="ASYNC_FILE"/>
     </root>
 
-    <logger name="org.harvey.vie.theory" level="TRACE"/>
+    <logger name="org.harvey.vie.theory" level="DEBUG"/>
 
 </configuration>

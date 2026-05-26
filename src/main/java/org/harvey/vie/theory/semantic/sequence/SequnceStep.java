@@ -12,26 +12,36 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 public final class SequnceStep<T> {
     private final T item;
     private final ShiftReduceSyntaxTreeNode tail;
+    private final boolean deferred;
 
-    private SequnceStep(T item, ShiftReduceSyntaxTreeNode tail) {
+    private SequnceStep(T item, ShiftReduceSyntaxTreeNode tail, boolean deferred) {
         this.item = item;
         this.tail = tail;
+        this.deferred = deferred;
     }
 
     public static <T> SequnceStep<T> item(T item, ShiftReduceSyntaxTreeNode tail) {
-        return new SequnceStep<>(item, tail);
+        return new SequnceStep<>(item, tail, false);
+    }
+
+    public static <T> SequnceStep<T> defer(T item, ShiftReduceSyntaxTreeNode tail) {
+        return new SequnceStep<>(item, tail, true);
     }
 
     public static <T> SequnceStep<T> advance(ShiftReduceSyntaxTreeNode tail) {
-        return new SequnceStep<>(null, tail);
+        return new SequnceStep<>(null, tail, false);
     }
 
     public static <T> SequnceStep<T> stop() {
-        return new SequnceStep<>(null, null);
+        return new SequnceStep<>(null, null, false);
     }
 
     boolean hasItem() {
         return item != null;
+    }
+
+    boolean isDeferred() {
+        return deferred;
     }
 
     T item() {

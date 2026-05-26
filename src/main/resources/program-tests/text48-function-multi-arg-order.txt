@@ -1,0 +1,6 @@
+int32 pair(int32 left, int32 right) {
+    return left;
+}
+{
+    pair(1, 2);
+}

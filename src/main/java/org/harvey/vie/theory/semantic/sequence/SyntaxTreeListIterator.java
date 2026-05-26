@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.sequence;
 
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
+import java.util.ArrayDeque;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -15,18 +16,19 @@ import java.util.Objects;
  */
 public final class SyntaxTreeListIterator<T> implements Iterator<T> {
     private final Stepper<T> stepper;
+    private final ArrayDeque<T> deferredItems = new ArrayDeque<>();
     private ShiftReduceSyntaxTreeNode cursor;
-    private SequnceStep<T> nextStep;
+    private T nextItem;
 
     public SyntaxTreeListIterator(ShiftReduceSyntaxTreeNode start, Stepper<T> stepper) {
         this.cursor = start;
         this.stepper = Objects.requireNonNull(stepper);
-        this.nextStep = advance();
+        this.nextItem = advance();
     }
 
     @Override
     public boolean hasNext() {
-        return nextStep != null && nextStep.hasItem();
+        return nextItem != null;
     }
 
     @Override
@@ -34,29 +36,38 @@ public final class SyntaxTreeListIterator<T> implements Iterator<T> {
         if (!hasNext()) {
             throw new NoSuchElementException("no more list items.");
         }
-        T current = nextStep.item();
-        cursor = nextStep.tail();
-        nextStep = advance();
+        T current = nextItem;
+        nextItem = advance();
         return current;
     }
 
-    private SequnceStep<T> advance() {
-        while (cursor != null) {
-            if (!cursor.isHead()) {
-                cursor = null;
+    private T advance() {
+        while (true) {
+            while (cursor != null) {
+                if (!cursor.isHead()) {
+                    cursor = null;
+                    continue;
+                }
+                SequnceStep<T> step = stepper.step(cursor.toHead());
+                if (step == null) {
+                    cursor = null;
+                    continue;
+                }
+                cursor = step.tail();
+                if (!step.hasItem()) {
+                    continue;
+                }
+                if (step.isDeferred()) {
+                    deferredItems.push(step.item());
+                    continue;
+                }
+                return step.item();
+            }
+            if (deferredItems.isEmpty()) {
                 return null;
             }
-            SequnceStep<T> step = stepper.step(cursor.toHead());
-            if (step == null) {
-                cursor = null;
-                return null;
-            }
-            if (step.hasItem()) {
-                return step;
-            }
-            cursor = step.tail();
+            return deferredItems.pop();
         }
-        return null;
     }
 
 }

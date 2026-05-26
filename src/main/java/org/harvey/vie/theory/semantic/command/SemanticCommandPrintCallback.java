@@ -1,23 +1,21 @@
 package org.harvey.vie.theory.semantic.command;
 
 import org.harvey.vie.theory.exception.CompilerException;
-import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
-import org.harvey.vie.theory.semantic.function.FunctionParameter;
+import org.harvey.vie.theory.semantic.display.SemanticDisplaySupport;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.tree.node.HeadNode;
-import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
+import org.harvey.vie.theory.semantic.structure.StructField;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import org.harvey.vie.theory.util.IdGenerator;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringJoiner;
 
 /**
  * TODO
@@ -46,9 +44,11 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
 
     private static void printResult(ShiftReduceSemanticContext context, CommandNodeRegister top) {
         List<SemanticCommand> entryCommands = CommandSegmentSupport.flatten(top);
-        printGlobalSection(entryCommands, entryLocals(context.identifierRecords()));
+        List<StructRecord> structTable = context.structRecords();
+        printStructTable(structTable);
+        printGlobalSection(entryCommands, entryLocals(context.identifierRecords()), structTable);
         for (FunctionCommandSegment segment : context.getFunctionCommandSegmentContext().snapshot()) {
-            printFunctionSection(segment, functionLocals(context.identifierRecords(), segment.getFunction()));
+            printFunctionSection(segment, functionLocals(context.identifierRecords(), segment.getFunction()), structTable);
         }
     }
 
@@ -70,68 +70,46 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         }
     }
 
-    private static void printGlobalSection(List<SemanticCommand> commands, IdentifierRecord[] locals) {
-        System.out.println("global segment:");
-        printSegment("commands", commands);
-        printIdentifierTable("local variables", locals);
+    private static void printStructTable(List<StructRecord> structTable) {
+        System.out.println("struct table:");
+        if (structTable.isEmpty()) {
+            System.out.println("<empty>");
+            return;
+        }
+        for (StructRecord record : structTable) {
+            System.out.println(SemanticDisplaySupport.formatStructRecord(record, structTable));
+            for (StructField field : record.getFields()) {
+                System.out.println("  " + SemanticDisplaySupport.formatStructField(field, structTable));
+            }
+        }
     }
 
-    private static void printFunctionSection(FunctionCommandSegment segment, IdentifierRecord[] locals) {
+    private static void printGlobalSection(List<SemanticCommand> commands, IdentifierRecord[] locals, List<StructRecord> structTable) {
+        System.out.println("global segment:");
+        printSegment("commands", commands);
+        printIdentifierTable("local variables", locals, structTable);
+    }
+
+    private static void printFunctionSection(
+            FunctionCommandSegment segment,
+            IdentifierRecord[] locals,
+            List<StructRecord> structTable) {
         FunctionRecord function = segment.getFunction();
         System.out.println("function segment:");
         System.out.println("index=" + function.getTableIndex());
-        System.out.println("signature=" + formatFunctionSignature(function));
+        System.out.println("signature=" + SemanticDisplaySupport.formatFunctionSignature(function, structTable));
         printSegment("commands", segment.getCommands());
-        printIdentifierTable("local variables", locals);
+        printIdentifierTable("local variables", locals, structTable);
     }
 
-    private static void printIdentifierTable(String title, IdentifierRecord[] records) {
+    private static void printIdentifierTable(String title, IdentifierRecord[] records, List<StructRecord> structTable) {
         System.out.println(title + ":");
         if (records.length == 0) {
             System.out.println("<empty>");
             return;
         }
         for (IdentifierRecord record : records) {
-            System.out.println(record.displayString());
-        }
-    }
-
-    private static String formatFunctionSignature(FunctionRecord function) {
-        StringJoiner joiner = new StringJoiner(", ");
-        for (FunctionParameter parameter : function.getParameters()) {
-            joiner.add(formatType(parameter.getTypeNode()) + " " +
-                       SourceTokenStringMapping.utf8(parameter.getNameToken()));
-        }
-        return String.format(
-                "%s %s(%s)",
-                formatReturnType(function),
-                SourceTokenStringMapping.utf8(function.getSignature().getNameToken()),
-                joiner
-        );
-    }
-
-    private static String formatReturnType(FunctionRecord function) {
-        ShiftReduceSyntaxTreeNode node = function.getFunctionHeadNode().get(0);
-        if (node.isToken()) {
-            return SourceTokenStringMapping.utf8(node.toToken().getSource());
-        }
-        return formatType(node.toHead());
-    }
-
-    private static String formatType(HeadNode typeNode) {
-        StringJoiner joiner = new StringJoiner(" ");
-        appendTypeLexemes(typeNode, joiner);
-        String value = joiner.toString().trim();
-        return value.isEmpty() ? typeNode.toString() : value;
-    }
-
-    private static void appendTypeLexemes(ShiftReduceSyntaxTreeNode node, StringJoiner joiner) {
-        if (node.isToken()) {
-            joiner.add(SourceTokenStringMapping.utf8(node.toToken().getSource()));
-            return;
-        }
-        for (ShiftReduceSyntaxTreeNode child : node.toHead()) {
-            appendTypeLexemes(child, joiner);
+            System.out.println(SemanticDisplaySupport.formatIdentifierRecord(record, structTable));
         }
     }
 

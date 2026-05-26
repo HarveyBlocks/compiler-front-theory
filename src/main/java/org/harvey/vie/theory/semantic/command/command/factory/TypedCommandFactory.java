@@ -4,6 +4,7 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
@@ -22,7 +23,7 @@ public interface TypedCommandFactory {
 
     SemanticCommand loadConstant(ConstantValue constantValue);
 
-    SemanticCommand newStruct(SourceToken token);
+    SemanticCommand newStruct(StructRecord record);
 
     SemanticCommand newArray(CommandDataType elementType, int totalDimensions, int specifiedDimensions);
 

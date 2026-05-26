@@ -37,6 +37,7 @@ public class SemanticResultCallback implements ShiftReduceCallback {
         return new SemanticAnalysisResult(
                 entryCommands,
                 context.getFunctionCommandSegmentContext().snapshot(),
+                context.structRecords(),
                 context.identifierRecords()
         );
     }
