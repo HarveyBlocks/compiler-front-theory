@@ -12,6 +12,7 @@ import org.harvey.vie.theory.demo.program.ProgramLexicalDemo;
  */
 public class Main {
     public static void main(String[] args) {
+
         System.out.println(deal(""));
         // lexical.flushTable
         System.out.println("ProgramLexicalDemo.FLUSH_TABLE = " + ProgramLexicalDemo.FLUSH_TABLE);

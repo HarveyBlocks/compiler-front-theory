@@ -59,7 +59,8 @@
 int[] an = new int[12]; // 长度可以是表达式不一定是常量
 结构体
 关键字 null, 数组/struct都可以是null
-stuct StructObject{
+
+stuct StructObject {
     int value = 0;
     int value2;
     StructObject obj; 
