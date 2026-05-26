@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -39,10 +40,14 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
         children[1].register(thisBuilder);
         children[3].register(thisBuilder);
         if (context.requiresImplicitCast(sourceType, targetType)) {
-            // TODO 同上
-            thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(sourceType, targetType)));
+            thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(
+                    CommandDataType.forValue(sourceType),
+                    CommandDataType.forValue(targetType)
+            )));
         }
-        thisBuilder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToAddr(targetType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToAddr(
+                CommandDataType.forStorage(targetType)
+        )));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

@@ -41,6 +41,10 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.NAMED_STRUCT_TYPE, ProgramSemanticTag.TYPE, ProgramSemanticTag.STRUCT_TYPE)
             .when(TypeRule.ARRAY_CREATION_BASE, ProgramSemanticTag.ARRAY_CREATION_BASE, ProgramSemanticTag.STRUCT_TYPE)
             .when(TypeRule.ARRAY_CREATION_BASE, ProgramSemanticTag.ARRAY_CREATION_BASE)
+            .when(TypeRule.ARRAY_CREATION_DIMENSION_VALUE, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.VALUE)
+            .when(TypeRule.NONE, ProgramSemanticTag.ARRAY_CREATION_DIM)
+            .when(TypeRule.FORWARD, ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.FORWARD)
+            .when(TypeRule.NONE, ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.SEQUENCE)
             .when(TypeRule.TYPE_DECLARATION, ProgramSemanticTag.TYPE)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.IDENTIFIER)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.IDENTIFIER)
@@ -137,6 +141,10 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             return TypeRegister.simple(SemanticType.struct(token), token);
         }
         return TypeRegister.simple(context.typeToken(token), token);
+    }
+
+    private static TypeRegister arrayCreationDimensionValue(ShiftReduceSemanticContext context, HeadNode head) {
+        return requireChild(context, head, 1);
     }
 
     private static TypeRegister assignment(ShiftReduceSemanticContext context, HeadNode head) {
@@ -345,6 +353,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         TypeRule ARRAY_TYPE = (context, head, production) -> arrayType(context, head);
         TypeRule NAMED_STRUCT_TYPE = (context, head, production) -> namedStructType(context, head);
         TypeRule ARRAY_CREATION_BASE = (context, head, production) -> arrayCreationBase(context, head);
+        TypeRule ARRAY_CREATION_DIMENSION_VALUE = (context, head, production) -> arrayCreationDimensionValue(context, head);
         TypeRule DECLARED_IDENTIFIER = (context, head, production) -> declaredIdentifier(context, head);
         TypeRule IDENTIFIER_REFERENCE = (context, head, production) -> identifierReference(context, head);
         TypeRule ARRAY_ACCESS = (context, head, production) -> arrayElement(context, head);

@@ -5,10 +5,10 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.command.command.factory.TypedCommandFactory;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
@@ -28,7 +28,7 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     @Override
     public SemanticCommand loadLiteral(SourceToken token) {
         return new StringCommand("load_st_" +
-                                 mnemonic(typeResolver.literalType(token)) +
+                                 CommandDataType.forValue(typeResolver.literalType(token)).mnemonic() +
                                  "_static " +
                                  SourceTokenStringMapping.utf8(token));
     }
@@ -40,13 +40,16 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
 
     @Override
     public SemanticCommand loadIdentifierAddress(IdentifierRecord record) {
-        return new StringCommand("load_st_" + mnemonic(record.getDeclaredType()) + "_address " + record.getOffset());
+        return new StringCommand("load_st_" +
+                                 CommandDataType.forStorage(record.getDeclaredType()).mnemonic() +
+                                 "_address " +
+                                 record.getOffset());
     }
 
     @Override
     public SemanticCommand loadConstant(ConstantValue constantValue) {
         return new StringCommand("load_st_" +
-                                 mnemonic(constantValue.getType()) +
+                                 CommandDataType.forValue(constantValue.getType()).mnemonic() +
                                  "_static " +
                                  constantValue);
     }
@@ -57,53 +60,55 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     }
 
     @Override
-    public SemanticCommand newArray(SourceToken token, SemanticType type, int dimensions) {
-        return new StringCommand("new_array " + typeName(token, type) + " " + dimensions);
+    public SemanticCommand newArray(CommandDataType elementType, int totalDimensions, int specifiedDimensions) {
+        return new StringCommand(
+                "new_array_" + elementType.mnemonic() + " " + totalDimensions + " " + specifiedDimensions
+        );
     }
 
     @Override
-    public SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType) {
-        return new StringCommand("st_" + operatorFactor + "_" + mnemonic(operandType));
+    public SemanticCommand stOperator(OperatorFactor operatorFactor, CommandDataType operandType) {
+        return new StringCommand("st_" + operatorFactor.mnemonic() + "_" + operandType.mnemonic());
     }
 
     @Override
-    public SemanticCommand stTopAddrToVal(SemanticType type) {
-        return new StringCommand("st_top_addr_to_val_" + mnemonic(type));
+    public SemanticCommand stTopAddrToVal(CommandDataType type) {
+        return new StringCommand("st_top_addr_to_val_" + type.mnemonic());
     }
 
     @Override
-    public SemanticCommand stTopRefToVal(SemanticType type) {
-        return new StringCommand("st_top_ref_to_val_" + mnemonic(type));
+    public SemanticCommand stTopRefToVal(CommandDataType type) {
+        return new StringCommand("st_top_ref_to_val_" + type.mnemonic());
     }
 
     @Override
-    public SemanticCommand assignFromStTopToAddr(SemanticType type) {
-        return new StringCommand("assign_from_st_top_to_addr_" + mnemonic(type));
+    public SemanticCommand assignFromStTopToAddr(CommandDataType type) {
+        return new StringCommand("assign_from_st_top_to_addr_" + type.mnemonic());
     }
 
     @Override
-    public SemanticCommand assignFromStTopToRef(SemanticType type) {
-        return new StringCommand("assign_from_st_top_to_ref_" + mnemonic(type));
+    public SemanticCommand assignFromStTopToRef(CommandDataType type) {
+        return new StringCommand("assign_from_st_top_to_ref_" + type.mnemonic());
     }
 
     @Override
-    public SemanticCommand biasFromStTopToAddr(SemanticType elementType) {
-        return new StringCommand("bias_from_st_top_to_addr_" + mnemonic(elementType));
+    public SemanticCommand biasFromStTopToAddr(CommandDataType elementType) {
+        return new StringCommand("bias_from_st_top_to_addr_" + elementType.mnemonic());
     }
 
     @Override
-    public SemanticCommand biasFromStTopToRef(SemanticType elementType) {
-        return new StringCommand("bias_from_st_top_to_ref_" + mnemonic(elementType));
+    public SemanticCommand biasFromStTopToRef(CommandDataType elementType) {
+        return new StringCommand("bias_from_st_top_to_ref_" + elementType.mnemonic());
     }
 
     @Override
-    public SemanticCommand biasFromStTopToRef(SemanticType fieldType, int offset) {
-        return new StringCommand("bias_from_st_top_to_ref_" + mnemonic(fieldType) + " " + offset);
+    public SemanticCommand biasFromStTopToRef(CommandDataType fieldType, int offset) {
+        return new StringCommand("bias_from_st_top_to_ref_" + fieldType.mnemonic() + " " + offset);
     }
 
     @Override
-    public SemanticCommand stTopCast(SemanticType from, SemanticType to) {
-        return new StringCommand("st_top_" + mnemonic(from) + "_cast_" + mnemonic(to));
+    public SemanticCommand stTopCast(CommandDataType from, CommandDataType to) {
+        return new StringCommand("st_top_" + from.mnemonic() + "_cast_" + to.mnemonic());
     }
 
     @Override
@@ -124,16 +129,5 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     @Override
     public UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token) {
         return new StringUncertainLabelGotoCommand(token);
-    }
-
-    private static String mnemonic(SemanticType type) {
-        return type.getKind().name().toLowerCase();
-    }
-
-    private static String typeName(SourceToken token, SemanticType type) {
-        if (type.getNamedTypeKey() != null) {
-            return SourceTokenStringMapping.utf8(token);
-        }
-        return mnemonic(type);
     }
 }

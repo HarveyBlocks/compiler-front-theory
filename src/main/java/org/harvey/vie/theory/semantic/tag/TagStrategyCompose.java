@@ -4,6 +4,7 @@ import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
+import org.harvey.vie.theory.semantic.command.translator.command.OperatorCategory;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
@@ -39,21 +40,21 @@ public class TagStrategyCompose {
         CommandTranslator doWhileStatementTranslator = new DoWhileStatementTranslator();
         CommandTranslator statementListTranslator = new StatementListTranslator();
         CommandTranslator logicalNotTranslator =
-                new UnaryExpressionTranslator(operator("logical_not"), ProgramTokenType.OPERATOR_LOGICAL_NOT);
+                new UnaryExpressionTranslator(operator("logical_not", OperatorCategory.UNARY), ProgramTokenType.OPERATOR_LOGICAL_NOT);
         CommandTranslator negateTranslator =
-                new UnaryExpressionTranslator(operator("negate"), ProgramTokenType.OPERATOR_MINUS);
-        CommandTranslator logicalOrTranslator = new InSuffixExpressionTranslator(operator("logical_or"));
-        CommandTranslator logicalAndTranslator = new InSuffixExpressionTranslator(operator("logical_and"));
-        CommandTranslator equalTranslator = new InSuffixExpressionTranslator(operator("equal"));
-        CommandTranslator notEqualTranslator = new InSuffixExpressionTranslator(operator("not_equal"));
-        CommandTranslator lessTranslator = new InSuffixExpressionTranslator(operator("less"));
-        CommandTranslator lessEqualTranslator = new InSuffixExpressionTranslator(operator("less_equal"));
-        CommandTranslator greaterTranslator = new InSuffixExpressionTranslator(operator("greater"));
-        CommandTranslator greaterEqualTranslator = new InSuffixExpressionTranslator(operator("greater_equal"));
-        CommandTranslator plusTranslator = new InSuffixExpressionTranslator(operator("plus"));
-        CommandTranslator minusTranslator = new InSuffixExpressionTranslator(operator("minus"));
-        CommandTranslator multiplyTranslator = new InSuffixExpressionTranslator(operator("multiply"));
-        CommandTranslator divideTranslator = new InSuffixExpressionTranslator(operator("divide"));
+                new UnaryExpressionTranslator(operator("negate", OperatorCategory.UNARY), ProgramTokenType.OPERATOR_MINUS);
+        CommandTranslator logicalOrTranslator = new InSuffixExpressionTranslator(operator("logical_or", OperatorCategory.LOGICAL));
+        CommandTranslator logicalAndTranslator = new InSuffixExpressionTranslator(operator("logical_and", OperatorCategory.LOGICAL));
+        CommandTranslator equalTranslator = new InSuffixExpressionTranslator(operator("equal", OperatorCategory.EQUALITY));
+        CommandTranslator notEqualTranslator = new InSuffixExpressionTranslator(operator("not_equal", OperatorCategory.EQUALITY));
+        CommandTranslator lessTranslator = new InSuffixExpressionTranslator(operator("less", OperatorCategory.RELATIONAL));
+        CommandTranslator lessEqualTranslator = new InSuffixExpressionTranslator(operator("less_equal", OperatorCategory.RELATIONAL));
+        CommandTranslator greaterTranslator = new InSuffixExpressionTranslator(operator("greater", OperatorCategory.RELATIONAL));
+        CommandTranslator greaterEqualTranslator = new InSuffixExpressionTranslator(operator("greater_equal", OperatorCategory.RELATIONAL));
+        CommandTranslator plusTranslator = new InSuffixExpressionTranslator(operator("plus", OperatorCategory.ARITHMETIC));
+        CommandTranslator minusTranslator = new InSuffixExpressionTranslator(operator("minus", OperatorCategory.ARITHMETIC));
+        CommandTranslator multiplyTranslator = new InSuffixExpressionTranslator(operator("multiply", OperatorCategory.ARITHMETIC));
+        CommandTranslator divideTranslator = new InSuffixExpressionTranslator(operator("divide", OperatorCategory.ARITHMETIC));
 
         return new ProductionTagStrategy<>(simpleShrink)
                 .when(programTranslator, ProgramSemanticTag.PROGRAM)
@@ -114,13 +115,22 @@ public class TagStrategyCompose {
         return production -> strategy.resolve(production);
     }
 
-    private static OperatorFactor operator(String name) {
+    private static OperatorFactor operator(String mnemonic, OperatorCategory category) {
         return new OperatorFactor() {
             @Override
+            public String mnemonic() {
+                return mnemonic;
+            }
+
+            @Override
+            public OperatorCategory category() {
+                return category;
+            }
+
+            @Override
             public String toString() {
-                return name;
+                return mnemonic;
             }
         };
     }
-
 }

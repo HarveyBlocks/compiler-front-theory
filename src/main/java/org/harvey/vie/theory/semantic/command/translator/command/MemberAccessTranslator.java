@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
@@ -43,7 +44,10 @@ public class MemberAccessTranslator implements CommandTranslator {
             );
         }
         StructField field = struct.field(TypeAttributes.childAnchor(context, 2));
-        builder.add(new TerminalNode(context.getCommandFactory().biasFromStTopToRef(field.getType(), field.getOffset())));
+        builder.add(new TerminalNode(context.getCommandFactory().biasFromStTopToRef(
+                CommandDataType.forStorage(field.getType()),
+                field.getOffset()
+        )));
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 }

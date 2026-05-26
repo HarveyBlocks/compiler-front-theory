@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.semantic.command.LocationKind;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -32,13 +33,13 @@ public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
                 : TypeAttributes.result(context);
         LocationKind locationKind = register.getLocationKind();
         if (locationKind == LocationKind.REFERENCE) {
-            builder.add(new TerminalNode(context.getCommandFactory().stTopRefToVal(register.requireType(
-                    "semantic type is required for left value."
-            ))));
+            builder.add(new TerminalNode(context.getCommandFactory().stTopRefToVal(
+                    CommandDataType.forStorage(register.requireType("semantic type is required for left value."))
+            )));
         } else {
-            builder.add(new TerminalNode(context.getCommandFactory().stTopAddrToVal(register.requireType(
-                    "semantic type is required for left value."
-            ))));
+            builder.add(new TerminalNode(context.getCommandFactory().stTopAddrToVal(
+                    CommandDataType.forStorage(register.requireType("semantic type is required for left value."))
+            )));
         }
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }

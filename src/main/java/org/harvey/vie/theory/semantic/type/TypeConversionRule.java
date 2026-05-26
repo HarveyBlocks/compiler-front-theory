@@ -19,6 +19,9 @@ public class TypeConversionRule {
     }
 
     public boolean requiresImplicitCast(SemanticType from, SemanticType to) {
+        if (from.isNullLiteral()) {
+            return false;
+        }
         return canImplicitlyConvert(from, to) && !from.equals(to);
     }
 

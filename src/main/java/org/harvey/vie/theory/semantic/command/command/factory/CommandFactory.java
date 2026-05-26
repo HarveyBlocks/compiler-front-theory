@@ -7,7 +7,6 @@ import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorFactor;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 /**
@@ -28,25 +27,25 @@ public interface CommandFactory {
 
     SemanticCommand newStruct(SourceToken token);
 
-    SemanticCommand newArray(SourceToken token, SemanticType type, int dimensions);
+    SemanticCommand newArray(CommandDataType elementType, int totalDimensions, int specifiedDimensions);
 
-    SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType);
+    SemanticCommand stOperator(OperatorFactor operatorFactor, CommandDataType operandType);
 
-    SemanticCommand stTopAddrToVal(SemanticType type);
+    SemanticCommand stTopAddrToVal(CommandDataType type);
 
-    SemanticCommand stTopRefToVal(SemanticType type);
+    SemanticCommand stTopRefToVal(CommandDataType type);
 
-    SemanticCommand assignFromStTopToAddr(SemanticType type);
+    SemanticCommand assignFromStTopToAddr(CommandDataType type);
 
-    SemanticCommand assignFromStTopToRef(SemanticType type);
+    SemanticCommand assignFromStTopToRef(CommandDataType type);
 
-    SemanticCommand biasFromStTopToAddr(SemanticType elementType);
+    SemanticCommand biasFromStTopToAddr(CommandDataType elementType);
 
-    SemanticCommand biasFromStTopToRef(SemanticType elementType);
+    SemanticCommand biasFromStTopToRef(CommandDataType elementType);
 
-    SemanticCommand biasFromStTopToRef(SemanticType fieldType, int offset);
+    SemanticCommand biasFromStTopToRef(CommandDataType fieldType, int offset);
 
-    SemanticCommand stTopCast(SemanticType from, SemanticType to);
+    SemanticCommand stTopCast(CommandDataType from, CommandDataType to);
 
     SemanticCommand ifGoto(SemanticLabel label);
 

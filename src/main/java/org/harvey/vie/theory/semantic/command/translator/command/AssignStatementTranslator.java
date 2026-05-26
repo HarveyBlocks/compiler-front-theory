@@ -2,6 +2,7 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.semantic.command.LocationKind;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -39,13 +40,20 @@ public class AssignStatementTranslator implements CommandTranslator {
         children[0].register(builder);
         children[2].register(builder);
         if (context.requiresImplicitCast(sourceType, targetType)) {
-            builder.add(new TerminalNode(context.getCommandFactory().stTopCast(sourceType, targetType)));
+            builder.add(new TerminalNode(context.getCommandFactory().stTopCast(
+                    CommandDataType.forValue(sourceType),
+                    CommandDataType.forValue(targetType)
+            )));
         }
         LocationKind locationKind = TypeAttributes.child(context, 0).getLocationKind();
         if (locationKind == LocationKind.REFERENCE) {
-            builder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToRef(targetType)));
+            builder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToRef(
+                    CommandDataType.forStorage(targetType)
+            )));
         } else {
-            builder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToAddr(targetType)));
+            builder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToAddr(
+                    CommandDataType.forStorage(targetType)
+            )));
         }
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }

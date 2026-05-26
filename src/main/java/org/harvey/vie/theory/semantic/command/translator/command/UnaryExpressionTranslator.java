@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -58,7 +59,10 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         } else {
             throw new IllegalStateException("unsupported unary operator type: " + operatorType);
         }
-        thisBuilder.add(new TerminalNode(context.getCommandFactory().stOperator(operatorFactor, instructionType)));
+        thisBuilder.add(new TerminalNode(context.getCommandFactory().stOperator(
+                operatorFactor,
+                CommandDataType.forValue(instructionType)
+        )));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }

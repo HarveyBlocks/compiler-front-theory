@@ -63,6 +63,9 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
         assertExpectedAcceptance(runReport, "text41-struct-declare-and-access");
         assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
+        assertExpectedAcceptance(runReport, "text45-array-create-fully-specified");
+        assertExpectedAcceptance(runReport, "text46-array-create-tail-omitted-one");
+        assertExpectedAcceptance(runReport, "text47-array-create-tail-omitted-two");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -107,6 +110,7 @@ public class AppTest extends TestCase {
         assertFunctionCall(runReport);
         assertStructDeclarationAndAccess(runReport);
         assertStructNullAssignment(runReport);
+        assertArrayCreationInstructions(runReport);
         assertDeadBranchControlFlowIsStillDiagnosed(runReport);
         assertConditionalReturnDoesNotSatisfyFunction(runReport);
         assertErrorContextCoverage(runReport);
@@ -427,6 +431,44 @@ public class AppTest extends TestCase {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
         List<String> commands = result.getSemanticResult().getCommands();
         assertTrue("null assignment should be allowed for struct references", commands.contains("load_st_null_static null"));
+    }
+
+    private static void assertArrayCreationInstructions(SemanticRunReport runReport) {
+        List<String> full = assertExpectedAcceptance(runReport, "text45-array-create-fully-specified")
+                .getSemanticResult()
+                .getCommands();
+        assertContainsSequence(
+                full,
+                "load_st_ref_address 0",
+                "load_st_int32_static 11",
+                "load_st_int32_static 12",
+                "load_st_int32_static 13",
+                "new_array_int32 3 3",
+                "assign_from_st_top_to_addr_ref"
+        );
+
+        List<String> omitOne = assertExpectedAcceptance(runReport, "text46-array-create-tail-omitted-one")
+                .getSemanticResult()
+                .getCommands();
+        assertContainsSequence(
+                omitOne,
+                "load_st_ref_address 0",
+                "load_st_int32_static 11",
+                "load_st_int32_static 12",
+                "new_array_int32 3 2",
+                "assign_from_st_top_to_addr_ref"
+        );
+
+        List<String> omitTwo = assertExpectedAcceptance(runReport, "text47-array-create-tail-omitted-two")
+                .getSemanticResult()
+                .getCommands();
+        assertContainsSequence(
+                omitTwo,
+                "load_st_ref_address 0",
+                "load_st_int32_static 11",
+                "new_array_int32 3 1",
+                "assign_from_st_top_to_addr_ref"
+        );
     }
 
     private static void assertStructErrors(SemanticRunReport runReport) {

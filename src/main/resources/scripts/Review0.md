@@ -39,10 +39,13 @@
   - 对于`int32[][][] a = new int32[11][12][13]`
   - 对于`int32[][][] a = new int32[11][12][]`
   - 对于`int32[][][] a = new int32[11][][]`
+  - 都各自是如何处理的? 
 - [ ] `ArrayCreationDimensions`的错误遍历`visitDimensions`
   - 从 params -> params, param 到 arguments->arguments, argument , 都可以套用同一个模板
   - 现在是 array_inits -> array_inits '[' expr ']' 也是一个道理
   - 只要对原来的实现稍作修改, 大不了对原来的实现进行模仿, 在sequence包下再写一个呢? 都不至于直接去遍历树!
+  - 其实最好的做法是, 让sequence下面的实现不要涉及产生式, 不要被产生式的具体结构影响, 由外界来和产生式耦合
+  - 建议创建一个新的类, 完成一套新的, 和产生式无关的实现, 然后跑通array部分的测试之后, 再进行后续的替换
   - 而且由于错误封装(遍历树), 方法变得十分臃肿, 丑陋和钻石
 
 
