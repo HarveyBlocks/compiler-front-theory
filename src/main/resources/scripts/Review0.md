@@ -79,8 +79,10 @@
   - `DoWhileStatementTranslator`
   - 看来Translator这里需要优化, 不应该是length来判断,但是后面从children里获取index的成员, 也确实不是好的设计
   - **因此好的设计应该是, 定义一个接口, 外界提供这个接口的实现, 内部调用接口的方法.**
+- [ ] 本身用了tag之后, 要选择translator, 但是translator内部还有用index来进行, 就说明translaor是和产生式耦合的, 因此这是没有办法的
+  - 问题就出在这儿, 好的解决办法是, 让外界来决定如何获取产生式的重要部分, 但是这又不合适了
 
-简单不紧急
+ 简单不紧急
 
 - [ ] `StructRecord` 是通过遍历fields 来找到字段的, 有点暴力了, 但是不急着改
 - [ ] reject 改成require

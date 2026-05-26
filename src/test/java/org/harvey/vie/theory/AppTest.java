@@ -10,6 +10,7 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 import java.nio.file.Files;
@@ -68,6 +69,7 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text45-array-create-fully-specified");
         assertExpectedAcceptance(runReport, "text46-array-create-tail-omitted-one");
         assertExpectedAcceptance(runReport, "text47-array-create-tail-omitted-two");
+        assertExpectedAcceptance(runReport, "text48-function-multi-arg-order");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -110,6 +112,9 @@ public class AppTest extends TestCase {
         assertNestedIfOuterFalse(runReport);
         assertFunctionReturn(runReport);
         assertFunctionCall(runReport);
+        assertFunctionCallArgOrder(runReport);
+        assertFunctionSegmentation(runReport);
+        assertFunctionMultiArgOrder(runReport);
         assertStructDeclarationAndAccess(runReport);
         assertStructNullAssignment(runReport);
         assertArrayCreationInstructions(runReport);
@@ -419,13 +424,45 @@ public class AppTest extends TestCase {
         assertContainsSequence(commands, "call 0", "assign_from_st_top_to_addr_int32");
     }
 
+    private static void assertFunctionSegmentation(SemanticRunReport runReport) {
+        SemanticAnalysisResult returnOnly = assertExpectedAcceptance(runReport, "text31-function-return").getSemanticResult();
+        assertTrue("function-only program should not synthesize entry commands", returnOnly.getCommands().isEmpty());
+        assertEquals("function-only program should have one function segment", 1, returnOnly.getFunctionSegments().size());
+        assertEquals("function-only program should have one function table entry", 1, returnOnly.getFunctionTable().size());
+        assertEquals("function-only program should not have global locals", 0, returnOnly.getEntryLocalVariables().length);
+        assertEquals("function parameter should belong to function local table", 1,
+                returnOnly.getFunctionLocalVariables(returnOnly.getFunctionTable().get(0)).length);
+
+        SemanticAnalysisResult callCase = assertExpectedAcceptance(runReport, "text32-function-call").getSemanticResult();
+        assertEquals("call case should keep one function table entry", 1, callCase.getFunctionTable().size());
+        assertEquals("call case should keep one function segment", 1, callCase.getFunctionSegments().size());
+        assertEquals("call case should keep one global local", 1, callCase.getEntryLocalVariables().length);
+        assertEquals("call case should keep one function local", 1,
+                callCase.getFunctionLocalVariables(callCase.getFunctionTable().get(0)).length);
+        assertEquals("call target should reference function table index 0", 0, callCase.getFunctionTable().get(0).getTableIndex());
+        assertEquals("function table entry should match callee name", "inc",
+                SourceTokenStringMapping.utf8(callCase.getFunctionTable().get(0).getSignature().getNameToken()));
+        assertEquals("entry segment should only contain global code for call case", 4, callCase.getCommands().size());
+        assertEquals("function segment should keep function body isolated", 5,
+                functionCommands(callCase, "inc").size());
+    }
+
     private static void assertStructDeclarationAndAccess(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text41-struct-declare-and-access");
         SemanticAnalysisResult semanticResult = result.getSemanticResult();
         IdentifierRecord p = findRecordByName(semanticResult.getIdentifierRecords(), "p");
         assertNotNull("missing symbol p", p);
+        assertEquals("struct table should contain one declared struct", 1, semanticResult.getStructTable().size());
+        StructRecord point = semanticResult.getStructTable().get(0);
+        assertEquals("struct table index should start from 0", 0, point.getTableIndex());
+        assertEquals("struct name should be preserved in struct table", "Point", point.displayName());
+        assertEquals("struct field count should match declaration", 2, point.getFields().size());
+        assertEquals("first field should be x", "x", SourceTokenStringMapping.utf8(point.getFields().get(0).getNameToken()));
+        assertEquals("first field offset should be 0", 0, point.getFields().get(0).getOffset());
+        assertEquals("second field should be y", "y", SourceTokenStringMapping.utf8(point.getFields().get(1).getNameToken()));
+        assertEquals("second field offset should be 1", 1, point.getFields().get(1).getOffset());
         List<String> commands = semanticResult.getCommands();
-        assertTrue("struct construction should be emitted", commands.contains("new_struct Point"));
+        assertTrue("struct construction should reference struct table index", commands.contains("new_struct 0"));
         assertTrue("member access should emit field bias", commands.stream().anyMatch(c -> c.startsWith("bias_from_st_top_to_ref_int32")));
     }
 
@@ -491,11 +528,28 @@ public class AppTest extends TestCase {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
         List<String> commands = result.getSemanticResult().getCommands();
         assertContainsSequence(commands,
+                "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address 0",
                 "st_top_addr_to_val_int32",
-                "load_st_int32_static 1",
+                "load_st_int32_static 2",
                 "st_plus_int32",
                 "call 0");
+    }
+
+    private static void assertFunctionMultiArgOrder(SemanticRunReport runReport) {
+        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(runReport, "text48-function-multi-arg-order")
+                .getSemanticResult();
+        assertEquals("multi-arg function case should have one function table entry", 1, semanticResult.getFunctionTable().size());
+        assertEquals("first parameter should keep source order", "left",
+                SourceTokenStringMapping.utf8(semanticResult.getFunctionTable().get(0).getParameters().get(0).getNameToken()));
+        assertEquals("second parameter should keep source order", "right",
+                SourceTokenStringMapping.utf8(semanticResult.getFunctionTable().get(0).getParameters().get(1).getNameToken()));
+        assertContainsSequence(
+                semanticResult.getCommands(),
+                "load_st_int32_static 1",
+                "load_st_int32_static 2",
+                "call 0"
+        );
     }
 
     private static List<String> functionCommands(SemanticAnalysisResult result, String name) {

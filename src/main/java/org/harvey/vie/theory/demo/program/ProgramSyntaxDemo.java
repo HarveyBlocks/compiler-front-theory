@@ -67,10 +67,6 @@ public class ProgramSyntaxDemo {
     );
 
     public static void main(String[] args) {
-        if (args.length == 0) {
-            ProgramSyntaxTestRunner.run();
-            return;
-        }
         // 由于ProductionPool的实现是依赖与hash的底层实现的, 而这个值是随着JVM变化的
         // 比如调试和运行的结果不一样
         //  解决方法, 要不是持久化, 要不就是在一开始引入id
@@ -83,8 +79,9 @@ public class ProgramSyntaxDemo {
         //      所以持久化才是比较好的方案?
         String text1 = "{ " +
                        "int32 i; " +
-                       "int32[10] arr; " +
+                       "int32[] arr; " +
                        "boolean flag; " +
+                       "arr = new int32[10]; " +
                        "i = 3 + 4 * 6; " +
                        "arr[1] = i - 2; " +
                        "if (i < arr[1] || false) { " +
@@ -110,10 +107,11 @@ public class ProgramSyntaxDemo {
                        "ok = a != b; " +
                        "}";
         String text3 = "{ " +
-                       "int32[2][3] matrix; " +
+                       "int32[][] matrix; " +
                        "int32 row; " +
                        "int32 col; " +
                        "float64 value; " +
+                       "matrix = new int32[2][3]; " +
                        "row = 0; " +
                        "col = 1; " +
                        "matrix[row][col] = 8; " +
@@ -164,7 +162,6 @@ public class ProgramSyntaxDemo {
                 log.error("{}", errorContext);
             }
         }
-
     }
 
 
