@@ -1,8 +1,5 @@
 package org.harvey.vie.theory;
 
-import org.harvey.vie.theory.demo.SyntaxDemo;
-import org.harvey.vie.theory.demo.program.ProgramLexicalDemo;
-
 /**
  * 启动类
  *
@@ -12,12 +9,7 @@ import org.harvey.vie.theory.demo.program.ProgramLexicalDemo;
  */
 public class Main {
     public static void main(String[] args) {
-
         System.out.println(deal(""));
-        // lexical.flushTable
-        System.out.println("ProgramLexicalDemo.FLUSH_TABLE = " + ProgramLexicalDemo.FLUSH_TABLE);
-        // syntax.flushTable
-        System.out.println("SyntaxDemo.FLUSH_TABLE = " + SyntaxDemo.FLUSH_TABLE);
     }
 
     public static int deal(String s) {

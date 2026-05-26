@@ -12,6 +12,7 @@ import org.harvey.vie.theory.lexical.alphabet.SourceAlphabetCharacterAdaptorImpl
 import org.harvey.vie.theory.lexical.analysis.DefaultLexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.dfa.status.RegexDfaStatusTable;
+import org.harvey.vie.theory.util.RuntimeProperties;
 
 import java.io.*;
 import java.text.ParseException;
@@ -56,7 +57,7 @@ public class ProgramLexicalDemo {
     private static final RegexCharSet ANY = RegexCharSet.unionAll(
             DIGIT, WHITESPACE, LOWER_LETTER, UPPER_LETTER, OPERATOR, OTHER
     );
-    public static final boolean FLUSH_TABLE = Boolean.getBoolean("lexical.flushTable");
+    public static final boolean FLUSH_TABLE = RuntimeProperties.lexicalFlushTable();
     private static volatile LexicalAnalyzer cachedAnalyzer;
 
     private static final List<LexicalPattern> REGEX_PATTERNS = List.of(

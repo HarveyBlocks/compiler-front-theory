@@ -18,8 +18,6 @@ import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
 import org.harvey.vie.theory.syntax.bu.table.element.ActiveTableElement;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
-import java.util.function.Supplier;
-
 /**
  * TODO
  *
@@ -32,7 +30,6 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     private final ShiftReduceCallbackRegister register;
     private final TokenFilterPredict tokenFilterPredict;
     private final CommandFactory commandFactory;
-    private final boolean traceSteps;
     private final TypeResolver typeResolver;
     private final ConstantResolver constantResolver;
     private final FunctionManager functionManager;
@@ -43,23 +40,12 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
             ShiftReduceCallbackRegister register,
             CommandFactory commandFactory,
             TypeResolver typeResolver, ConstantResolver constantResolver, FunctionManager functionManager) {
-        this(table, tokenFilterPredict, register, commandFactory, typeResolver, constantResolver, functionManager, false);
-    }
-
-    public ShiftReducePhaserImpl(
-            ShiftReduceParsingTable table,
-            TokenFilterPredict tokenFilterPredict,
-            ShiftReduceCallbackRegister register,
-            CommandFactory commandFactory,
-            TypeResolver typeResolver,
-            ConstantResolver constantResolver, FunctionManager functionManager, boolean traceSteps) {
         this.tokenFilterPredict = tokenFilterPredict;
         this.table = table;
         this.register = register;
         this.commandFactory = commandFactory;
         this.constantResolver = constantResolver;
         this.functionManager = functionManager;
-        this.traceSteps = traceSteps;
         this.typeResolver = typeResolver;
     }
 
@@ -101,15 +87,12 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         context.onStart();
         while (true) {
             SourceToken current = ctx.currentToken();
-            // ...trace(()->"syntax stack: " + ctx.statusStackString());
-            // ...trace(()-> "current token: " + current.hintString() + " -> " + SourceTokenStringMapping.utf8(current));
             if (ctx.isStackEmpty()) {
                 context.onError(ShiftReduceErrorType.STACK_UNDERFLOW);
                 break;
             }
             int top = ctx.peek();
             ActiveTableElement element = table.activeNext(top, table.matchTerminal(current));
-            // trace(()->"action: " + (element == null ? "error" : element));
             if (element == null) {
                 // error
                 context.onError(ShiftReduceErrorType.UNDEFINED_ACTION);
@@ -125,12 +108,6 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
             }
         }
         return context.getResult();
-    }
-
-    private void trace(Supplier<String> message) {
-        if (traceSteps) {
-            System.out.println(message.get());
-        }
     }
 
     private void onReduce(ShiftReduceSemanticContext context, ActiveTableElement element) {

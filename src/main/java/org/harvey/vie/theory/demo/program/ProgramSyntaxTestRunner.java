@@ -21,6 +21,7 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable;
+import org.harvey.vie.theory.util.RuntimeProperties;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -46,9 +47,6 @@ public final class ProgramSyntaxTestRunner {
     private static final Path REPORT_DIR = Path.of("run-reports/program-syntax");
     private static final DateTimeFormatter RUN_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
-    private static final String TRACE_STEPS_PROPERTY = "syntax.traceSteps";
-    private static final String ONLY_CASE_PROPERTY = "program.testCase";
-
     private ProgramSyntaxTestRunner() {
     }
 
@@ -76,7 +74,7 @@ public final class ProgramSyntaxTestRunner {
     }
 
     private static List<Path> listTestCases() throws IOException {
-        String onlyCase = System.getProperty(ONLY_CASE_PROPERTY);
+        String onlyCase = RuntimeProperties.programTestCase();
         try (Stream<Path> stream = Files.list(TEST_CASE_DIR)) {
             return stream.filter(path -> path.getFileName().toString().endsWith(".txt"))
                     .filter(path -> onlyCase == null || path.getFileName().toString().equals(onlyCase + ".txt"))
@@ -151,8 +149,7 @@ public final class ProgramSyntaxTestRunner {
                 SyntaxDemo.STRING_COMMAND_FACTORY,
                 ProgramSyntaxDemo.TYPE_RESOLVER,
                 ProgramSyntaxDemo.CONSTANT_RESOLVER,
-                ProgramSyntaxDemo.FUNCTION_MANAGER,
-                Boolean.getBoolean(TRACE_STEPS_PROPERTY)
+                ProgramSyntaxDemo.FUNCTION_MANAGER
         );
         try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
             SemanticResult result = phaser.phase(iterator, errorContext);

@@ -57,6 +57,7 @@ import org.harvey.vie.theory.syntax.td.PredictivePhaserImpl;
 import org.harvey.vie.theory.syntax.td.table.DeterministicPredictiveParsingTableFactory;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTable;
 import org.harvey.vie.theory.syntax.td.table.PredictiveParsingTableFactory;
+import org.harvey.vie.theory.util.RuntimeProperties;
 
 import java.io.*;
 import java.util.Map;
@@ -163,7 +164,7 @@ public class SyntaxDemo {
         return new DefaultLexicalAnalyzer(table, saca);
     }
 
-    public static final boolean FLUSH_TABLE = Boolean.getBoolean("syntax.flushTable");
+    public static final boolean FLUSH_TABLE = RuntimeProperties.syntaxFlushTable();
     private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(

@@ -40,8 +40,6 @@ import java.util.function.Consumer;
  */
 @Getter
 public class ShiftReduceSemanticContext {
-    private static final boolean DEBUG_FUNCTION = Boolean.getBoolean("semantic.debugFunction");
-
     private final ShiftReduceCallbackRegister register;
     @Getter
     private SemanticResult result;
@@ -263,18 +261,12 @@ public class ShiftReduceSemanticContext {
     }
 
     public void markPendingFunction(FunctionRecord record) {
-        if (DEBUG_FUNCTION) {
-            System.out.println("[function-debug] mark pending function: " + record.getSignature().getNameKey());
-        }
         pendingFunction = record;
     }
 
     public FunctionRecord consumePendingFunction() {
         FunctionRecord function = pendingFunction;
         pendingFunction = null;
-        if (DEBUG_FUNCTION) {
-            System.out.println("[function-debug] consume pending function: " + (function == null ? "<none>" : function.getSignature().getNameKey()));
-        }
         return function;
     }
 
@@ -282,16 +274,10 @@ public class ShiftReduceSemanticContext {
         scopeInto();
         FunctionRecord function = consumePendingFunction();
         if (function == null) {
-            if (DEBUG_FUNCTION) {
-                System.out.println("[function-debug] enter ordinary block");
-            }
             blockFunctionFlags.push(Boolean.FALSE);
             return;
         }
         enterFunction(function);
-        if (DEBUG_FUNCTION) {
-            System.out.println("[function-debug] enter function body: " + function.getSignature().getNameKey());
-        }
         blockFunctionFlags.push(Boolean.TRUE);
         for (FunctionParameter parameter : function.getParameters()) {
             SourceToken nameToken = parameter.getNameToken();
@@ -322,12 +308,7 @@ public class ShiftReduceSemanticContext {
     public void finishBlockScope() {
         boolean functionBody = !blockFunctionFlags.isEmpty() && blockFunctionFlags.pop();
         if (functionBody) {
-            if (DEBUG_FUNCTION) {
-                System.out.println("[function-debug] exit function body: " + currentFunction().getSignature().getNameKey());
-            }
             exitFunction();
-        } else if (DEBUG_FUNCTION) {
-            System.out.println("[function-debug] exit ordinary block");
         }
     }
     // endregion

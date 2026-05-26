@@ -20,7 +20,6 @@ import java.util.List;
  * @author Temper
  */
 public class FunctionSemanticCallback implements ShiftReduceCallback {
-    private static final boolean DEBUG_FUNCTION = Boolean.getBoolean("semantic.debugFunction");
     private final ArgumentStepper argumentStepper = new ArgumentStepper();
     private final ParameterStepper parameterStepper = new ParameterStepper();
 
@@ -51,9 +50,6 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
 
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken nameToken = tokenAt(head, 1);
-        if (DEBUG_FUNCTION) {
-            System.out.println("[function-debug] prepare function head: " + nameToken);
-        }
         if (context.existFunction(nameToken)) {
             SemanticDiagnostics.reject(context, nameToken, "duplicate function declaration is not allowed.");
         }
@@ -73,10 +69,6 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
 
     private void validateReturnValue(ShiftReduceSemanticContext context, HeadNode head, boolean hasValue) {
         SourceToken returnToken = tokenAt(head, 0);
-        if (DEBUG_FUNCTION) {
-            System.out.println("[function-debug] validate return: insideFunction=" + context.insideFunction()
-                    + ", currentBlockIsFunctionBody=" + context.isCurrentBlockFunctionBody());
-        }
         if (!context.insideFunction()) {
             SemanticDiagnostics.reject(context, returnToken, "return is only allowed inside function body.");
         }

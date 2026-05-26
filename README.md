@@ -1,5 +1,30 @@
 # compiler
 
+## Runtime Properties
+
+The project currently keeps runtime startup properties in one place:
+`org.harvey.vie.theory.util.RuntimeProperties`.
+
+Supported properties:
+
+- `-Dlexical.flushTable=true`
+  Rebuilds the lexical DFA table and writes it to
+  `src/main/resources/serial/lex_table.data`.
+- `-Dsyntax.flushTable=true`
+  Rebuilds the LALR parsing table and writes it to
+  `src/main/resources/serial/syntax_table.data`.
+- `-Dprogram.testCase=<case-name>`
+  Runs only one Program full-chain test case in `ProgramSyntaxTestRunner`.
+  Example: `-Dprogram.testCase=text31-function-return`
+
+Typical examples:
+
+```bash
+mvn test
+mvn -Dprogram.testCase=text31-function-return test
+mvn -Dlexical.flushTable=true -Dsyntax.flushTable=true test
+```
+
 ## IO
 
 - [X] 错误恢复
