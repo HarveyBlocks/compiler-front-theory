@@ -34,11 +34,6 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
     }
 
     @Override
-    public SemanticCommand loadIdentifierAddress(SourceToken token) {
-        return new StringCommand("load_st_identifier_address " + SourceTokenStringMapping.utf8(token));
-    }
-
-    @Override
     public SemanticCommand loadIdentifierAddress(IdentifierRecord record) {
         return new StringCommand("load_st_" +
                                  CommandDataType.forStorage(record.getDeclaredType()).mnemonic() +

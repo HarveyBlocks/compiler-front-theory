@@ -34,11 +34,6 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
     @Override
-    public SemanticCommand loadIdentifierAddress(SourceToken token) {
-        return typedCommandFactory.loadIdentifierAddress(token);
-    }
-
-    @Override
     public SemanticCommand loadIdentifierAddress(IdentifierRecord record) {
         return typedCommandFactory.loadIdentifierAddress(record);
     }

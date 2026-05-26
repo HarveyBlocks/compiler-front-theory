@@ -55,9 +55,9 @@ public class SemanticDemo {
         register.add(new ConstantValueBuildCallback());
         register.add(new StructSemanticCallback());
         register.add(new FunctionSemanticCallback());
+        register.add(instanceIdentifierTableBuildCallback());
         register.add(instanceSemanticCommandPrintCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
-        register.add(instanceIdentifierTableBuildCallback());
         register.add(new IdentifierConstantStateCallback());
         register.add(new PassiveErrorCallback());
         return register;
@@ -71,9 +71,9 @@ public class SemanticDemo {
         register.add(new ConstantValueBuildCallback());
         register.add(new StructSemanticCallback());
         register.add(new FunctionSemanticCallback());
+        register.add(instanceIdentifierTableBuildCallback());
         register.add(new SemanticResultCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
-        register.add(instanceIdentifierTableBuildCallback());
         register.add(new IdentifierConstantStateCallback());
         register.add(new PassiveErrorCallback());
         return register;

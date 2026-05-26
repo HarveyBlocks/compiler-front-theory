@@ -2,9 +2,8 @@ package org.harvey.vie.theory.semantic.command.translator.token;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
-import org.harvey.vie.theory.semantic.command.register.TokenCommandRegister;
+import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 
 /**
  * Loads a local variable address, not an object reference.
@@ -16,10 +15,6 @@ import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 public class LoadIdentifierAddressTokenTranslator implements TokenTranslator {
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {
-        IdentifierRecord record = context.getIdentifier(token);
-        if (record == null) {
-            return new TokenCommandRegister(context.getCommandFactory().loadIdentifierAddress(token));
-        }
-        return new TokenCommandRegister(context.getCommandFactory().loadIdentifierAddress(record));
+        return new PlaceholderNodeRegister();
     }
 }

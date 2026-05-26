@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.command.factory;
 
-import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
@@ -17,15 +16,13 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
  * @date 2026-05-24 23:16
  */
 public interface CommandFactory {
-    SemanticCommand loadStatic(SourceToken token);
-
-    SemanticCommand loadIdentifierAddress(SourceToken token);
+    SemanticCommand loadStatic(org.harvey.vie.theory.lexical.analysis.token.SourceToken token);
 
     SemanticCommand loadIdentifierAddress(IdentifierRecord record);
 
     SemanticCommand loadConstant(ConstantValue constantValue);
 
-    SemanticCommand newStruct(SourceToken token);
+    SemanticCommand newStruct(org.harvey.vie.theory.lexical.analysis.token.SourceToken token);
 
     SemanticCommand newArray(CommandDataType elementType, int totalDimensions, int specifiedDimensions);
 
@@ -53,7 +50,7 @@ public interface CommandFactory {
 
     SemanticCommand gotoCommand(SemanticLabel label);
 
-    UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token);
+    UncertainLabelGotoCommand gotoCommandUncertainLabel(org.harvey.vie.theory.lexical.analysis.token.SourceToken token);
 
     SemanticCommand callFunction(FunctionRecord name);
 

@@ -18,8 +18,6 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
 public interface TypedCommandFactory {
     SemanticCommand loadLiteral(SourceToken token);
 
-    SemanticCommand loadIdentifierAddress(SourceToken token);
-
     SemanticCommand loadIdentifierAddress(IdentifierRecord record);
 
     SemanticCommand loadConstant(ConstantValue constantValue);

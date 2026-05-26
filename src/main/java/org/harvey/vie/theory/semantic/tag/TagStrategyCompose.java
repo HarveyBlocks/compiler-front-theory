@@ -26,6 +26,7 @@ public class TagStrategyCompose {
         CommandTranslator declarationWithInitializationTranslator =
                 new DeclarationWithInitializationTranslator();
         CommandTranslator arrayTypeTranslator = new ArrayTypeTranslator();
+        CommandTranslator identifierUseTranslator = new IdentifierUseTranslator();
         CommandTranslator parenthesizedExpressionTranslator = new ParenthesizedExpressionTranslator();
         CommandTranslator primaryProduceLeftValueTranslator = new PrimaryProduceLeftValueTranslator();
         CommandTranslator assignStatementTranslator = new AssignStatementTranslator();
@@ -85,6 +86,7 @@ public class TagStrategyCompose {
                 .when(newStructTranslator, ProgramSemanticTag.NEW_STRUCT)
                 .when(newArrayTranslator, ProgramSemanticTag.NEW_ARRAY)
                 .when(arrayTypeTranslator, ProgramSemanticTag.TYPE, ProgramSemanticTag.ARRAY)
+                .when(identifierUseTranslator, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
                 .when(parenthesizedExpressionTranslator, ProgramSemanticTag.PARENTHESIZED)
                 .when(primaryProduceLeftValueTranslator, ProgramSemanticTag.LEFT_VALUE)
                 .when(logicalNotTranslator, ProgramSemanticTag.LOGICAL_NOT)
@@ -125,11 +127,6 @@ public class TagStrategyCompose {
             @Override
             public OperatorCategory category() {
                 return category;
-            }
-
-            @Override
-            public String toString() {
-                return mnemonic;
             }
         };
     }
