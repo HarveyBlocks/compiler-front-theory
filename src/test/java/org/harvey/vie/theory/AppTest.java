@@ -6,6 +6,8 @@ import junit.framework.TestSuite;
 import org.harvey.vie.theory.demo.program.ProgramSyntaxTestRunner;
 import org.harvey.vie.theory.demo.program.ProgramSyntaxTestRunner.SemanticRunReport;
 import org.harvey.vie.theory.demo.program.ProgramSyntaxTestRunner.TestCaseResult;
+import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
+import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
@@ -407,14 +409,14 @@ public class AppTest extends TestCase {
 
     private static void assertFunctionReturn(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text31-function-return");
-        List<String> commands = result.getSemanticResult().getCommands();
+        List<String> commands = functionCommands(result.getSemanticResult(), "addOne");
         assertContainsSequence(commands, "load_st_int32_address 0", "st_top_addr_to_val_int32", "load_st_int32_static 1", "st_plus_int32", "return");
     }
 
     private static void assertFunctionCall(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text32-function-call");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands, "call inc", "assign_from_st_top_to_addr_int32");
+        assertContainsSequence(commands, "call 0", "assign_from_st_top_to_addr_int32");
     }
 
     private static void assertStructDeclarationAndAccess(SemanticRunReport runReport) {
@@ -493,7 +495,17 @@ public class AppTest extends TestCase {
                 "st_top_addr_to_val_int32",
                 "load_st_int32_static 1",
                 "st_plus_int32",
-                "call add");
+                "call 0");
+    }
+
+    private static List<String> functionCommands(SemanticAnalysisResult result, String name) {
+        for (FunctionCommandSegment segment : result.getFunctionSegments()) {
+            if (name.equals(SourceTokenStringMapping.utf8(segment.getFunction().getSignature().getNameToken()))) {
+                return new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands());
+            }
+        }
+        fail("missing function command segment: " + name);
+        return List.of();
     }
 
     private static TestCaseResult assertExpectedAcceptance(SemanticRunReport runReport, String caseName) {

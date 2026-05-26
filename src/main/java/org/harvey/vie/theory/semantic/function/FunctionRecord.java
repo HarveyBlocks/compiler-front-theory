@@ -11,14 +11,17 @@ import java.util.List;
  */
 @Getter
 public class FunctionRecord {
+    private final int tableIndex;
     private final FunctionSignature signature;
     private final List<FunctionParameter> parameters;
     private final HeadNode functionHeadNode;
 
     public FunctionRecord(
+            int tableIndex,
             FunctionSignature signature,
             List<FunctionParameter> parameters,
             HeadNode functionHeadNode) {
+        this.tableIndex = tableIndex;
         this.signature = signature;
         this.parameters = List.copyOf(parameters);
         this.functionHeadNode = functionHeadNode;

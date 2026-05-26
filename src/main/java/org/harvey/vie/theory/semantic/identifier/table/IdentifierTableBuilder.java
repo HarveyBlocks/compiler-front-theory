@@ -3,6 +3,7 @@ package org.harvey.vie.theory.semantic.identifier.table;
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
@@ -48,6 +49,7 @@ public class IdentifierTableBuilder {
             SemanticType declaredType,
             SourceToken identifierToken,
             boolean initialized,
+            FunctionRecord ownerFunction,
             ConstantValue constantValue) {
         ScopeBuilder last = getLast();
         int no = recordIdGenerator.next();
@@ -59,10 +61,11 @@ public class IdentifierTableBuilder {
                 declaredType,
                 identifierToken.getLexeme(),
                 initialized,
+                ownerFunction,
                 constantValue
         );
         last.put(IdentifierKey.generate(identifierToken), identifierRecord);
-        log.trace("register identifier: " + identifierRecord);
+        log.trace("register identifier: " + identifierRecord.displayString());
         log.trace("now identifier table: \n" +
                   identifierTable.stream().map(r -> "\t" + r).collect(Collectors.joining("\n")));
         return identifierRecord;
@@ -128,7 +131,7 @@ public class IdentifierTableBuilder {
 
         @Override
         public String toString() {
-            return map.values().stream().map(Objects::toString).collect(Collectors.joining(",", "{", "}"));
+            return map.values().stream().map(IdentifierRecord::displayString).collect(Collectors.joining(",", "{", "}"));
         }
     }
 

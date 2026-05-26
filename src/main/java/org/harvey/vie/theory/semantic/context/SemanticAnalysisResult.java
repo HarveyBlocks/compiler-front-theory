@@ -1,8 +1,12 @@
 package org.harvey.vie.theory.semantic.context;
 
-import lombok.Getter;
+import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
+import org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter;
+import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,15 +14,67 @@ import java.util.List;
  */
 public class SemanticAnalysisResult implements SemanticResult {
     private final IdentifierRecord[] identifierRecords;
-    @Getter
-    private final List<String> commands;
+    private final List<SemanticCommand> entryCommands;
+    private final List<FunctionCommandSegment> functionSegments;
 
-    public SemanticAnalysisResult(List<String> commands, IdentifierRecord[] identifierRecords) {
-        this.commands = List.copyOf(commands);
+    public SemanticAnalysisResult(
+            List<SemanticCommand> entryCommands,
+            List<FunctionCommandSegment> functionSegments,
+            IdentifierRecord[] identifierRecords) {
+        this.entryCommands = List.copyOf(entryCommands);
+        this.functionSegments = List.copyOf(functionSegments);
         this.identifierRecords = identifierRecords.clone();
     }
 
     public IdentifierRecord[] getIdentifierRecords() {
         return identifierRecords.clone();
+    }
+
+    public List<SemanticCommand> getEntryCommands() {
+        return List.copyOf(entryCommands);
+    }
+
+    public List<String> getCommands() {
+        return new ThreeAddressCodePrinter().print(entryCommands);
+    }
+
+    public List<FunctionCommandSegment> getFunctionSegments() {
+        return List.copyOf(functionSegments);
+    }
+
+    public List<FunctionRecord> getFunctionTable() {
+        List<FunctionRecord> table = new ArrayList<>(functionSegments.size());
+        for (FunctionCommandSegment segment : functionSegments) {
+            table.add(segment.getFunction());
+        }
+        return List.copyOf(table);
+    }
+
+    public IdentifierRecord[] getEntryLocalVariables() {
+        List<IdentifierRecord> result = new ArrayList<>();
+        for (IdentifierRecord record : identifierRecords) {
+            if (record.getOwnerFunction() == null) {
+                result.add(record);
+            }
+        }
+        return result.toArray(IdentifierRecord[]::new);
+    }
+
+    public IdentifierRecord[] getFunctionLocalVariables(FunctionRecord function) {
+        List<IdentifierRecord> result = new ArrayList<>();
+        for (IdentifierRecord record : identifierRecords) {
+            if (record.getOwnerFunction() == function) {
+                result.add(record);
+            }
+        }
+        return result.toArray(IdentifierRecord[]::new);
+    }
+
+    public int commandCount() {
+        int total = entryCommands.size();
+        for (FunctionCommandSegment segment : functionSegments) {
+            total += segment.getCommands().size();
+        }
+        return total;
     }
 }

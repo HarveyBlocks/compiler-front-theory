@@ -19,6 +19,7 @@ public class TagStrategyCompose {
         CommandTranslator doNothing = new DoNotingTranslator();
         CommandTranslator simpleShrink = new SimpleShrinkTranslator();
         CommandTranslator programTranslator = new ProgramCommandTranslator();
+        CommandTranslator functionDefinitionTranslator = new FunctionDefinitionTranslator();
         CommandTranslator functionHeadTranslator = new FunctionHeadTranslator();
         CommandTranslator returnTranslator = new FunctionReturnTranslator();
         CommandTranslator declarationWithoutInitializationTranslator =
@@ -59,6 +60,7 @@ public class TagStrategyCompose {
 
         return new ProductionTagStrategy<>(simpleShrink)
                 .when(programTranslator, ProgramSemanticTag.PROGRAM)
+                .when(functionDefinitionTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.DEFINITION)
                 .when(functionHeadTranslator, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
                 .when(doNothing, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
                 .when(

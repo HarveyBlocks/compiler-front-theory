@@ -389,7 +389,7 @@ public class ProgramSyntaxDemo {
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
                 .tagLast(ProgramSemanticTag.IDENTIFIER);
 
-        contextBuilder.define("function_decl")
+        contextBuilder.define("function_decl", ProgramSemanticTag.FUNCTION, ProgramSemanticTag.DEFINITION)
                 .alternateDefinition("function_head")
                 .concatenateDefinitionLast("block")
                 .tagLast(ProgramSemanticTag.FORWARD);

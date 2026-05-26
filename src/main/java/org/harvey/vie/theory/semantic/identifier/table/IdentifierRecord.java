@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
@@ -27,6 +28,7 @@ public class IdentifierRecord {
     private final SemanticType declaredType;
     private final byte[] lexeme;
     private final boolean initialized;
+    private final FunctionRecord ownerFunction;
 
     @Setter
     private ConstantValue constantValue;
@@ -39,6 +41,10 @@ public class IdentifierRecord {
                " name=" + SourceTokenStringMapping.utf8(lexeme) +
                " initialized=" + initialized +
                " constant=" + (constantValue == null ? "<none>" : constantValue.toString());
+    }
+
+    public String displayString() {
+        return toString();
     }
 
 }

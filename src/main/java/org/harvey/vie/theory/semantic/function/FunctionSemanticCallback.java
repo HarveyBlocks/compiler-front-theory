@@ -55,7 +55,9 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
         SemanticType returnType = returnTypeRegister.requireType("function return type is required.");
         List<FunctionParameter> parameters = collectParameters(context, head.get(3));
-        FunctionRecord record = new FunctionRecord(new FunctionSignature(nameToken, returnType, head),
+        FunctionRecord record = new FunctionRecord(
+                context.functionTableSize(),
+                new FunctionSignature(nameToken, returnType, head),
                 parameters,
                 head
         );

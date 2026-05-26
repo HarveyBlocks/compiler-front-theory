@@ -12,8 +12,11 @@ import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
+import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
+import org.harvey.vie.theory.semantic.function.FunctionParameter;
+import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
@@ -116,7 +119,7 @@ public final class ProgramSyntaxTestRunner {
                 failure,
                 expectedFailure
         );
-        int commandCount = semanticResult == null ? 0 : semanticResult.getCommands().size();
+        int commandCount = semanticResult == null ? 0 : semanticResult.commandCount();
         int symbolCount = semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length;
         return new TestCaseResult(
                 caseName,
@@ -218,29 +221,20 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Observed: ").append(observedRejected ? "REJECT" : observedAccepted ? "ACCEPT" : "UNKNOWN").append("\n");
         builder.append("- Matched Expectation: ").append(matchedExpectation ? "YES" : "NO").append("\n");
         builder.append("- Errors: ").append(errorContext.size()).append("\n");
-        builder.append("- Commands: ").append(semanticResult == null ? 0 : semanticResult.getCommands().size()).append("\n");
+        builder.append("- Commands: ").append(semanticResult == null ? 0 : semanticResult.commandCount()).append("\n");
         builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
-        builder.append("## Semantic Commands\n\n");
-        if (semanticResult == null || semanticResult.getCommands().isEmpty()) {
-            builder.append("_None_\n");
-        } else {
-            builder.append("```text\n");
-            int index = 0;
-            for (String command : semanticResult.getCommands()) {
-                builder.append(String.format("[%03d] %s%n", index++, command));
+        builder.append("## Global Segment\n\n");
+        builder.append("- Kind: Program Entry\n\n");
+        builder.append("### Commands\n\n");
+        writeCommands(builder, semanticResult == null ? null : semanticResult.getCommands());
+        builder.append("\n### Local Variables\n\n");
+        writeIdentifierTable(builder, semanticResult == null ? null : semanticResult.getEntryLocalVariables());
+        if (semanticResult != null && !semanticResult.getFunctionSegments().isEmpty()) {
+            for (FunctionCommandSegment segment : semanticResult.getFunctionSegments()) {
+                writeFunctionSection(builder, semanticResult, segment);
             }
-            builder.append("```\n");
-        }
-        builder.append("\n## Symbol Table\n\n");
-        if (semanticResult == null || semanticResult.getIdentifierRecords().length == 0) {
-            builder.append("_None_\n");
-        } else {
-            builder.append("```text\n");
-            Arrays.stream(semanticResult.getIdentifierRecords())
-                    .forEach(record -> builder.append(formatRecord(record)).append('\n'));
-            builder.append("```\n");
         }
         builder.append("\n## Errors\n\n");
         if (errorContext.isEmpty()) {
@@ -256,6 +250,69 @@ public final class ProgramSyntaxTestRunner {
             builder.append("\n## Failure\n\n```text\n").append(failure).append("\n```\n");
         }
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
+    }
+
+    private static void writeCommands(StringBuilder builder, List<String> commands) {
+        if (commands == null || commands.isEmpty()) {
+            builder.append("_None_\n");
+            return;
+        }
+        builder.append("```text\n");
+        int index = 0;
+        for (String command : commands) {
+            builder.append(String.format("[%03d] %s%n", index++, command));
+        }
+        builder.append("```\n");
+    }
+
+    private static void writeIdentifierTable(StringBuilder builder, IdentifierRecord[] records) {
+        if (records == null || records.length == 0) {
+            builder.append("_None_\n");
+            return;
+        }
+        builder.append("```text\n");
+        Arrays.stream(records)
+                .forEach(record -> builder.append(formatRecord(record)).append('\n'));
+        builder.append("```\n");
+    }
+
+    private static void writeFunctionSection(
+            StringBuilder builder,
+            SemanticAnalysisResult semanticResult,
+            FunctionCommandSegment segment) {
+        FunctionRecord function = segment.getFunction();
+        builder.append("\n## Function Segment: ").append(formatFunctionName(function)).append("\n\n");
+        builder.append("- Function Index: ").append(function.getTableIndex()).append("\n");
+        builder.append("- Signature: ").append(formatFunctionSignature(function)).append("\n\n");
+        builder.append("### Commands\n\n");
+        writeCommands(builder, new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands()));
+        builder.append("\n### Local Variables\n\n");
+        writeIdentifierTable(builder, semanticResult.getFunctionLocalVariables(function));
+    }
+
+    private static String formatFunctionRecord(FunctionRecord function) {
+        return "index=" + function.getTableIndex() + " signature=" + formatFunctionSignature(function);
+    }
+
+    private static String formatFunctionSignature(FunctionRecord function) {
+        StringJoiner joiner = new StringJoiner(", ");
+        for (FunctionParameter parameter : function.getParameters()) {
+            joiner.add(formatType(parameter.getTypeNode()) + " " +
+                       SourceTokenStringMapping.utf8(parameter.getNameToken()));
+        }
+        return String.format("%s %s(%s)", formatFunctionReturnType(function), formatFunctionName(function), joiner);
+    }
+
+    private static String formatFunctionName(FunctionRecord function) {
+        return SourceTokenStringMapping.utf8(function.getSignature().getNameToken());
+    }
+
+    private static String formatFunctionReturnType(FunctionRecord function) {
+        ShiftReduceSyntaxTreeNode node = function.getFunctionHeadNode().get(0);
+        if (node.isToken()) {
+            return SourceTokenStringMapping.utf8(node.toToken().getSource());
+        }
+        return formatType(node.toHead());
     }
 
     private static String formatRecord(IdentifierRecord record) {

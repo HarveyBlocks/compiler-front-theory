@@ -4,15 +4,11 @@ import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
-import org.harvey.vie.theory.semantic.command.node.CommandNode;
-import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
-import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -30,21 +26,19 @@ public class SemanticResultCallback implements ShiftReduceCallback {
     }
 
     private static SemanticAnalysisResult buildResult(ShiftReduceSemanticContext context, CommandContext commandContext) {
-        CommandNodeBuilder resultBuilder = new CommandNodeListBuilder();
-        for (CommandNodeRegister register : commandContext) {
-            register.register(resultBuilder);
-        }
-        CommandNode[] array = resultBuilder.build();
-        if (array.length == 0) {
+        if (commandContext.isEmpty()) {
             throw new CompilerException("illegal statement before accept on production.");
         }
-        List<SemanticCommand> commands = new ArrayList<>();
-        for (CommandNode node : array) {
-            node.flat(commands);
+        CommandNodeRegister top = commandContext.peek();
+        List<SemanticCommand> entryCommands = CommandSegmentSupport.flatten(top);
+        if (entryCommands.isEmpty() && context.getFunctionCommandSegmentContext().isEmpty()) {
+            throw new CompilerException("semantic result must contain entry commands or function commands.");
         }
-        ThreeAddressCodePrinter printer = new ThreeAddressCodePrinter();
-        List<String> lines = printer.print(commands);
-        return new SemanticAnalysisResult(lines, context.identifierRecords());
+        return new SemanticAnalysisResult(
+                entryCommands,
+                context.getFunctionCommandSegmentContext().snapshot(),
+                context.identifierRecords()
+        );
     }
 }
 

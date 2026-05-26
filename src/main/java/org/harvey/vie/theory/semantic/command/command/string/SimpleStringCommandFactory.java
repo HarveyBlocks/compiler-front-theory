@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.command.string;
 
-import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import org.harvey.vie.theory.semantic.command.command.factory.SimpleCommandFactory;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
@@ -15,7 +14,7 @@ import org.harvey.vie.theory.semantic.function.FunctionRecord;
 public class SimpleStringCommandFactory implements SimpleCommandFactory {
     @Override
     public SemanticCommand callFunction(FunctionRecord name) {
-        return new StringCommand("call " + SourceTokenStringMapping.utf8(name.getSignature().getNameToken()));
+        return new StringCommand("call " + name.getTableIndex());
     }
 
     @Override

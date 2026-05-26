@@ -19,6 +19,7 @@ public enum ProgramSemanticTag implements SemanticTag {
     // Root and callable semantics
     PROGRAM,
     FUNCTION,
+    DEFINITION,
     HEAD,
     CALL,
     RETURN,

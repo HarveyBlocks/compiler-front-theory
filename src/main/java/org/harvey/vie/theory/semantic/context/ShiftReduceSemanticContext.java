@@ -8,6 +8,8 @@ import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegister;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType;
 import org.harvey.vie.theory.semantic.command.command.factory.CommandFactory;
+import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
+import org.harvey.vie.theory.semantic.command.FunctionCommandSegmentContext;
 import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.function.*;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
@@ -49,6 +51,8 @@ public class ShiftReduceSemanticContext {
     private final TreeContext treeContext = new TreeContext();
     @Getter
     private final CommandContext commandContext = new CommandContext();
+    @Getter
+    private final FunctionCommandSegmentContext functionCommandSegmentContext = new FunctionCommandSegmentContext();
 
     @Getter
     private final CommandFactory commandFactory;
@@ -155,6 +159,10 @@ public class ShiftReduceSemanticContext {
         this.result = result;
     }
 
+    public void registerFunctionCommandSegment(FunctionCommandSegment segment) {
+        functionCommandSegmentContext.register(segment);
+    }
+
     // region error context
     public void addError(int offset, String message) {
         syntaxContext.getErrorContext().addError(new SemanticErrorMessage(offset, message));
@@ -192,10 +200,12 @@ public class ShiftReduceSemanticContext {
             SourceToken identifierToken,
             boolean initialized,
             ConstantValue constantValue) {
+        FunctionRecord ownerFunction = insideFunction() ? currentFunction() : null;
         identifierRecords.add(identifierTableBuilder.registerIdentifier(typeHeadNode,
                 declaredType,
                 identifierToken,
                 initialized,
+                ownerFunction,
                 constantValue
         ));
     }
@@ -225,6 +235,10 @@ public class ShiftReduceSemanticContext {
 
     public void registerFunction(FunctionRecord record) {
         functionContext.register(record);
+    }
+
+    public int functionTableSize() {
+        return functionContext.records().size();
     }
 
     public void registerCurrentFunction(FunctionRecord record) {
