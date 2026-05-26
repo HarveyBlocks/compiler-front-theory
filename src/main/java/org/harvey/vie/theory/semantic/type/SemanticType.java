@@ -1,6 +1,8 @@
 package org.harvey.vie.theory.semantic.type;
 
 import lombok.Getter;
+import org.harvey.vie.theory.lexical.analysis.token.IdentifierKey;
+import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,23 +16,33 @@ import java.util.StringJoiner;
 @Getter
 public final class SemanticType {
     public enum Kind {
-        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID;
+        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID, STRUCT, NULL;
     }
 
     private final Kind kind;
     private final List<Integer> dimensions;
+    private final IdentifierKey namedTypeKey;
 
-    private SemanticType(Kind kind, List<Integer> dimensions) {
+    private SemanticType(Kind kind, List<Integer> dimensions, IdentifierKey namedTypeKey) {
         this.kind = kind;
         this.dimensions = List.copyOf(dimensions);
+        this.namedTypeKey = namedTypeKey;
     }
 
     public static SemanticType scalar(Kind kind) {
-        return new SemanticType(kind, List.of());
+        return new SemanticType(kind, List.of(), null);
     }
 
     public static SemanticType array(Kind kind, List<Integer> dimensions) {
-        return new SemanticType(kind, dimensions);
+        return new SemanticType(kind, dimensions, null);
+    }
+
+    public static SemanticType struct(SourceToken token) {
+        return new SemanticType(Kind.STRUCT, List.of(), IdentifierKey.generate(token));
+    }
+
+    public static SemanticType nullLiteral() {
+        return scalar(Kind.NULL);
     }
 
     public boolean isScalar() {
@@ -49,14 +61,30 @@ public final class SemanticType {
         return isScalar() && (kind == Kind.INT32 || kind == Kind.FLOAT64);
     }
 
+    public boolean isStruct() {
+        return kind == Kind.STRUCT && isScalar();
+    }
+
     public boolean isVoidScalar() {
         return kind == Kind.VOID && isScalar();
+    }
+
+    public boolean isNullLiteral() {
+        return kind == Kind.NULL && isScalar();
+    }
+
+    public boolean isReferenceType() {
+        return kind == Kind.STRUCT || isArray();
     }
 
     public SemanticType withAppendedDimension(int dimension) {
         ArrayList<Integer> next = new ArrayList<>(dimensions);
         next.add(dimension);
-        return new SemanticType(kind, next);
+        return new SemanticType(kind, next, namedTypeKey);
+    }
+
+    public SemanticType withAppendedDimension() {
+        return withAppendedDimension(0);
     }
 
     public SemanticType arrayElementType() {
@@ -64,9 +92,9 @@ public final class SemanticType {
             throw new IllegalStateException("array element type requires an array semantic type");
         }
         if (dimensions.size() == 1) {
-            return scalar(kind);
+            return new SemanticType(kind, List.of(), namedTypeKey);
         }
-        return new SemanticType(kind, dimensions.subList(1, dimensions.size()));
+        return new SemanticType(kind, dimensions.subList(1, dimensions.size()), namedTypeKey);
     }
 
     public SemanticType commonNumericType(SemanticType other) {
@@ -86,9 +114,8 @@ public final class SemanticType {
     public String toString() {
         StringJoiner joiner = new StringJoiner(" ");
         joiner.add(kind.name().toLowerCase());
-        for (Integer dimension : dimensions) {
+        for (int i = 0; i < dimensions.size(); i++) {
             joiner.add("[");
-            joiner.add(String.valueOf(dimension));
             joiner.add("]");
         }
         return joiner.toString();
@@ -103,11 +130,13 @@ public final class SemanticType {
             return false;
         }
         SemanticType that = (SemanticType) object;
-        return kind == that.kind && Objects.equals(dimensions, that.dimensions);
+        return kind == that.kind &&
+               Objects.equals(dimensions, that.dimensions) &&
+               Objects.equals(namedTypeKey, that.namedTypeKey);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(kind, dimensions);
+        return Objects.hash(kind, dimensions, namedTypeKey);
     }
 }

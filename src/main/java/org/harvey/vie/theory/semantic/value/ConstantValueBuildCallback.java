@@ -28,9 +28,12 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             .when(ConstantRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
             .when(ConstantRule.NONE, ProgramSemanticTag.BLOCK, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
             .when(ConstantRule.NONE, ProgramSemanticTag.PARAMETER)
+            .when(ConstantRule.NONE, ProgramSemanticTag.STRUCT_DECL)
             .when(ConstantRule.NONE, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
             .when(ConstantRule.NONE, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
+            .when(ConstantRule.NONE, ProgramSemanticTag.NEW_STRUCT)
             .when(ConstantRule.NONE, ProgramSemanticTag.ACCESS)
+            .when(ConstantRule.NONE, ProgramSemanticTag.MEMBER_ACCESS)
             .when(ConstantRule.NONE, ProgramSemanticTag.ASSIGNMENT)
             .when(ConstantRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.EMPTY)
             .when(ConstantRule.NONE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.LIST, ProgramSemanticTag.SEQUENCE)
@@ -38,6 +41,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             .when(ConstantRule.IDENTIFIER, ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE)
             .when(ConstantRule.LEFT_VALUE, ProgramSemanticTag.LEFT_VALUE)
             .when(ConstantRule.LITERAL, ProgramSemanticTag.LITERAL)
+            .when(ConstantRule.NULL_LITERAL, ProgramSemanticTag.NULL_LITERAL)
             .when(ConstantRule.PARENTHESIZED, ProgramSemanticTag.PARENTHESIZED)
             .when(ConstantRule.UNARY_MINUS, ProgramSemanticTag.NEGATE)
             .when(ConstantRule.UNARY_NOT, ProgramSemanticTag.LOGICAL_NOT)
@@ -89,6 +93,10 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             default:
                 return null;
         }
+    }
+
+    private static ConstantValue nullLiteral(ShiftReduceSemanticContext context, HeadNode head) {
+        return new ConstantValue(SemanticType.nullLiteral(), null);
     }
 
     private static ConstantValue unaryMinus(ShiftReduceSemanticContext context, HeadNode head) {
@@ -220,6 +228,7 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         ConstantRule IDENTIFIER = ConstantValueBuildCallback::identifierConstant;
         ConstantRule LEFT_VALUE = (context, head) -> child(context, head, 0);
         ConstantRule LITERAL = ConstantValueBuildCallback::literal;
+        ConstantRule NULL_LITERAL = ConstantValueBuildCallback::nullLiteral;
         ConstantRule PARENTHESIZED = (context, head) -> child(context, head, 1);
         ConstantRule UNARY_MINUS = ConstantValueBuildCallback::unaryMinus;
         ConstantRule UNARY_NOT = ConstantValueBuildCallback::unaryNot;

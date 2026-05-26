@@ -2,7 +2,6 @@ package org.harvey.vie.theory.demo.program;
 
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeResolver;
 
@@ -25,6 +24,8 @@ public class ProgramTypeResolver implements TypeResolver {
                 return SemanticType.scalar(SemanticType.Kind.CHARACTER);
             case CONSTANT_STRING:
                 return SemanticType.scalar(SemanticType.Kind.STRING);
+            case CONSTANT_NULL:
+                return SemanticType.nullLiteral();
             default:
                 throw new IllegalArgumentException("token does not represent a literal type: " + tokenType);
         }
@@ -46,6 +47,8 @@ public class ProgramTypeResolver implements TypeResolver {
                 return SemanticType.scalar(SemanticType.Kind.STRING);
             case TYPE_VOID:
                 return SemanticType.scalar(SemanticType.Kind.VOID);
+            case TYPE_IDENTIFIER:
+                return SemanticType.struct(token);
             default:
                 throw new IllegalArgumentException("token does not represent a declared type: " + tokenType);
         }

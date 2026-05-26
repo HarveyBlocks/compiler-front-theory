@@ -33,6 +33,8 @@ public enum ProgramTokenType implements TokenType {
     TYPE_INT32(4),
     TYPE_FLOAT64(4),
     TYPE_STRING(4),
+    KEYWORD_NEW(4),
+    KEYWORD_STRUCT(4),
     OPERATOR_PLUS(3),
     OPERATOR_MULTIPLY(3),
     OPERATOR_PARENTHESIS_OPEN(3),
@@ -61,8 +63,11 @@ public enum ProgramTokenType implements TokenType {
     OPERATOR_GREATER(3),
     OPERATOR_GREATER_EQUAL(3),
     TYPE_VOID(4),
+    CONSTANT_NULL(5),
     OPERATOR_COMMA(3),
-    CONTROL_STRUCTURES_RETURN(2);
+    OPERATOR_DOT(3),
+    CONTROL_STRUCTURES_RETURN(2),
+    TYPE_IDENTIFIER(10);
 
     private final int priority;
 

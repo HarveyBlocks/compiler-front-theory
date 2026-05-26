@@ -21,6 +21,11 @@ public class FunctionReturnTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        if (children.length != 2 && children.length != 3) {
+            throw new org.harvey.vie.theory.exception.CompilerException(
+                    "illegal statement on return statement production: " + production + ", children=" + children.length
+            );
+        }
         boolean hasValue = production.containsTag(ProgramSemanticTag.VALUE);
         CommandNodeBuilder builder = new CommandNodeListBuilder();
         if (hasValue && ConstantAttributes.childIsConstant(context, 1)) {

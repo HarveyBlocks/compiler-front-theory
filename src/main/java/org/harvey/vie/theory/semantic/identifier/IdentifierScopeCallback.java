@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.identifier;
 
 import lombok.AllArgsConstructor;
+import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
@@ -34,8 +35,15 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
 
     @Override
     public void onShift(ShiftReduceSemanticContext context, int nextStatus, SourceToken token) {
+        if (token.getType() == ProgramTokenType.KEYWORD_STRUCT) {
+            context.markPendingStructBody();
+        }
         // token
         if (scopeIntoPredicate.test(token)) {
+            if (context.consumePendingStructBody()) {
+                ShiftReduceCallback.super.onShift(context, nextStatus, token);
+                return;
+            }
             context.scopeIntoBlock();
         }
         ShiftReduceCallback.super.onShift(context, nextStatus, token);

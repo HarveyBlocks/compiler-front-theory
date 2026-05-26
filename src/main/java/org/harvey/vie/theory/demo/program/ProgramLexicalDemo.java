@@ -87,6 +87,9 @@ public class ProgramLexicalDemo {
             new LexicalPattern("float64", ProgramTokenType.TYPE_FLOAT64),
             new LexicalPattern("string", ProgramTokenType.TYPE_STRING),
             new LexicalPattern("void", ProgramTokenType.TYPE_VOID),
+            new LexicalPattern("new", ProgramTokenType.KEYWORD_NEW),
+            new LexicalPattern("struct", ProgramTokenType.KEYWORD_STRUCT),
+            new LexicalPattern("null", ProgramTokenType.CONSTANT_NULL),
             new LexicalPattern("&&", ProgramTokenType.OPERATOR_LOGICAL_AND),
             new LexicalPattern("\\|\\|", ProgramTokenType.OPERATOR_LOGICAL_OR),
             new LexicalPattern("==", ProgramTokenType.OPERATOR_EQUAL),
@@ -105,6 +108,7 @@ public class ProgramLexicalDemo {
             new LexicalPattern("=", ProgramTokenType.OPERATOR_ASSIGN),
             new LexicalPattern(";", ProgramTokenType.OPERATOR_SEMICOLON),
             new LexicalPattern(",", ProgramTokenType.OPERATOR_COMMA),
+            new LexicalPattern("\\.", ProgramTokenType.OPERATOR_DOT),
             new LexicalPattern("[", ProgramTokenType.OPERATOR_SQUARE_OPEN),
             new LexicalPattern("]", ProgramTokenType.OPERATOR_SQUARE_CLOSE),
             new LexicalPattern("{", ProgramTokenType.OPERATOR_BRACE_OPEN),
@@ -177,7 +181,9 @@ public class ProgramLexicalDemo {
                 AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
                 RegexDfaStatusTable table = buildTable(alphabetCharacterFactory);
                 SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
-                cachedAnalyzer = new DefaultLexicalAnalyzer(table, saca);
+                DefaultLexicalAnalyzer baseAnalyzer = new DefaultLexicalAnalyzer(table, saca);
+                cachedAnalyzer = (errorContext, resource) ->
+                        new ProgramStructAwareTokenIterator(baseAnalyzer.iterator(errorContext, resource));
             }
             return cachedAnalyzer;
         }

@@ -19,19 +19,31 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
 public interface TypedCommandFactory {
     SemanticCommand loadLiteral(SourceToken token);
 
-    SemanticCommand loadIdentifierReference(SourceToken token);
+    SemanticCommand loadIdentifierAddress(SourceToken token);
 
-    SemanticCommand loadIdentifierReference(IdentifierRecord record);
+    SemanticCommand loadIdentifierAddress(IdentifierRecord record);
 
     SemanticCommand loadConstant(ConstantValue constantValue);
 
+    SemanticCommand newStruct(SourceToken token);
+
+    SemanticCommand newArray(SourceToken token, SemanticType type, int dimensions);
+
     SemanticCommand stOperator(OperatorFactor operatorFactor, SemanticType operandType);
+
+    SemanticCommand stTopAddrToVal(SemanticType type);
 
     SemanticCommand stTopRefToVal(SemanticType type);
 
+    SemanticCommand assignFromStTopToAddr(SemanticType type);
+
     SemanticCommand assignFromStTopToRef(SemanticType type);
 
+    SemanticCommand biasFromStTopToAddr(SemanticType elementType);
+
     SemanticCommand biasFromStTopToRef(SemanticType elementType);
+
+    SemanticCommand biasFromStTopToRef(SemanticType fieldType, int offset);
 
     SemanticCommand stTopCast(SemanticType from, SemanticType to);
 

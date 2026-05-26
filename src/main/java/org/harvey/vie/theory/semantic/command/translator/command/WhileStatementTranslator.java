@@ -27,6 +27,11 @@ public class WhileStatementTranslator implements CommandTranslator {
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        if (children.length != 5) {
+            throw new org.harvey.vie.theory.exception.CompilerException(
+                    "illegal statement on while statement production."
+            );
+        }
         // while ( expr ) stmt
         // while 循环语句
         //    L1:

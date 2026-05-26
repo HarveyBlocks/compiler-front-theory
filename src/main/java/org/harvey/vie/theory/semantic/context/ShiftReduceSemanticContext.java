@@ -12,6 +12,8 @@ import org.harvey.vie.theory.semantic.command.node.CommandContext;
 import org.harvey.vie.theory.semantic.function.*;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierTableBuilder;
+import org.harvey.vie.theory.semantic.structure.StructContext;
+import org.harvey.vie.theory.semantic.structure.StructRecord;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
@@ -38,6 +40,7 @@ import java.util.function.Consumer;
  */
 @Getter
 public class ShiftReduceSemanticContext {
+    private static final boolean DEBUG_FUNCTION = Boolean.getBoolean("semantic.debugFunction");
 
     private final ShiftReduceCallbackRegister register;
     @Getter
@@ -61,7 +64,9 @@ public class ShiftReduceSemanticContext {
     private final IdentifierTableBuilder identifierTableBuilder = new IdentifierTableBuilder();
     private final List<IdentifierRecord> identifierRecords = new ArrayList<>();
     private final FunctionContext functionContext = new FunctionContext();
+    private final StructContext structContext = new StructContext();
     private final ArrayDeque<Boolean> blockFunctionFlags = new ArrayDeque<>();
+    private int pendingStructBraceDepth;
     private FunctionRecord pendingFunction;
     @Getter
     private final FunctionManager functionManager;
@@ -258,12 +263,18 @@ public class ShiftReduceSemanticContext {
     }
 
     public void markPendingFunction(FunctionRecord record) {
+        if (DEBUG_FUNCTION) {
+            System.out.println("[function-debug] mark pending function: " + record.getSignature().getNameKey());
+        }
         pendingFunction = record;
     }
 
     public FunctionRecord consumePendingFunction() {
         FunctionRecord function = pendingFunction;
         pendingFunction = null;
+        if (DEBUG_FUNCTION) {
+            System.out.println("[function-debug] consume pending function: " + (function == null ? "<none>" : function.getSignature().getNameKey()));
+        }
         return function;
     }
 
@@ -271,10 +282,16 @@ public class ShiftReduceSemanticContext {
         scopeInto();
         FunctionRecord function = consumePendingFunction();
         if (function == null) {
+            if (DEBUG_FUNCTION) {
+                System.out.println("[function-debug] enter ordinary block");
+            }
             blockFunctionFlags.push(Boolean.FALSE);
             return;
         }
         enterFunction(function);
+        if (DEBUG_FUNCTION) {
+            System.out.println("[function-debug] enter function body: " + function.getSignature().getNameKey());
+        }
         blockFunctionFlags.push(Boolean.TRUE);
         for (FunctionParameter parameter : function.getParameters()) {
             SourceToken nameToken = parameter.getNameToken();
@@ -286,6 +303,18 @@ public class ShiftReduceSemanticContext {
         }
     }
 
+    public void markPendingStructBody() {
+        pendingStructBraceDepth++;
+    }
+
+    public boolean consumePendingStructBody() {
+        if (pendingStructBraceDepth <= 0) {
+            return false;
+        }
+        pendingStructBraceDepth--;
+        return true;
+    }
+
     public IdentifierRecord[] scopeExistBlock() {
         return scopeExist();
     }
@@ -293,7 +322,12 @@ public class ShiftReduceSemanticContext {
     public void finishBlockScope() {
         boolean functionBody = !blockFunctionFlags.isEmpty() && blockFunctionFlags.pop();
         if (functionBody) {
+            if (DEBUG_FUNCTION) {
+                System.out.println("[function-debug] exit function body: " + currentFunction().getSignature().getNameKey());
+            }
             exitFunction();
+        } else if (DEBUG_FUNCTION) {
+            System.out.println("[function-debug] exit ordinary block");
         }
     }
     // endregion
@@ -321,6 +355,32 @@ public class ShiftReduceSemanticContext {
 
     public SemanticType commonBinaryType(SemanticType left, SemanticType right) {
         return typeConversionRule.commonBinaryType(left, right);
+    }
+
+    public boolean existStruct(SourceToken token) {
+        return structContext.exists(token);
+    }
+
+    public StructRecord getStruct(SourceToken token) {
+        return structContext.get(token);
+    }
+
+    public StructRecord getStruct(SemanticType type) {
+        if (type == null || type.getNamedTypeKey() == null) {
+            return null;
+        }
+        return structContext.get(type.getNamedTypeKey());
+    }
+
+    public void registerStruct(StructRecord record) {
+        structContext.register(record);
+    }
+
+    public void requireDeclaredType(SemanticType type, SourceToken anchor, String message) {
+        if (type != null && type.getNamedTypeKey() != null && getStruct(type) == null) {
+            addError(anchor.getOffset(), message);
+            throw new CompilerException(message);
+        }
     }
 
     public void bindType(ShiftReduceSyntaxTreeNode node, TypeRegister register) {

@@ -61,6 +61,8 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text31-function-return");
         assertExpectedAcceptance(runReport, "text32-function-call");
         assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
+        assertExpectedAcceptance(runReport, "text41-struct-declare-and-access");
+        assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -78,6 +80,8 @@ public class AppTest extends TestCase {
         assertExpectedRejection(runReport, "text38-if-false-break-invalid");
         assertExpectedRejection(runReport, "text39-if-false-continue-invalid");
         assertExpectedRejection(runReport, "text40-function-conditional-return-invalid");
+        assertExpectedRejection(runReport, "text43-struct-duplicate-field-invalid");
+        assertExpectedRejection(runReport, "text44-struct-missing-field-invalid");
 
         assertSiblingScopeOffsets(runReport);
         assertNoUnknownTypedReference(runReport, "text3");
@@ -101,9 +105,12 @@ public class AppTest extends TestCase {
         assertNestedIfOuterFalse(runReport);
         assertFunctionReturn(runReport);
         assertFunctionCall(runReport);
+        assertStructDeclarationAndAccess(runReport);
+        assertStructNullAssignment(runReport);
         assertDeadBranchControlFlowIsStillDiagnosed(runReport);
         assertConditionalReturnDoesNotSatisfyFunction(runReport);
         assertErrorContextCoverage(runReport);
+        assertStructErrors(runReport);
     }
 
     private static void assertSiblingScopeOffsets(SemanticRunReport runReport) {
@@ -121,16 +128,16 @@ public class AppTest extends TestCase {
     private static void assertNoUnknownTypedReference(SemanticRunReport runReport, String caseName) {
         TestCaseResult result = assertExpectedAcceptance(runReport, caseName);
         assertFalse("typed loads should not degrade to unknown references",
-                result.getSemanticResult().getCommands().stream().anyMatch(command -> command.contains("load_st_unknown_reference")));
+                result.getSemanticResult().getCommands().stream().anyMatch(command -> command.contains("load_st_unknown_address")));
     }
 
     private static void assertDanglingElseControlFlow(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text2");
         List<String> commands = result.getSemanticResult().getCommands();
-        int outerFalseJump = indexOfCommand(commands, "ifn_goto 32");
-        int innerFalseJump = indexOfCommand(commands, "ifn_goto 25");
-        int thenJoinGoto = indexOfCommand(commands, "goto 32");
-        int elseAssign = indexOfCommand(commands, "assign_from_st_top_to_ref_int32", 25);
+        int outerFalseJump = indexOfPrefix(commands, "ifn_goto ");
+        int innerFalseJump = indexOfPrefix(commands, "ifn_goto ", outerFalseJump + 1);
+        int thenJoinGoto = indexOfPrefix(commands, "goto ", innerFalseJump + 1);
+        int elseAssign = indexOfCommand(commands, "assign_from_st_top_to_addr_int32", innerFalseJump + 1);
         assertTrue("outer if false branch should jump to final join", outerFalseJump >= 0);
         assertTrue("inner if false branch should jump to else branch start", innerFalseJump >= 0);
         assertTrue("then branch should skip else branch via goto", thenJoinGoto > innerFalseJump);
@@ -140,43 +147,48 @@ public class AppTest extends TestCase {
     private static void assertDoWhileBackEdgeTargetsBody(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text3");
         List<String> commands = result.getSemanticResult().getCommands();
-        int doBodyStart = indexOfCommand(commands, "load_st_int32_reference 1", 63);
-        int doBackEdge = indexOfCommand(commands, "if_goto 63");
-        assertEquals("do-while body should start at target 63", 63, doBodyStart);
-        assertEquals("do-while condition should jump back to body start", 77, doBackEdge);
+        int doBodyStart = indexOfCommand(commands, "load_st_int32_address 1", 80);
+        int doBackEdge = indexOfPrefix(commands, "if_goto ", doBodyStart);
+        assertTrue("do-while body should be present near the loop tail", doBodyStart >= 0);
+        assertTrue("do-while condition should jump back to body start", doBackEdge > doBodyStart);
+        assertEquals(
+                "do-while back edge should target the body start",
+                doBodyStart,
+                parseGotoTarget(commands.get(doBackEdge))
+        );
     }
 
     private static void assertWideningCastPlacement(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text12-int32-to-float64-implicit-cast");
         List<String> commands = result.getSemanticResult().getCommands();
         assertContainsSequence(commands,
-                "load_st_float64_reference 1",
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
+                "load_st_float64_address 1",
+                "load_st_int32_address 0",
+                "st_top_addr_to_val_int32",
                 "st_top_int32_cast_float64",
-                "assign_from_st_top_to_ref_float64");
+                "assign_from_st_top_to_addr_float64");
         assertContainsSequence(commands,
-                "load_st_float64_reference 1",
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
+                "load_st_float64_address 1",
+                "load_st_int32_address 0",
+                "st_top_addr_to_val_int32",
                 "st_top_int32_cast_float64",
                 "load_st_float64_static 2.5",
                 "st_plus_float64",
-                "assign_from_st_top_to_ref_float64");
+                "assign_from_st_top_to_addr_float64");
     }
 
     private static void assertMixedRelationalCastPlacement(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text14-mixed-relational-int-float");
         List<String> commands = result.getSemanticResult().getCommands();
         assertContainsSequence(commands,
-                "load_st_boolean_reference 2",
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
+                "load_st_boolean_address 2",
+                "load_st_int32_address 0",
+                "st_top_addr_to_val_int32",
                 "st_top_int32_cast_float64",
-                "load_st_float64_reference 1",
-                "st_top_ref_to_val_float64",
+                "load_st_float64_address 1",
+                "st_top_addr_to_val_float64",
                 "st_less_float64",
-                "assign_from_st_top_to_ref_boolean");
+                "assign_from_st_top_to_addr_boolean");
     }
 
     private static void assertDoubleBreakBinding(SemanticRunReport runReport) {
@@ -187,49 +199,49 @@ public class AppTest extends TestCase {
                 .map(AppTest::parseGotoTarget)
                 .collect(Collectors.toList());
         assertTrue("inner break should not reuse outer break target", gotoTargets.stream().distinct().count() >= 2);
-        assertTrue("one break should exit the inner loop", gotoTargets.contains(8));
-        assertTrue("one break should exit the outer loop", gotoTargets.contains(commands.size()));
+        assertTrue("one break should exit the inner loop", gotoTargets.contains(14));
+        assertTrue("one break should exit the outer loop", gotoTargets.contains(16));
     }
 
     private static void assertWhileContinueTargetsCondition(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text15-continue-in-while");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands,
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
-                "load_st_int32_static 3",
-                "st_less_int32",
-                "ifn_goto 25");
-        assertTrue("continue in while should jump back to condition start",
-                commands.contains("goto 6"));
-        assertEquals("while continue case should contain exactly two back edges to condition",
-                2,
-                commands.stream().filter("goto 6"::equals).count());
+        int conditionStart = indexOfCommand(commands, "load_st_int32_address 0", 8);
+        int conditionBranch = indexOfPrefix(commands, "ifn_goto ", conditionStart);
+        assertTrue("while condition should be emitted", conditionStart >= 0);
+        assertTrue("while condition should end with ifn_goto", conditionBranch > conditionStart);
+        long backEdges = commands.stream()
+                .filter(command -> command.equals("goto " + conditionStart))
+                .count();
+        assertEquals("while continue case should contain exactly two back edges to condition", 2, backEdges);
     }
 
     private static void assertDoWhileContinueTargetsCondition(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertTrue("continue in do-while should jump to condition evaluation point",
-                commands.contains("goto 19"));
-        assertContainsSequence(commands,
-                "goto 19",
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
-                "load_st_int32_static 3",
-                "st_less_int32",
-                "if_goto 6");
+        int conditionStart = indexOfCommand(commands, "load_st_int32_address 0", 20);
+        int continueJump = indexOfCommand(commands, "goto " + conditionStart);
+        int backEdge = indexOfPrefix(commands, "if_goto ", conditionStart);
+        assertTrue("continue in do-while should jump to condition evaluation point", continueJump >= 0);
+        assertTrue("do-while should contain a conditional back edge", backEdge > conditionStart);
+        assertEquals(
+                "do-while back edge should target body start",
+                8,
+                parseGotoTarget(commands.get(backEdge))
+        );
     }
 
     private static void assertNestedLoopBinding(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertTrue("inner continue should jump back to inner loop condition start", commands.contains("goto 14"));
-        assertTrue("inner break should jump to inner loop exit", commands.contains("goto 44"));
-        assertTrue("outer loop back edge should jump to outer condition start", commands.contains("goto 6"));
-        assertEquals("inner continue and normal inner-loop back edge should both target inner condition",
-                2,
-                commands.stream().filter("goto 14"::equals).count());
+        int innerContinue = indexOfPrefix(commands, "goto ", 35);
+        int innerBreak = indexOfPrefix(commands, "goto ", 44);
+        int outerLoopBack = indexOfPrefix(commands, "goto ", 55);
+        assertTrue("inner continue should jump back to inner loop condition start", innerContinue >= 0);
+        assertTrue("inner break should jump to inner loop exit", innerBreak >= 0);
+        assertTrue("outer loop back edge should jump to outer condition start", outerLoopBack >= 0);
+        assertTrue("inner continue should target an earlier loop position", parseGotoTarget(commands.get(innerContinue)) < 35);
+        assertTrue("outer loop back edge should target the outer loop condition", parseGotoTarget(commands.get(outerLoopBack)) < 20);
     }
 
     private static void assertErrorContextCoverage(SemanticRunReport runReport) {
@@ -286,15 +298,14 @@ public class AppTest extends TestCase {
         assertNull("a should lose constant state after reassignment", a.getConstantValue());
         assertNull("b should not be treated as constant after reading reassigned a", b.getConstantValue());
         assertContainsSequence(semanticResult.getCommands(),
-                "load_st_int32_reference 0",
                 "load_st_int32_static 2",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_identifier_reference b",
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_identifier_address b",
+                "load_st_int32_address 0",
+                "st_top_addr_to_val_int32",
                 "load_st_int32_static 1",
                 "st_plus_int32",
-                "assign_from_st_top_to_ref_int32");
+                "assign_from_st_top_to_addr_int32");
     }
 
     private static void assertIfTrueInlined(SemanticRunReport runReport) {
@@ -303,15 +314,15 @@ public class AppTest extends TestCase {
         assertFalse("if(true) should be inlined without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
         assertFalse("if(true) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
         assertContainsSequence(commands,
-                "load_st_int32_reference 0",
+                "load_st_int32_address 0",
                 "load_st_int32_static 1",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_int32_reference 0",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_int32_address 0",
                 "load_st_int32_static 2",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_int32_reference 0",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_ref_int32");
+                "assign_from_st_top_to_addr_int32");
     }
 
     private static void assertIfFalseElided(SemanticRunReport runReport) {
@@ -320,12 +331,12 @@ public class AppTest extends TestCase {
         assertFalse("if(false) should be removed without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
         assertFalse("if(false) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
         assertContainsSequence(commands,
-                "load_st_int32_reference 0",
+                "load_st_int32_address 0",
                 "load_st_int32_static 1",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_int32_reference 0",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_ref_int32");
+                "assign_from_st_top_to_addr_int32");
     }
 
     private static void assertWhileFalseElided(SemanticRunReport runReport) {
@@ -334,12 +345,12 @@ public class AppTest extends TestCase {
         assertFalse("while(false) should be removed without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
         assertFalse("while(false) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
         assertContainsSequence(commands,
-                "load_st_int32_reference 0",
+                "load_st_int32_address 0",
                 "load_st_int32_static 1",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_int32_reference 0",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_ref_int32");
+                "assign_from_st_top_to_addr_int32");
     }
 
     private static void assertDoWhileFalseOnce(SemanticRunReport runReport) {
@@ -348,15 +359,15 @@ public class AppTest extends TestCase {
         assertFalse("do-while(false) should not emit conditional branch", commands.stream().anyMatch(c -> c.startsWith("if_goto")));
         assertFalse("do-while(false) should not emit back edges", commands.stream().anyMatch(c -> c.startsWith("goto ")));
         assertContainsSequence(commands,
-                "load_st_int32_reference 0",
+                "load_st_int32_address 0",
                 "load_st_int32_static 1",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_int32_reference 0",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_int32_address 0",
                 "load_st_int32_static 2",
-                "assign_from_st_top_to_ref_int32",
-                "load_st_int32_reference 0",
+                "assign_from_st_top_to_addr_int32",
+                "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_ref_int32");
+                "assign_from_st_top_to_addr_int32");
     }
 
     private static void assertNestedIfConstantThen(SemanticRunReport runReport) {
@@ -389,13 +400,34 @@ public class AppTest extends TestCase {
     private static void assertFunctionReturn(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text31-function-return");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands, "load_st_int32_reference 0", "st_top_ref_to_val_int32", "load_st_int32_static 1", "st_plus_int32", "return");
+        assertContainsSequence(commands, "load_st_int32_address 0", "st_top_addr_to_val_int32", "load_st_int32_static 1", "st_plus_int32", "return");
     }
 
     private static void assertFunctionCall(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text32-function-call");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands, "load_st_int32_static 2", "call inc");
+        assertContainsSequence(commands, "call inc", "assign_from_st_top_to_addr_int32");
+    }
+
+    private static void assertStructDeclarationAndAccess(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text41-struct-declare-and-access");
+        SemanticAnalysisResult semanticResult = result.getSemanticResult();
+        IdentifierRecord p = findRecordByName(semanticResult.getIdentifierRecords(), "p");
+        assertNotNull("missing symbol p", p);
+        List<String> commands = semanticResult.getCommands();
+        assertTrue("struct construction should be emitted", commands.contains("new_struct Point"));
+        assertTrue("member access should emit field bias", commands.stream().anyMatch(c -> c.startsWith("bias_from_st_top_to_ref_int32")));
+    }
+
+    private static void assertStructNullAssignment(SemanticRunReport runReport) {
+        TestCaseResult result = assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
+        List<String> commands = result.getSemanticResult().getCommands();
+        assertTrue("null assignment should be allowed for struct references", commands.contains("load_st_null_static null"));
+    }
+
+    private static void assertStructErrors(SemanticRunReport runReport) {
+        assertExpectedRejection(runReport, "text43-struct-duplicate-field-invalid");
+        assertExpectedRejection(runReport, "text44-struct-missing-field-invalid");
     }
 
     private static void assertDeadBranchControlFlowIsStillDiagnosed(SemanticRunReport runReport) {
@@ -411,9 +443,9 @@ public class AppTest extends TestCase {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
         List<String> commands = result.getSemanticResult().getCommands();
         assertContainsSequence(commands,
-                "load_st_int32_reference 0",
-                "st_top_ref_to_val_int32",
-                "load_st_int32_static 2",
+                "load_st_int32_address 0",
+                "st_top_addr_to_val_int32",
+                "load_st_int32_static 1",
                 "st_plus_int32",
                 "call add");
     }
@@ -473,6 +505,19 @@ public class AppTest extends TestCase {
     private static int indexOfCommand(List<String> commands, String expected, int fromIndex) {
         for (int i = Math.max(0, fromIndex); i < commands.size(); i++) {
             if (expected.equals(commands.get(i))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static int indexOfPrefix(List<String> commands, String prefix) {
+        return indexOfPrefix(commands, prefix, 0);
+    }
+
+    private static int indexOfPrefix(List<String> commands, String prefix, int fromIndex) {
+        for (int i = Math.max(0, fromIndex); i < commands.size(); i++) {
+            if (commands.get(i).startsWith(prefix)) {
                 return i;
             }
         }

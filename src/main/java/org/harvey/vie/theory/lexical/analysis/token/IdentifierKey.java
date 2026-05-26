@@ -14,7 +14,11 @@ public class IdentifierKey {
 
     private IdentifierKey(byte[] lexeme) {this.lexeme = lexeme;}
     public static IdentifierKey generate(SourceToken token){
-        return new IdentifierKey(token.getLexeme());
+        return generate(token.getLexeme());
+    }
+
+    public static IdentifierKey generate(byte[] lexeme) {
+        return new IdentifierKey(Arrays.copyOf(lexeme, lexeme.length));
     }
 
     @Override

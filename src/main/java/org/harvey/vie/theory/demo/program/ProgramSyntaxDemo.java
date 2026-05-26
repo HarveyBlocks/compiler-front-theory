@@ -356,10 +356,38 @@ public class ProgramSyntaxDemo {
                 .concatenateSelfLast();
 
         contextBuilder.define("top_item")
+                .alternateDefinition("struct_decl")
+                .tagLast(ProgramSemanticTag.FORWARD)
                 .alternateDefinition("function_decl")
                 .tagLast(ProgramSemanticTag.FORWARD)
                 .alternateDefinition("block_item")
                 .tagLast(ProgramSemanticTag.FORWARD);
+
+        contextBuilder.define("struct_decl", ProgramSemanticTag.STRUCT_DECL)
+                .alternateTerminal(ProgramTokenType.KEYWORD_STRUCT)
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_BRACE_OPEN)
+                .concatenateDefinitionLast("struct_field_list")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_BRACE_CLOSE);
+
+        contextBuilder.define("struct_field_list", ProgramSemanticTag.LIST, ProgramSemanticTag.STRUCT_FIELD)
+                .alternateDefinition("struct_fields")
+                .tagLast(ProgramSemanticTag.FORWARD)
+                .alternateEpsilon()
+                .tagLast(ProgramSemanticTag.EMPTY);
+
+        contextBuilder.define("struct_fields", ProgramSemanticTag.LIST, ProgramSemanticTag.STRUCT_FIELD)
+                .alternateDefinition("struct_fields")
+                .concatenateDefinitionLast("struct_field")
+                .tagLast(ProgramSemanticTag.SEQUENCE)
+                .alternateDefinition("struct_field")
+                .tagLast(ProgramSemanticTag.FORWARD);
+
+        contextBuilder.define("struct_field", ProgramSemanticTag.STRUCT_FIELD)
+                .alternateDefinition("type")
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SEMICOLON)
+                .tagLast(ProgramSemanticTag.IDENTIFIER);
 
         contextBuilder.define("function_decl")
                 .alternateDefinition("function_head")
@@ -439,9 +467,10 @@ public class ProgramSyntaxDemo {
         contextBuilder.define("type", ProgramSemanticTag.TYPE)
                 .alternateSelf()
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_OPEN)
-                .concatenateTerminalLast(ProgramTokenType.CONSTANT_INTEGER)
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
                 .tagLast(ProgramSemanticTag.ARRAY)
+                .alternateTerminal(ProgramTokenType.TYPE_IDENTIFIER)
+                .tagLast(ProgramSemanticTag.STRUCT_TYPE)
                 .alternateTerminal(ProgramTokenType.TYPE_BOOLEAN)
                 .alternateTerminal(ProgramTokenType.TYPE_CHARACTER)
                 .alternateTerminal(ProgramTokenType.TYPE_INT32)
@@ -563,6 +592,10 @@ public class ProgramSyntaxDemo {
                 .concatenateDefinitionLast("bool")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
                 .tagLast(ProgramSemanticTag.ACCESS)
+                .alternateSelf()
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_DOT)
+                .concatenateTerminalLast(ProgramTokenType.IDENTIFIER)
+                .tagLast(ProgramSemanticTag.MEMBER_ACCESS)
                 .alternateTerminal(ProgramTokenType.IDENTIFIER)
                 .tagLast(ProgramSemanticTag.IDENTIFIER, ProgramSemanticTag.USE);
 
@@ -653,6 +686,10 @@ public class ProgramSyntaxDemo {
                 .concatenateDefinitionLast("bool")
                 .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE)
                 .tagLast(ProgramSemanticTag.PARENTHESIZED)
+                .alternateDefinition("new_struct_expr")
+                .tagLast(ProgramSemanticTag.FORWARD)
+                .alternateDefinition("new_array_expr")
+                .tagLast(ProgramSemanticTag.FORWARD)
                 .alternateDefinition("call_expr")
                 .tagLast(ProgramSemanticTag.FORWARD)
                 .alternateDefinition("loc")
@@ -664,7 +701,44 @@ public class ProgramSyntaxDemo {
                 .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_TRUE)
                 .tagLast(ProgramSemanticTag.LITERAL)
                 .alternateTerminal(ProgramTokenType.CONSTANT_BOOLEAN_FALSE)
-                .tagLast(ProgramSemanticTag.LITERAL);
+                .tagLast(ProgramSemanticTag.LITERAL)
+                .alternateTerminal(ProgramTokenType.CONSTANT_NULL)
+                .tagLast(ProgramSemanticTag.NULL_LITERAL);
+
+        contextBuilder.define("new_struct_expr", ProgramSemanticTag.NEW_STRUCT)
+                .alternateTerminal(ProgramTokenType.KEYWORD_NEW)
+                .concatenateTerminalLast(ProgramTokenType.TYPE_IDENTIFIER)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_OPEN)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_PARENTHESIS_CLOSE);
+
+        contextBuilder.define("new_array_expr", ProgramSemanticTag.NEW_ARRAY)
+                .alternateTerminal(ProgramTokenType.KEYWORD_NEW)
+                .concatenateDefinitionLast("array_creation_base")
+                .concatenateDefinitionLast("array_creation_dims");
+
+        contextBuilder.define("array_creation_base", ProgramSemanticTag.ARRAY_CREATION_BASE)
+                .alternateTerminal(ProgramTokenType.TYPE_IDENTIFIER)
+                .tagLast(ProgramSemanticTag.STRUCT_TYPE)
+                .alternateTerminal(ProgramTokenType.TYPE_BOOLEAN)
+                .alternateTerminal(ProgramTokenType.TYPE_CHARACTER)
+                .alternateTerminal(ProgramTokenType.TYPE_INT32)
+                .alternateTerminal(ProgramTokenType.TYPE_FLOAT64)
+                .alternateTerminal(ProgramTokenType.TYPE_STRING);
+
+        contextBuilder.define("array_creation_dims", ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM)
+                .alternateDefinition("array_creation_dims")
+                .concatenateDefinitionLast("array_creation_dim")
+                .tagLast(ProgramSemanticTag.SEQUENCE)
+                .alternateDefinition("array_creation_dim")
+                .tagLast(ProgramSemanticTag.FORWARD);
+
+        contextBuilder.define("array_creation_dim", ProgramSemanticTag.ARRAY_CREATION_DIM)
+                .alternateTerminal(ProgramTokenType.OPERATOR_SQUARE_OPEN)
+                .concatenateDefinitionLast("bool")
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE)
+                .tagLast(ProgramSemanticTag.VALUE)
+                .alternateTerminal(ProgramTokenType.OPERATOR_SQUARE_OPEN)
+                .concatenateTerminalLast(ProgramTokenType.OPERATOR_SQUARE_CLOSE);
 
         contextBuilder.define("call_expr", ProgramSemanticTag.FUNCTION, ProgramSemanticTag.CALL)
                 .alternateTerminal(ProgramTokenType.IDENTIFIER)

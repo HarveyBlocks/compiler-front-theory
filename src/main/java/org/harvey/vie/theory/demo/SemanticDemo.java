@@ -42,7 +42,7 @@ import org.harvey.vie.theory.semantic.command.translator.command.WhileStatementT
 import org.harvey.vie.theory.semantic.command.translator.token.BreakTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.ContinueTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.DoNothingTokenTranslator;
-import org.harvey.vie.theory.semantic.command.translator.token.LoadIdentifierReferenceTokenTranslator;
+import org.harvey.vie.theory.semantic.command.translator.token.LoadIdentifierAddressTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.SimpleStringTokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.TypeTokenTranslator;
@@ -51,6 +51,7 @@ import org.harvey.vie.theory.semantic.function.FunctionSemanticCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierScopeCallback;
 import org.harvey.vie.theory.semantic.identifier.IdentifierTableBuildCallback;
 import org.harvey.vie.theory.semantic.log.TreeLogCallback;
+import org.harvey.vie.theory.semantic.structure.StructSemanticCallback;
 import org.harvey.vie.theory.semantic.tag.TagStrategyCompose;
 import org.harvey.vie.theory.semantic.tree.TreeBuildCallback;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
@@ -83,6 +84,7 @@ public class SemanticDemo {
         register.add(instanceIdentifierScopeCallback());
         register.add(new TypeBuildCallback());
         register.add(new ConstantValueBuildCallback());
+        register.add(new StructSemanticCallback());
         register.add(new FunctionSemanticCallback());
         register.add(instanceSemanticCommandPrintCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
@@ -98,6 +100,7 @@ public class SemanticDemo {
         register.add(instanceIdentifierScopeCallback());
         register.add(new TypeBuildCallback());
         register.add(new ConstantValueBuildCallback());
+        register.add(new StructSemanticCallback());
         register.add(new FunctionSemanticCallback());
         register.add(new SemanticResultCallback());
         register.add(instanceSyntaxDirectedTranslationCallback());
@@ -116,8 +119,8 @@ public class SemanticDemo {
 
     private static TokenTranslatorStrategy shiftStrategies() {
         Map<TokenType, TokenTranslator> shiftStrategies = new HashMap<>();
-        TokenTranslator loadIdentifierReferenceTokenTranslator = new LoadIdentifierReferenceTokenTranslator();
-        shiftStrategies.put(ProgramTokenType.IDENTIFIER, loadIdentifierReferenceTokenTranslator);
+        TokenTranslator loadIdentifierAddressTokenTranslator = new LoadIdentifierAddressTokenTranslator();
+        shiftStrategies.put(ProgramTokenType.IDENTIFIER, loadIdentifierAddressTokenTranslator);
         TokenTranslator simpleStringTokenTranslator = new SimpleStringTokenTranslator();
         shiftStrategies.put(ProgramTokenType.CONSTANT_STRING, simpleStringTokenTranslator);
         shiftStrategies.put(ProgramTokenType.CONSTANT_CHARACTER, simpleStringTokenTranslator);
@@ -125,19 +128,22 @@ public class SemanticDemo {
         shiftStrategies.put(ProgramTokenType.CONSTANT_FLOAT, simpleStringTokenTranslator);
         shiftStrategies.put(ProgramTokenType.CONSTANT_BOOLEAN_TRUE, simpleStringTokenTranslator);
         shiftStrategies.put(ProgramTokenType.CONSTANT_BOOLEAN_FALSE, simpleStringTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.CONSTANT_NULL, simpleStringTokenTranslator);
         TokenTranslator typeTokenTranslator = new TypeTokenTranslator();
         shiftStrategies.put(ProgramTokenType.TYPE_BOOLEAN, typeTokenTranslator);
         shiftStrategies.put(ProgramTokenType.TYPE_CHARACTER, typeTokenTranslator);
         shiftStrategies.put(ProgramTokenType.TYPE_INT32, typeTokenTranslator);
         shiftStrategies.put(ProgramTokenType.TYPE_FLOAT64, typeTokenTranslator);
         shiftStrategies.put(ProgramTokenType.TYPE_STRING, typeTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.TYPE_VOID, typeTokenTranslator);
+        shiftStrategies.put(ProgramTokenType.TYPE_IDENTIFIER, typeTokenTranslator);
         shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_BREAK, new BreakTokenTranslator());
         shiftStrategies.put(ProgramTokenType.CONTROL_STRUCTURES_CONTINUE, new ContinueTokenTranslator());
         return t -> shiftStrategies.getOrDefault(t, defaultTokenTranslator);
     }
 
     private static CommandTranslatorStrategy reduceStrategies0() {
-        return TagStrategyCompose.stringCommand()::resolve;
+        return TagStrategyCompose.preciseStringCommand();
     }
 
     private static ShiftReduceCallback instanceSemanticCommandPrintCallback() {
@@ -158,7 +164,8 @@ public class SemanticDemo {
                 ProgramSemanticTag.IDENTIFIER,
                 ProgramSemanticTag.USE
         );
-        ReducePredicate declaringPredicate = TagReducePredicateFactory.predicate(ProgramSemanticTag.DECLARATION);
+        ReducePredicate declaringPredicate = production ->
+                production.matchTags(ProgramSemanticTag.DECLARATION);
         IdentifierTableBuildCallback.UsingIdentifierSupplier usingIdentifierSupplier =
                 usingIdentifierReducedNode -> usingIdentifierReducedNode.get(0).toToken().getSource();
 

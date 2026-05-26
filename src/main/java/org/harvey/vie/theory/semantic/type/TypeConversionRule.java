@@ -6,6 +6,9 @@ package org.harvey.vie.theory.semantic.type;
  */
 public class TypeConversionRule {
     public boolean canImplicitlyConvert(SemanticType from, SemanticType to) {
+        if (from.isNullLiteral()) {
+            return to.isReferenceType();
+        }
         if (from.equals(to)) {
             return true;
         }
