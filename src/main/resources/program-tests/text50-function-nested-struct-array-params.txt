@@ -1,0 +1,35 @@
+struct Student {
+    boolean gender;
+}
+
+boolean readStudent(Student s) {
+    return s.gender;
+}
+
+boolean readStudentArray(Student[] students, int32 index) {
+    return readStudent(students[index]);
+}
+
+boolean pickFromSchool(Student[] direct, Student[][] groups, Student one) {
+    return readStudentArray(direct, 0);
+}
+
+{
+Student a;
+Student b;
+Student[] direct;
+Student[][] groups;
+boolean answer;
+boolean nested;
+a = new Student();
+b = new Student();
+a.gender = true;
+b.gender = false;
+direct = new Student[2];
+direct[0] = a;
+direct[1] = b;
+groups = new Student[1][2];
+groups[0] = direct;
+answer = pickFromSchool(direct, groups, a);
+nested = readStudentArray(groups[0], 1);
+}

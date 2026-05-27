@@ -70,6 +70,8 @@ public class AppTest extends TestCase {
         assertExpectedAcceptance(runReport, "text46-array-create-tail-omitted-one");
         assertExpectedAcceptance(runReport, "text47-array-create-tail-omitted-two");
         assertExpectedAcceptance(runReport, "text48-function-multi-arg-order");
+        assertExpectedAcceptance(runReport, "text49-nested-struct-array-lvalue-assignment");
+        assertExpectedAcceptance(runReport, "text50-function-nested-struct-array-params");
 
         assertExpectedRejection(runReport, "text4-unary-invalid");
         assertExpectedRejection(runReport, "text7-condition-int-invalid");
@@ -118,6 +120,8 @@ public class AppTest extends TestCase {
         assertStructDeclarationAndAccess(runReport);
         assertStructNullAssignment(runReport);
         assertArrayCreationInstructions(runReport);
+        assertNestedStructArrayLValueAssignment(runReport);
+        assertFunctionStructAndArrayParameters(runReport);
         assertDeadBranchControlFlowIsStillDiagnosed(runReport);
         assertConditionalReturnDoesNotSatisfyFunction(runReport);
         assertErrorContextCoverage(runReport);
@@ -510,6 +514,149 @@ public class AppTest extends TestCase {
         );
     }
 
+    private static void assertNestedStructArrayLValueAssignment(SemanticRunReport runReport) {
+        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(runReport, "text49-nested-struct-array-lvalue-assignment")
+                .getSemanticResult();
+        List<String> commands = semanticResult.getCommands();
+        assertTrue("nested struct-array assignment should allocate school root object", commands.contains("new_struct 3"));
+        assertTrue("nested struct-array assignment should allocate grade array", commands.contains("new_array_ref 1 1"));
+        assertTrue("nested struct-array assignment should allocate classroom array", commands.contains("new_array_ref 1 1"));
+        assertTrue("nested struct-array assignment should allocate student array", commands.contains("new_array_ref 1 1"));
+        assertStructFieldOffset(semanticResult, "School", "grade", 1);
+        assertStructFieldOffset(semanticResult, "Grade", "class", 1);
+        assertStructFieldOffset(semanticResult, "ClassRoom", "student", 1);
+        assertStructFieldOffset(semanticResult, "Student", "gender", 1);
+        assertContainsSequence(
+                commands,
+                "load_st_ref_address 0",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 4",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 4",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 2",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_boolean 1",
+                "load_st_ref_address 0",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 2",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 3",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 0",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_boolean 1",
+                "st_top_ref_to_val_boolean",
+                "assign_from_st_top_to_ref_boolean"
+        );
+        assertContainsSequence(
+                commands,
+                "load_st_ref_address 0",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 2",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 3",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 0",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_boolean 1",
+                "load_st_ref_address 0",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 4",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 4",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_ref 1",
+                "load_st_int32_static 2",
+                "bias_from_st_top_to_ref_ref",
+                "bias_from_st_top_to_ref_boolean 1",
+                "st_top_ref_to_val_boolean",
+                "assign_from_st_top_to_ref_boolean"
+        );
+    }
+
+    private static void assertFunctionStructAndArrayParameters(SemanticRunReport runReport) {
+        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(runReport, "text50-function-nested-struct-array-params")
+                .getSemanticResult();
+        assertEquals("combined parameter case should register three functions", 3, semanticResult.getFunctionTable().size());
+
+        var readStudent = semanticResult.getFunctionTable().get(0);
+        var readStudentArray = semanticResult.getFunctionTable().get(1);
+        var pickFromSchool = semanticResult.getFunctionTable().get(2);
+
+        assertEquals("first function name should be preserved", "readStudent",
+                SourceTokenStringMapping.utf8(readStudent.getSignature().getNameToken()));
+        assertEquals("second function name should be preserved", "readStudentArray",
+                SourceTokenStringMapping.utf8(readStudentArray.getSignature().getNameToken()));
+        assertEquals("third function name should be preserved", "pickFromSchool",
+                SourceTokenStringMapping.utf8(pickFromSchool.getSignature().getNameToken()));
+
+        assertEquals("readStudent should have one parameter", 1, readStudent.getParameters().size());
+        assertTrue("readStudent parameter should be struct-typed", readStudent.getParameters().get(0).getType().isStruct());
+
+        assertEquals("readStudentArray should have two parameters", 2, readStudentArray.getParameters().size());
+        assertTrue("readStudentArray first parameter should be an array", readStudentArray.getParameters().get(0).getType().isArray());
+        assertTrue("readStudentArray first parameter element type should be struct",
+                readStudentArray.getParameters().get(0).getType().arrayElementType().isStruct());
+
+        assertEquals("pickFromSchool should have three parameters", 3, pickFromSchool.getParameters().size());
+        assertTrue("pickFromSchool first parameter should be struct array", pickFromSchool.getParameters().get(0).getType().isArray());
+        assertTrue("pickFromSchool second parameter should be nested array", pickFromSchool.getParameters().get(1).getType().isArray());
+        assertTrue("pickFromSchool second parameter should remain array after one element dereference",
+                pickFromSchool.getParameters().get(1).getType().arrayElementType().isArray());
+        assertTrue("pickFromSchool third parameter should be struct", pickFromSchool.getParameters().get(2).getType().isStruct());
+
+        List<String> entryCommands = semanticResult.getCommands();
+        assertContainsSequence(
+                entryCommands,
+                "load_st_boolean_address 4",
+                "load_st_ref_address 2",
+                "load_st_ref_address 3",
+                "load_st_ref_address 0",
+                "call 2",
+                "assign_from_st_top_to_addr_boolean"
+        );
+        assertContainsSequence(
+                entryCommands,
+                "load_st_boolean_address 5",
+                "load_st_ref_address 3",
+                "load_st_int32_static 0",
+                "bias_from_st_top_to_ref_ref",
+                "load_st_int32_static 1",
+                "call 1",
+                "assign_from_st_top_to_addr_boolean"
+        );
+
+        List<String> readStudentArrayCommands = functionCommands(semanticResult, "readStudentArray");
+        assertContainsSequence(
+                readStudentArrayCommands,
+                "load_st_ref_address 0",
+                "load_st_int32_address 1",
+                "st_top_addr_to_val_int32",
+                "bias_from_st_top_to_ref_ref",
+                "st_top_ref_to_val_ref",
+                "call 0",
+                "return"
+        );
+
+        List<String> pickFromSchoolCommands = functionCommands(semanticResult, "pickFromSchool");
+        assertContainsSequence(
+                pickFromSchoolCommands,
+                "load_st_ref_address 0",
+                "st_top_addr_to_val_ref",
+                "load_st_int32_static 0",
+                "call 1",
+                "return"
+        );
+    }
+
     private static void assertStructErrors(SemanticRunReport runReport) {
         assertExpectedRejection(runReport, "text43-struct-duplicate-field-invalid");
         assertExpectedRejection(runReport, "text44-struct-missing-field-invalid");
@@ -675,6 +822,24 @@ public class AppTest extends TestCase {
         ConstantValue value = record.getConstantValue();
         assertNotNull("missing constant value for " + new String(record.getLexeme()), value);
         assertEquals("unexpected boolean constant value", expected, value.bool());
+    }
+
+    private static void assertStructFieldOffset(
+            SemanticAnalysisResult semanticResult,
+            String structName,
+            String fieldName,
+            int expectedOffset) {
+        StructRecord struct = semanticResult.getStructTable().stream()
+                .filter(record -> structName.equals(record.displayName()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull("missing struct " + structName, struct);
+        int actualOffset = struct.getFields().stream()
+                .filter(field -> fieldName.equals(SourceTokenStringMapping.utf8(field.getNameToken())))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("missing field " + structName + "." + fieldName))
+                .getOffset();
+        assertEquals("unexpected field offset for " + structName + "." + fieldName, expectedOffset, actualOffset);
     }
 }
 
