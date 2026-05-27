@@ -15,7 +15,10 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 把 while 循环翻译为带首部判定的跳转结构。
+ * <p>
+ * 除了生成循环首尾标签外，还负责把循环体内尚未解析目标的
+ * {@code break}/{@code continue} 绑定到当前循环的真实出口。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -33,13 +36,13 @@ public class WhileStatementTranslator implements CommandTranslator {
             );
         }
         // while ( expr ) stmt
-        // while 循环语句
-        //    L1:
+        // 目标代码结构：
+        // whileStart:
         //    expr.command();
-        //    DefaultCommandFactory.ifn_goto(L2);
-        //    (matched_stmt|unmatched_stmt).command();
-        //    DefaultCommandFactory.goto(L1);
-        //    L2:
+        //    ifn_goto whileEnd;
+        //    stmt.command();
+        //    goto whileStart;
+        // whileEnd:
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
         if (Boolean.FALSE.equals(constantCondition)) {
             return new PlaceholderNodeRegister();
@@ -63,6 +66,13 @@ public class WhileStatementTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 
+    /**
+     * 将循环体中延迟解析的 break/continue 指令绑定到当前循环。
+     *
+     * @param body 循环体对应的命令注册器
+     * @param continueLabel continue 跳转目标
+     * @param breakLabel break 跳转目标
+     */
     static void bindLoopLabels(CommandNodeRegister body, SemanticLabel continueLabel, SemanticLabel breakLabel) {
         for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainBreaks()) {
             if (!gotoCommand.isResolved()) {

@@ -15,7 +15,10 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 把 if-else 语句翻译为三地址形式的条件跳转与顺序标签。
+ * <p>
+ * 当条件已经在编译期折叠为常量时，会直接裁剪掉不可达分支，
+ * 从而避免生成多余的跳转指令。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -33,14 +36,14 @@ public class IfElseStatementTranslator implements CommandTranslator {
             );
         }
         // if ( expr ) stmt else stmt
-        // if-else 语句
+        // 目标代码结构：
         //    expr.command();
-        //    DefaultCommandFactory.ifn_goto(L1);
-        //    stmt.command();
-        //    DefaultCommandFactory.ifn_goto(L2);
-        //    L1:
-        //    (unmatched_stmt|matched_stmt).command();
-        //    L2:
+        //    ifn_goto elseStart;
+        //    then.command();
+        //    goto elseEnd;
+        // elseStart:
+        //    else.command();
+        // elseEnd:
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
         if (constantCondition != null) {
             return constantCondition
@@ -56,6 +59,7 @@ public class IfElseStatementTranslator implements CommandTranslator {
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel elseStartLabel = new DefaultSemanticLabel();
         SemanticLabel elseEndLabel = new DefaultSemanticLabel();
+        // 先计算条件，再按真假分流到 then/else 两个代码块。
         children[2].register(thisBuilder);
         thisBuilder.add(new TerminalNode(context.getCommandFactory().ifnGoto(elseStartLabel)));
         children[4].register(thisBuilder);

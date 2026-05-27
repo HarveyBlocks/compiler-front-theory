@@ -7,7 +7,11 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 程序顶层命令翻译器。
+ * <p>
+ * 它复用普通的顺序收缩逻辑来拼接子节点命令，
+ * 但会在最外层额外兜底检查未绑定的 break/continue，
+ * 防止非法跳转从语句块中泄漏到程序级别。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -26,6 +30,9 @@ public class ProgramCommandTranslator implements CommandTranslator {
         return result;
     }
 
+    /**
+     * 顶层语句不允许残留未解析的 break/continue。
+     */
     private void rejectUnresolved(ShiftReduceSemanticContext context, CommandNodeRegister result) {
         boolean failed = false;
         for (UncertainLabelGotoCommand gotoCommand : result.getUncertainBreaks()) {

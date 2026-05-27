@@ -13,6 +13,11 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
+ * 翻译函数调用表达式。
+ * <p>
+ * 参数求值代码会先按既定顺序入栈，随后再发出调用指令，
+ * 以保证被调函数读取到的实参与语义分析阶段的顺序一致。
+ *
  * @author Temper
  */
 public class FunctionCallTranslator implements CommandTranslator {
@@ -28,6 +33,9 @@ public class FunctionCallTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 
+    /**
+     * 根据当前归约节点上的函数名恢复被调函数记录。
+     */
     private FunctionRecord function(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             throw new CompilerException("current reduced head is absent for function call.");

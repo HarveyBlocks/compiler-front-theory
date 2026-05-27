@@ -12,7 +12,10 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * Translates struct instantiation expressions.
+ * 翻译结构体实例化表达式。
+ * <p>
+ * 这里会根据语法树中的结构体名查找结构体定义，
+ * 并生成一条按记录布局分配对象的创建指令。
  *
  * @author Temper
  */
@@ -28,6 +31,7 @@ public class NewStructTranslator implements CommandTranslator {
         if (record == null) {
             SemanticDiagnostics.reject(context, nameToken, "struct type is not declared.");
         }
+        // 结构体实例的内存布局完全由 StructRecord 描述。
         CommandNode node = new TerminalNode(context.getCommandFactory().newStruct(record));
         return new NormalCommandNodeRegister(new CommandNode[]{node}, production, children);
     }

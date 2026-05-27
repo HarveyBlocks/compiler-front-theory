@@ -13,6 +13,11 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
+ * 翻译 return 语句。
+ * <p>
+ * 当返回表达式已被常量传播为编译期常量时，直接生成常量装载指令；
+ * 否则先计算表达式，再统一追加返回指令。
+ *
  * @author Temper
  */
 public class FunctionReturnTranslator implements CommandTranslator {
@@ -29,6 +34,7 @@ public class FunctionReturnTranslator implements CommandTranslator {
         boolean hasValue = production.containsTag(ProgramSemanticTag.VALUE);
         CommandNodeBuilder builder = new CommandNodeListBuilder();
         if (hasValue && ConstantAttributes.childIsConstant(context, 1)) {
+            // 常量返回值可以直接装载，避免额外求值代码。
             ConstantValue value = ConstantAttributes.child(context, 1);
             if (value != null) {
                 builder.add(new TerminalNode(context.getCommandFactory().loadConstant(value)));

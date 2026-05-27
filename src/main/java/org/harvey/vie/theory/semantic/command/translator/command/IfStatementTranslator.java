@@ -16,7 +16,10 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 把不带 else 的 if 语句翻译为条件跳转。
+ * <p>
+ * 如果条件已被求值为编译期常量，则直接保留可达分支，
+ * 不再生成无意义的跳转与空标签。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -34,11 +37,11 @@ public class IfStatementTranslator implements CommandTranslator {
             );
         }
         // if ( expr ) stmt
-        // 一般的 if 语句
+        // 目标代码结构：
         //    expr.command();
-        //    DefaultCommandFactory.ifn_goto(L1);
+        //    ifn_goto ifEnd;
         //    stmt.command();
-        //    L1:
+        // ifEnd:
         Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 2);
         if (constantCondition != null) {
             return constantCondition
@@ -53,6 +56,7 @@ public class IfStatementTranslator implements CommandTranslator {
         );
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         SemanticLabel ifEndLabel = new DefaultSemanticLabel();
+        // 条件为假时直接跳过语句体。
         children[2].register(thisBuilder);
         thisBuilder.add(new TerminalNode(context.getCommandFactory().ifnGoto(ifEndLabel)));
         children[4].register(thisBuilder);

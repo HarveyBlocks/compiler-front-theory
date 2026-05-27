@@ -15,6 +15,9 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
+ * 翻译赋值语句，负责完成类型兼容性检查、必要的隐式类型转换，
+ * 以及按左值位置类型选择不同的写回指令。
+ *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-20 08:29
@@ -37,9 +40,11 @@ public class AssignStatementTranslator implements CommandTranslator {
                 "assignment requires assignable types."
         );
         CommandNodeBuilder builder = new CommandNodeListBuilder();
+        // 先求左值定位信息，再求右值，保证最终写回时栈顶保存的是待赋值结果。
         children[0].register(builder);
         children[2].register(builder);
         if (context.requiresImplicitCast(sourceType, targetType)) {
+            // 赋值兼容但底层存储类型不同的场景，需要在写回前补一次栈顶转换。
             builder.add(new TerminalNode(context.getCommandFactory().stTopCast(
                     CommandDataType.forValue(sourceType),
                     CommandDataType.forValue(targetType)
@@ -47,10 +52,12 @@ public class AssignStatementTranslator implements CommandTranslator {
         }
         LocationKind locationKind = TypeAttributes.child(context, 0).getLocationKind();
         if (locationKind == LocationKind.REFERENCE) {
+            // 引用左值保存的是“指向目标存储单元的引用”，因此按引用写回。
             builder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToRef(
                     CommandDataType.forStorage(targetType)
             )));
         } else {
+            // 普通左值直接持有目标地址，按地址写回即可。
             builder.add(new TerminalNode(context.getCommandFactory().assignFromStTopToAddr(
                     CommandDataType.forStorage(targetType)
             )));

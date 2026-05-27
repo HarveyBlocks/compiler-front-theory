@@ -9,7 +9,10 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 把语句列表节点翻译为线性的命令序列。
+ * <p>
+ * 空列表返回占位节点，单元素列表直接透传，
+ * 多元素列表则按原有顺序把各子节点命令依次拼接起来。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

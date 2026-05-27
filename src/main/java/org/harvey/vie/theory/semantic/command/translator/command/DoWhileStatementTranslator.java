@@ -14,7 +14,10 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 把 do-while 循环翻译为“先执行一次，再检测条件”的跳转结构。
+ * <p>
+ * 与 while 不同，循环体至少会执行一次，因此在条件恒为 false 时
+ * 也仍然需要保留一次循环体代码。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -49,13 +52,13 @@ public class DoWhileStatementTranslator implements CommandTranslator {
                 "do-while condition must be boolean."
         );
         // do stmt while ( expr ) ;
-        // do-while 语句
-        //    L1:
+        // 目标代码结构：
+        // whileStart:
         //    stmt.command();
-        //    L2:
+        // beforeTest:
         //    expr.command();
-        //    DefaultCommandFactory.if_goto(L1);
-        //    L3:
+        //    if_goto whileStart;
+        // whileEnd:
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel beforeTestLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
@@ -73,6 +76,7 @@ public class DoWhileStatementTranslator implements CommandTranslator {
     private static NormalCommandNodeRegister onFalseConstantCondition(
             SimpleGrammarProduction production,
             CommandNodeRegister[] children) {
+        // 条件恒假时仍需执行一次循环体，随后直接落到循环末尾。
         SemanticLabel whileStartLabel = new DefaultSemanticLabel();
         SemanticLabel whileEndLabel = new DefaultSemanticLabel();
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();

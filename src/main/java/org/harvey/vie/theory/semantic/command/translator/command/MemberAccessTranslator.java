@@ -15,7 +15,10 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * Translates member access into object reference plus fixed field offset.
+ * 翻译成员访问表达式。
+ * <p>
+ * 左操作数求值后，栈顶会保存结构体对象的引用或地址；
+ * 再结合字段在结构体布局中的固定偏移，生成字段定位指令。
  *
  * @author Temper
  */
@@ -44,6 +47,7 @@ public class MemberAccessTranslator implements CommandTranslator {
             );
         }
         StructField field = struct.field(TypeAttributes.childAnchor(context, 2));
+        // 字段访问本质上是“基址 + 固定偏移”的引用偏移。
         builder.add(new TerminalNode(context.getCommandFactory().biasFromStTopToRef(
                 CommandDataType.forStorage(field.getType()),
                 field.getOffset()

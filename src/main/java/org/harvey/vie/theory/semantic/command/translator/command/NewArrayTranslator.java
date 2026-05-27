@@ -14,6 +14,12 @@ import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
+/**
+ * 翻译数组创建表达式。
+ * <p>
+ * 该翻译器会先校验元素类型是否合法，再汇总维度声明信息，
+ * 最终把各维度长度求值结果与数组元数据一并交给命令工厂。
+ */
 public class NewArrayTranslator implements CommandTranslator {
     @Override
     public CommandNodeRegister translate(
@@ -30,6 +36,7 @@ public class NewArrayTranslator implements CommandTranslator {
         HeadNode head = context.getTreeContext().peek().toHead();
         ArrayCreationDimensions.Summary summary = ArrayCreationDimensions.summarizeAndValidate(context, head.get(2));
         CommandNodeBuilder builder = new CommandNodeListBuilder();
+        // 先求出每个显式维度的长度表达式，再生成数组分配指令。
         children[2].register(builder);
         builder.add(new TerminalNode(context.getCommandFactory().newArray(
                 CommandDataType.forStorage(type),

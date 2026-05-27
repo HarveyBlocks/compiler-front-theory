@@ -14,7 +14,10 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * Handles unary productions such as {@code ! unary} and {@code - unary}.
+ * 翻译单目表达式，如逻辑非和算术取负。
+ * <p>
+ * 如果该表达式已经在常量传播阶段折叠为常量，就直接复用常量装载逻辑；
+ * 否则先生成操作数求值代码，再补上对应的一元运算指令。
  *
  * @author Temper
  */
