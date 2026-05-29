@@ -47,6 +47,7 @@ public final class ProgramSyntaxTestRunner {
     private static final Path REPORT_ROOT_DIR = Path.of("run-reports/program-syntax");
     private static final DateTimeFormatter RUN_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
+    private static final String COMMON_LEXICAL_REPORT = "stage1-common.md";
     private static final String COMMON_SYNTAX_REPORT = "stage2-common.md";
     private ProgramSyntaxTestRunner() {
     }
@@ -61,7 +62,9 @@ public final class ProgramSyntaxTestRunner {
             String runId = LocalDateTime.now().format(RUN_ID_FORMATTER);
             Path runReportDir = REPORT_ROOT_DIR.resolve(runId);
             Files.createDirectories(runReportDir);
+            Path commonLexicalReport = runReportDir.resolve(COMMON_LEXICAL_REPORT);
             Path commonSyntaxReport = runReportDir.resolve(COMMON_SYNTAX_REPORT);
+            writeCommonLexicalReport(commonLexicalReport);
             writeCommonSyntaxReport(commonSyntaxReport);
             List<TestCaseResult> results = cases.stream().map(testCase -> {
                 try {
@@ -194,6 +197,7 @@ public final class ProgramSyntaxTestRunner {
         summary.append("- Cases: ").append(results.size()).append("\n");
         summary.append("- Passed: ").append(passCount).append("\n");
         summary.append("- Failed: ").append(failCount).append("\n\n");
+        summary.append("- Stage 1 Common Report: ").append(REPORT_ROOT_DIR.resolve(runId).resolve(COMMON_LEXICAL_REPORT).toAbsolutePath()).append("\n");
         summary.append("- Stage 2 Common Report: ").append(REPORT_ROOT_DIR.resolve(runId).resolve(COMMON_SYNTAX_REPORT).toAbsolutePath()).append("\n\n");
         summary.append("| Case | Expected | Observed | Matched | Errors | Commands | Symbols | Report |\n");
         summary.append("| --- | --- | --- | --- | --- | --- | --- | --- |\n");
@@ -242,18 +246,21 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
-        builder.append("## Stage 1 Lexical Result\n\n");
+        builder.append("## Experiment 1 Required Output\n\n");
         writeLexicalSection(builder, lexicalReport);
-        builder.append("\n## Stage 2 Syntax Trace\n\n");
+        builder.append("\n## Experiment 2 Required Output\n\n");
         writeSyntaxTrace(builder, syntaxTrace);
-        builder.append("## Struct Table\n\n");
+        builder.append("\n## Experiment 3 Required Output\n\n");
+        builder.append("### Struct Table\n\n");
         writeStructTable(builder, semanticResult == null ? null : semanticResult.getStructTable());
         builder.append("\n");
-        builder.append("## Global Segment\n\n");
+        builder.append("### Syntax Analysis Process Reference\n\n");
+        builder.append("- Reuse the complete shift/reduce process recorded in `Experiment 2 Required Output`.\n\n");
+        builder.append("### Global Segment\n\n");
         builder.append("- Kind: Program Entry\n\n");
-        builder.append("### Commands\n\n");
+        builder.append("#### Three Address Code\n\n");
         writeCommands(builder, semanticResult == null ? null : semanticResult.getCommands());
-        builder.append("\n### Local Variables\n\n");
+        builder.append("\n#### Local Variables\n\n");
         writeIdentifierTable(
                 builder,
                 semanticResult == null ? null : semanticResult.getEntryLocalVariables(),
@@ -264,7 +271,7 @@ public final class ProgramSyntaxTestRunner {
                 writeFunctionSection(builder, semanticResult, segment);
             }
         }
-        builder.append("\n## Errors\n\n");
+        builder.append("\n### Errors\n\n");
         if (errorContext.isEmpty()) {
             builder.append("_None_\n");
         } else {
@@ -280,6 +287,17 @@ public final class ProgramSyntaxTestRunner {
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
     }
 
+    private static void writeCommonLexicalReport(Path report) throws IOException {
+        StringBuilder builder = new StringBuilder();
+        builder.append("# Experiment 1 Common Lexical Report\n\n");
+        builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n");
+        builder.append("- Scope: shared lexical DFA/status table for all program test cases\n\n");
+        builder.append("## Lexical DFA Status Table\n\n```text\n");
+        builder.append(ProgramLexicalDemo.lexicalTable()).append('\n');
+        builder.append("```\n");
+        Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
+    }
+
     private static void writeCommonSyntaxReport(Path report) throws IOException {
         ShiftReduceParsingTable table = SyntaxDemo.buildShiftReduceParsingTable(
                 "compilation_unit",
@@ -289,10 +307,10 @@ public final class ProgramSyntaxTestRunner {
                 PROGRAM_SEMANTIC_TAG_COMPARATOR
         );
         StringBuilder builder = new StringBuilder();
-        builder.append("# Stage 2 Common Syntax Report\n\n");
+        builder.append("# Experiment 2 Common Syntax Report\n\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n");
         builder.append("- Scope: shared grammar/table output for all program test cases\n\n");
-        builder.append("## Shift Reduce Table\n\n```text\n");
+        builder.append("## Syntax Analysis Table\n\n```text\n");
         builder.append(table).append('\n');
         builder.append("```\n");
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
@@ -302,9 +320,10 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Observed: ").append(lexicalReport.isAccepted() ? "ACCEPT" : "REJECT").append("\n");
         builder.append("- Filtered Tokens: ").append(lexicalReport.getFilteredTokens().size()).append("\n");
         builder.append("- Raw Tokens: ").append(lexicalReport.getRawTokens().size()).append("\n");
+        builder.append("- Removed Comment/Whitespace Tokens: ").append(lexicalReport.getNoiseTokens().size()).append("\n");
         builder.append("- Identifiers: ").append(lexicalReport.getIdentifiers().size()).append("\n");
         builder.append("- Errors: ").append(lexicalReport.getErrors().size()).append("\n\n");
-        builder.append("### Token Pairs\n\n");
+        builder.append("### Token Pair Sequence\n\n");
         if (lexicalReport.getFilteredTokens().isEmpty()) {
             builder.append("_None_\n");
         } else {
@@ -320,7 +339,23 @@ public final class ProgramSyntaxTestRunner {
             }
             builder.append("```\n");
         }
-        builder.append("\n### Identifier Table\n\n");
+        builder.append("\n### Removed Comments And Whitespace\n\n");
+        if (lexicalReport.getNoiseTokens().isEmpty()) {
+            builder.append("_None_\n");
+        } else {
+            builder.append("```text\n");
+            for (LexicalStageReport.LexicalTokenView token : lexicalReport.getNoiseTokens()) {
+                builder.append("(")
+                        .append(token.getLexeme())
+                        .append(", ")
+                        .append(token.getType())
+                        .append(") @")
+                        .append(token.getOffset())
+                        .append('\n');
+            }
+            builder.append("```\n");
+        }
+        builder.append("\n### Symbol Table\n\n");
         if (lexicalReport.getIdentifiers().isEmpty()) {
             builder.append("_None_\n");
         } else {
@@ -356,7 +391,8 @@ public final class ProgramSyntaxTestRunner {
         List<SyntaxTraceReport.TraceEntry> entries = syntaxTrace.snapshot();
         builder.append("- Steps: ").append(entries.size()).append("\n");
         builder.append("- Error Type: ").append(syntaxTrace.getErrorType() == null ? "<none>" : syntaxTrace.getErrorType().name()).append("\n");
-        builder.append("- Shared Table Report: ").append(COMMON_SYNTAX_REPORT).append("\n\n");
+        builder.append("- Shared Analysis Table Report: ").append(COMMON_SYNTAX_REPORT).append("\n\n");
+        builder.append("### Analysis Stack And Process Trace\n\n");
         if (entries.isEmpty()) {
             builder.append("_None_\n");
             return;
@@ -429,9 +465,9 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Signature: ")
                 .append(SemanticDisplaySupport.formatFunctionSignature(function, semanticResult.getStructTable()))
                 .append("\n\n");
-        builder.append("### Commands\n\n");
+        builder.append("#### Three Address Code\n\n");
         writeCommands(builder, new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands()));
-        builder.append("\n### Local Variables\n\n");
+        builder.append("\n#### Local Variables\n\n");
         writeIdentifierTable(
                 builder,
                 semanticResult.getFunctionLocalVariables(function),
