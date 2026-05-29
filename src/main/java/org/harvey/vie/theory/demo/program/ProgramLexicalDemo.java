@@ -190,6 +190,11 @@ public class ProgramLexicalDemo {
         }
     }
 
+    public static RegexDfaStatusTable lexicalTable() {
+        AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
+        return buildTable(alphabetCharacterFactory);
+    }
+
     private static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
         if (FLUSH_TABLE) {
             try {
