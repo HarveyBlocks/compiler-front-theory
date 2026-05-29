@@ -44,6 +44,7 @@ import static org.harvey.vie.theory.demo.program.ProgramSyntaxDemo.PROGRAM_SEMAN
  */
 public final class ProgramSyntaxTestRunner {
     private static final Path TEST_CASE_DIR = Path.of("src/main/resources/program-tests");
+    private static final Path PHASE_REPORT_CASE_DIR = TEST_CASE_DIR.resolve("phase-report");
     private static final Path REPORT_ROOT_DIR = Path.of("run-reports/program-syntax");
     private static final DateTimeFormatter RUN_ID_FORMATTER = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
     private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
@@ -62,10 +63,11 @@ public final class ProgramSyntaxTestRunner {
             String runId = LocalDateTime.now().format(RUN_ID_FORMATTER);
             Path runReportDir = REPORT_ROOT_DIR.resolve(runId);
             Files.createDirectories(runReportDir);
-            Path commonLexicalReport = runReportDir.resolve(COMMON_LEXICAL_REPORT);
-            Path commonSyntaxReport = runReportDir.resolve(COMMON_SYNTAX_REPORT);
-            writeCommonLexicalReport(commonLexicalReport);
-            writeCommonSyntaxReport(commonSyntaxReport);
+            boolean containsPhaseReportCases = containsPhaseReportCases(cases);
+            if (containsPhaseReportCases) {
+                writeCommonLexicalReport(runReportDir.resolve(COMMON_LEXICAL_REPORT));
+                writeCommonSyntaxReport(runReportDir.resolve(COMMON_SYNTAX_REPORT));
+            }
             List<TestCaseResult> results = cases.stream().map(testCase -> {
                 try {
                     return runOneTestCase(testCase, runReportDir);
@@ -74,7 +76,7 @@ public final class ProgramSyntaxTestRunner {
                 }
             }).collect(Collectors.toList());
             Path summaryReport = runReportDir.resolve("summary.md");
-            writeSummary(summaryReport, runId, results);
+            writeSummary(summaryReport, runId, results, containsPhaseReportCases);
             return new SemanticRunReport(runId, summaryReport, results);
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -83,22 +85,36 @@ public final class ProgramSyntaxTestRunner {
 
     private static List<Path> listTestCases() throws IOException {
         String onlyCase = RuntimeProperties.programTestCase();
-        try (Stream<Path> stream = Files.list(TEST_CASE_DIR)) {
-            return stream.filter(path -> path.getFileName().toString().endsWith(".txt"))
+        try (Stream<Path> stream = Files.walk(TEST_CASE_DIR)) {
+            return stream.filter(Files::isRegularFile)
+                    .filter(path -> isTestCaseFile(path.getFileName().toString()))
                     .filter(path -> onlyCase == null || path.getFileName().toString().equals(onlyCase + ".txt"))
                     .sorted(Comparator.comparing(path -> path.getFileName().toString()))
                     .collect(Collectors.toList());
         }
     }
 
+    private static boolean isTestCaseFile(String fileName) {
+        return fileName.endsWith(".txt");
+    }
+
+    private static boolean isPhaseReportCase(Path testCase) {
+        return testCase.normalize().startsWith(PHASE_REPORT_CASE_DIR.normalize());
+    }
+
+    private static boolean containsPhaseReportCases(List<Path> cases) {
+        return cases.stream().anyMatch(ProgramSyntaxTestRunner::isPhaseReportCase);
+    }
+
     private static TestCaseResult runOneTestCase(Path testCase, Path runReportDir) throws IOException {
         String caseName = testCase.getFileName().toString().replaceFirst("\\.txt$", "");
         boolean expectedFailure = caseName.contains("invalid");
         String text = Files.readString(testCase, StandardCharsets.UTF_8);
-        LexicalStageReport lexicalReport = LexicalStageReport.analyze(text);
+        boolean phaseReportCase = isPhaseReportCase(testCase);
+        LexicalStageReport lexicalReport = phaseReportCase ? LexicalStageReport.analyze(text) : null;
         DefaultErrorContext errorContext = new DefaultErrorContext();
         SemanticAnalysisResult semanticResult = null;
-        SyntaxTraceReport syntaxTrace = new SyntaxTraceReport();
+        SyntaxTraceReport syntaxTrace = phaseReportCase ? new SyntaxTraceReport() : null;
         Throwable failure = null;
         boolean executedSuccessfully = false;
         try {
@@ -124,7 +140,8 @@ public final class ProgramSyntaxTestRunner {
                 observedAccepted,
                 observedRejected,
                 failure,
-                expectedFailure
+                expectedFailure,
+                phaseReportCase
         );
         int commandCount = semanticResult == null ? 0 : semanticResult.commandCount();
         int symbolCount = semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length;
@@ -136,8 +153,9 @@ public final class ProgramSyntaxTestRunner {
                 observedAccepted,
                 observedRejected,
                 errorContext.size(),
+                phaseReportCase,
                 lexicalReport,
-                syntaxTrace.snapshot(),
+                syntaxTrace == null ? List.of() : syntaxTrace.snapshot(),
                 commandCount,
                 symbolCount,
                 semanticResult,
@@ -160,7 +178,9 @@ public final class ProgramSyntaxTestRunner {
                 PROGRAM_SEMANTIC_TAG_COMPARATOR
         );
         ShiftReduceCallbackRegisterImpl register = new ShiftReduceCallbackRegisterImpl();
-        register.add(new SyntaxTraceReportProxy(syntaxTrace));
+        if (syntaxTrace != null) {
+            register.add(new SyntaxTraceReportProxy(syntaxTrace));
+        }
         for (var callback : SemanticDemo.buildShiftReduceTestRegister()) {
             register.add(callback);
         }
@@ -187,7 +207,11 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
-    private static void writeSummary(Path summaryReport, String runId, List<TestCaseResult> results) throws IOException {
+    private static void writeSummary(
+            Path summaryReport,
+            String runId,
+            List<TestCaseResult> results,
+            boolean containsPhaseReportCases) throws IOException {
         long passCount = results.stream().filter(TestCaseResult::isExpectationMatched).count();
         long failCount = results.size() - passCount;
         StringBuilder summary = new StringBuilder();
@@ -197,8 +221,14 @@ public final class ProgramSyntaxTestRunner {
         summary.append("- Cases: ").append(results.size()).append("\n");
         summary.append("- Passed: ").append(passCount).append("\n");
         summary.append("- Failed: ").append(failCount).append("\n\n");
-        summary.append("- Stage 1 Common Report: ").append(REPORT_ROOT_DIR.resolve(runId).resolve(COMMON_LEXICAL_REPORT).toAbsolutePath()).append("\n");
-        summary.append("- Stage 2 Common Report: ").append(REPORT_ROOT_DIR.resolve(runId).resolve(COMMON_SYNTAX_REPORT).toAbsolutePath()).append("\n\n");
+        if (containsPhaseReportCases) {
+            summary.append("- Stage 1 Common Report: ")
+                    .append(REPORT_ROOT_DIR.resolve(runId).resolve(COMMON_LEXICAL_REPORT).toAbsolutePath())
+                    .append("\n");
+            summary.append("- Stage 2 Common Report: ")
+                    .append(REPORT_ROOT_DIR.resolve(runId).resolve(COMMON_SYNTAX_REPORT).toAbsolutePath())
+                    .append("\n\n");
+        }
         summary.append("| Case | Expected | Observed | Matched | Errors | Commands | Symbols | Report |\n");
         summary.append("| --- | --- | --- | --- | --- | --- | --- | --- |\n");
         for (TestCaseResult result : results) {
@@ -235,7 +265,8 @@ public final class ProgramSyntaxTestRunner {
             boolean observedAccepted,
             boolean observedRejected,
             Throwable failure,
-            boolean expectedFailure) throws IOException {
+            boolean expectedFailure,
+            boolean phaseReportCase) throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append("# Program Semantic Test: ").append(caseName).append("\n\n");
         builder.append("- Expected: ").append(expectedFailure ? "REJECT" : "ACCEPT").append("\n");
@@ -246,21 +277,25 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
-        builder.append("## Experiment 1 Required Output\n\n");
-        writeLexicalSection(builder, lexicalReport);
-        builder.append("\n## Experiment 2 Required Output\n\n");
-        writeSyntaxTrace(builder, syntaxTrace);
-        builder.append("\n## Experiment 3 Required Output\n\n");
-        builder.append("### Struct Table\n\n");
+        writeRequestedExtraSections(builder, phaseReportCase, lexicalReport, syntaxTrace);
+        writeSemanticSections(builder, semanticResult);
+        builder.append("\n");
+        writeErrorSection(builder, errorContext, "## Errors");
+        if (failure != null) {
+            builder.append("\n## Failure\n\n```text\n").append(failure).append("\n```\n");
+        }
+        Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
+    }
+
+    private static void writeSemanticSections(StringBuilder builder, SemanticAnalysisResult semanticResult) {
+        builder.append("## Struct Table\n\n");
         writeStructTable(builder, semanticResult == null ? null : semanticResult.getStructTable());
         builder.append("\n");
-        builder.append("### Syntax Analysis Process Reference\n\n");
-        builder.append("- Reuse the complete shift/reduce process recorded in `Experiment 2 Required Output`.\n\n");
-        builder.append("### Global Segment\n\n");
+        builder.append("## Global Segment\n\n");
         builder.append("- Kind: Program Entry\n\n");
-        builder.append("#### Three Address Code\n\n");
+        builder.append("### Commands\n\n");
         writeCommands(builder, semanticResult == null ? null : semanticResult.getCommands());
-        builder.append("\n#### Local Variables\n\n");
+        builder.append("\n### Local Variables\n\n");
         writeIdentifierTable(
                 builder,
                 semanticResult == null ? null : semanticResult.getEntryLocalVariables(),
@@ -271,20 +306,6 @@ public final class ProgramSyntaxTestRunner {
                 writeFunctionSection(builder, semanticResult, segment);
             }
         }
-        builder.append("\n### Errors\n\n");
-        if (errorContext.isEmpty()) {
-            builder.append("_None_\n");
-        } else {
-            builder.append("```text\n");
-            for (CompileErrorMessage error : errorContext) {
-                builder.append(error).append('\n');
-            }
-            builder.append("```\n");
-        }
-        if (failure != null) {
-            builder.append("\n## Failure\n\n```text\n").append(failure).append("\n```\n");
-        }
-        Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
     }
 
     private static void writeCommonLexicalReport(Path report) throws IOException {
@@ -319,8 +340,6 @@ public final class ProgramSyntaxTestRunner {
     private static void writeLexicalSection(StringBuilder builder, LexicalStageReport lexicalReport) {
         builder.append("- Observed: ").append(lexicalReport.isAccepted() ? "ACCEPT" : "REJECT").append("\n");
         builder.append("- Filtered Tokens: ").append(lexicalReport.getFilteredTokens().size()).append("\n");
-        builder.append("- Raw Tokens: ").append(lexicalReport.getRawTokens().size()).append("\n");
-        builder.append("- Removed Comment/Whitespace Tokens: ").append(lexicalReport.getNoiseTokens().size()).append("\n");
         builder.append("- Identifiers: ").append(lexicalReport.getIdentifiers().size()).append("\n");
         builder.append("- Errors: ").append(lexicalReport.getErrors().size()).append("\n\n");
         builder.append("### Token Pair Sequence\n\n");
@@ -329,22 +348,6 @@ public final class ProgramSyntaxTestRunner {
         } else {
             builder.append("```text\n");
             for (LexicalStageReport.LexicalTokenView token : lexicalReport.getFilteredTokens()) {
-                builder.append("(")
-                        .append(token.getLexeme())
-                        .append(", ")
-                        .append(token.getType())
-                        .append(") @")
-                        .append(token.getOffset())
-                        .append('\n');
-            }
-            builder.append("```\n");
-        }
-        builder.append("\n### Removed Comments And Whitespace\n\n");
-        if (lexicalReport.getNoiseTokens().isEmpty()) {
-            builder.append("_None_\n");
-        } else {
-            builder.append("```text\n");
-            for (LexicalStageReport.LexicalTokenView token : lexicalReport.getNoiseTokens()) {
                 builder.append("(")
                         .append(token.getLexeme())
                         .append(", ")
@@ -465,14 +468,42 @@ public final class ProgramSyntaxTestRunner {
         builder.append("- Signature: ")
                 .append(SemanticDisplaySupport.formatFunctionSignature(function, semanticResult.getStructTable()))
                 .append("\n\n");
-        builder.append("#### Three Address Code\n\n");
+        builder.append("### Commands\n\n");
         writeCommands(builder, new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands()));
-        builder.append("\n#### Local Variables\n\n");
+        builder.append("\n### Local Variables\n\n");
         writeIdentifierTable(
                 builder,
                 semanticResult.getFunctionLocalVariables(function),
                 semanticResult.getStructTable()
         );
+    }
+
+    private static void writeErrorSection(StringBuilder builder, ErrorContext errorContext, String title) {
+        builder.append("\n").append(title).append("\n\n");
+        if (errorContext.isEmpty()) {
+            builder.append("_None_\n");
+            return;
+        }
+        builder.append("```text\n");
+        for (CompileErrorMessage error : errorContext) {
+            builder.append(error).append('\n');
+        }
+        builder.append("```\n");
+    }
+
+    private static void writeRequestedExtraSections(
+            StringBuilder builder,
+            boolean phaseReportCase,
+            LexicalStageReport lexicalReport,
+            SyntaxTraceReport syntaxTrace) {
+        if (phaseReportCase) {
+            builder.append("## Experiment 1 Required Output\n\n");
+            writeLexicalSection(builder, lexicalReport);
+            builder.append("\n");
+            builder.append("## Experiment 2 Required Output\n\n");
+            writeSyntaxTrace(builder, syntaxTrace);
+            builder.append("\n");
+        }
     }
 
     @Getter
@@ -498,6 +529,7 @@ public final class ProgramSyntaxTestRunner {
         private final boolean observedAccepted;
         private final boolean observedRejected;
         private final int errorCount;
+        private final boolean phaseReportCase;
         private final LexicalStageReport lexicalReport;
         private final List<SyntaxTraceReport.TraceEntry> syntaxTrace;
         private final int commandCount;
@@ -514,6 +546,7 @@ public final class ProgramSyntaxTestRunner {
                 boolean observedAccepted,
                 boolean observedRejected,
                 int errorCount,
+                boolean phaseReportCase,
                 LexicalStageReport lexicalReport,
                 List<SyntaxTraceReport.TraceEntry> syntaxTrace,
                 int commandCount,
@@ -528,6 +561,7 @@ public final class ProgramSyntaxTestRunner {
             this.observedAccepted = observedAccepted;
             this.observedRejected = observedRejected;
             this.errorCount = errorCount;
+            this.phaseReportCase = phaseReportCase;
             this.lexicalReport = lexicalReport;
             this.syntaxTrace = syntaxTrace;
             this.commandCount = commandCount;
@@ -542,7 +576,6 @@ public final class ProgramSyntaxTestRunner {
         }
 
     }
-
     private static final class SyntaxTraceReportProxy implements org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback {
         private final SyntaxTraceReport delegate;
 

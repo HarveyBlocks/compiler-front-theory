@@ -19,22 +19,16 @@ import java.util.Map;
  */
 public class LexicalStageReport {
     private final List<LexicalTokenView> filteredTokens;
-    private final List<LexicalTokenView> rawTokens;
-    private final List<LexicalTokenView> noiseTokens;
     private final List<IdentifierEntry> identifiers;
     private final List<CompileErrorMessage> errors;
     private final Throwable failure;
 
     public LexicalStageReport(
             List<LexicalTokenView> filteredTokens,
-            List<LexicalTokenView> rawTokens,
-            List<LexicalTokenView> noiseTokens,
             List<IdentifierEntry> identifiers,
             List<CompileErrorMessage> errors,
             Throwable failure) {
         this.filteredTokens = List.copyOf(filteredTokens);
-        this.rawTokens = List.copyOf(rawTokens);
-        this.noiseTokens = List.copyOf(noiseTokens);
         this.identifiers = List.copyOf(identifiers);
         this.errors = List.copyOf(errors);
         this.failure = failure;
@@ -42,14 +36,6 @@ public class LexicalStageReport {
 
     public List<LexicalTokenView> getFilteredTokens() {
         return filteredTokens;
-    }
-
-    public List<LexicalTokenView> getRawTokens() {
-        return rawTokens;
-    }
-
-    public List<LexicalTokenView> getNoiseTokens() {
-        return noiseTokens;
     }
 
     public List<IdentifierEntry> getIdentifiers() {
@@ -70,9 +56,7 @@ public class LexicalStageReport {
 
     public static LexicalStageReport analyze(String source) {
         DefaultErrorContext errorContext = new DefaultErrorContext();
-        List<LexicalTokenView> rawTokens = new ArrayList<>();
         List<LexicalTokenView> filteredTokens = new ArrayList<>();
-        List<LexicalTokenView> noiseTokens = new ArrayList<>();
         Map<String, IdentifierEntry> identifiers = new LinkedHashMap<>();
         Throwable failure = null;
         LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
@@ -84,12 +68,9 @@ public class LexicalStageReport {
                     continue;
                 }
                 LexicalTokenView view = LexicalTokenView.from(token);
-                rawTokens.add(view);
                 ProgramTokenType type = (ProgramTokenType) token.getType();
                 if (!ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(type)) {
                     filteredTokens.add(view);
-                } else {
-                    noiseTokens.add(view);
                 }
                 if (type == ProgramTokenType.IDENTIFIER || type == ProgramTokenType.TYPE_IDENTIFIER) {
                     identifiers.putIfAbsent(view.getLexeme(), new IdentifierEntry(
@@ -105,8 +86,6 @@ public class LexicalStageReport {
         }
         return new LexicalStageReport(
                 filteredTokens,
-                rawTokens,
-                noiseTokens,
                 new ArrayList<>(identifiers.values()),
                 List.copyOf(errorContext.getErrors()),
                 failure
