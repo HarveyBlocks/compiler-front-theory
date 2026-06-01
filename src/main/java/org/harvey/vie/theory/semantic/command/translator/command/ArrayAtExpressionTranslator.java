@@ -14,7 +14,15 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO lvalue->lvalue [ expr ]
+ * 左值定位支路：翻译数组下标访问 {@code lvalue[expr]}。
+ * <p>
+ * 左侧子命令先把数组对象的位置压到栈上，右侧子命令再把下标值压到栈上；随后本类追加
+ * {@code bias_from_st_top_to_ref_*}，表示“用栈顶下标在数组引用上做偏移”，得到数组元素的引用位置。
+ * 这个位置之后可以被 {@link PrimaryProduceLeftValueTranslator} 读取成值，也可以被
+ * {@link AssignStatementTranslator} 写回。
+ * <p>
+ * 讲完本支路可继续看结构体字段偏移 {@link MemberAccessTranslator}，或回到
+ * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

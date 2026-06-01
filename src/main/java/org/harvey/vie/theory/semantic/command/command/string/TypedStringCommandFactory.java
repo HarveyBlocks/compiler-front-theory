@@ -14,7 +14,18 @@ import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 /**
- * TODO
+ * 带类型文本命令工厂：把语义命令编码成演示用的三地址码/四元式风格文本。
+ * <p>
+ * 这里是“实际输出长什么样”的核心文件。它不会生成 JVM 字节码，而是返回 {@link StringCommand}
+ * 或 {@link StringSupplierCommand}。命令名通常由“动作 + 命令数据类型”组成，例如
+ * {@code load_st_int32_address 0}、{@code st_plus_int32}、
+ * {@code assign_from_st_top_to_ref_boolean}。
+ * <p>
+ * 标签跳转命令使用 {@link StringSupplierCommand}，因为标签下标要等
+ * {@link org.harvey.vie.theory.semantic.command.node.LabelNode} 展开后才知道。
+ * 讲完本类继续看结果如何展开和打印：
+ * {@link org.harvey.vie.theory.semantic.command.SemanticResultCallback} 与
+ * {@link org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

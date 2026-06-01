@@ -2,19 +2,40 @@ package org.harvey.vie.theory.semantic.tag;
 
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
+import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorCategory;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 讲解主线第 2 站：把“产生式上的语义标签”映射成真正负责生成命令的 {@link CommandTranslator}。
+ * <p>
+ * {@link CommandBuildCallback} 在规约时只知道当前产生式 {@link SimpleGrammarProduction}，它会调用
+ * {@link #preciseStringCommand()} 拿到的策略；本类再根据 {@link ProgramSemanticTag} 选择具体翻译器。
+ * 所以这张映射表就是“语法制导翻译规则表”：声明、赋值、表达式、if/while/do-while、函数、数组、结构体
+ * 都从这里进入各自的翻译支路。
+ * <p>
+ * 讲解路线建议：
+ * 先看顶层 {@link ProgramCommandTranslator}，再看通用拼接 {@link SimpleShrinkTranslator} 与
+ * {@link StatementListTranslator}；表达式支路看 {@link InSuffixExpressionTranslator} 和
+ * {@link UnaryExpressionTranslator}；控制流支路看 {@link IfStatementTranslator}、
+ * {@link IfElseStatementTranslator}、{@link WhileStatementTranslator}、{@link DoWhileStatementTranslator}。
+ * 支路讲完都回到 {@link CommandNodeRegister}，因为所有翻译器最终都返回注册器。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-05-25 11:00
  */
 public class TagStrategyCompose {
+    /**
+     * 构造“语义标签 -> 命令翻译器”的完整映射表。
+     * <p>
+     * 默认值是 {@link SimpleShrinkTranslator}，表示没有特殊规则的产生式只把子节点命令顺序拼起来；
+     * 带有关键语义的产生式会被替换成更专门的翻译器。例如 {@link ProgramSemanticTag#ASSIGNMENT}
+     * 进入 {@link AssignStatementTranslator}，{@link ProgramSemanticTag#LOOP} 进入循环翻译器。
+     */
     public static ProductionTagStrategy<CommandTranslator> stringCommand() {
         CommandTranslator doNothing = new DoNotingTranslator();
         CommandTranslator simpleShrink = new SimpleShrinkTranslator();
@@ -114,6 +135,12 @@ public class TagStrategyCompose {
                 .when(whileStatementTranslator, ProgramSemanticTag.LOOP);
     }
 
+    /**
+     * 提供给 {@link CommandBuildCallback} 的规约策略入口。
+     * <p>
+     * {@link ProductionTagStrategy#resolve(SimpleGrammarProduction)} 会按当前产生式携带的标签精确匹配上面的规则；
+     * 找不到专用规则时回退到 {@link SimpleShrinkTranslator}。
+     */
     public static CommandTranslatorStrategy preciseStringCommand() {
         ProductionTagStrategy<CommandTranslator> strategy = stringCommand();
         return production -> strategy.resolve(production);

@@ -1,19 +1,27 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import lombok.extern.slf4j.Slf4j;
+import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.node.CommandNode;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
-import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
+import org.harvey.vie.theory.semantic.tag.TagStrategyCompose;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 import java.util.Arrays;
 
 /**
- * TODO
+ * 通用规约翻译器：没有专门语义动作的产生式都走这里。
+ * <p>
+ * 在 {@link TagStrategyCompose} 的映射表中，{@link SimpleShrinkTranslator} 是默认翻译器。
+ * 它不新建运算或跳转命令，只把所有子 {@link CommandNodeRegister} 注册出的节点按语法右部顺序拼接起来。
+ * 这就是“语法树向命令树收缩”的基础动作。
+ * <p>
+ * 如果是 epsilon 产生式，返回 {@link PlaceholderNodeRegister}，表示这里不产生中间代码。
+ * 讲完本类后，普通语句列表可跳到 {@link StatementListTranslator}；特殊语义支路回到 {@link TagStrategyCompose}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -36,6 +44,7 @@ public class SimpleShrinkTranslator implements CommandTranslator {
                 );
             }
             CommandNodeBuilder listBuilder = new CommandNodeListBuilder();
+            // 每个子注册器把自己的命令节点写入同一个 builder，顺序就是语法右部顺序。
             Arrays.stream(children).forEach(c -> c.register(listBuilder));
             CommandNode[] childrenNode = listBuilder.build();
             return new NormalCommandNodeRegister(childrenNode, production, children);

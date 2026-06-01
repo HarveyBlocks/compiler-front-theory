@@ -16,10 +16,15 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 把不带 else 的 if 语句翻译为条件跳转。
+ * 控制流支路：把不带 {@code else} 的 {@code if} 语句翻译为条件跳转。
  * <p>
- * 如果条件已被求值为编译期常量，则直接保留可达分支，
- * 不再生成无意义的跳转与空标签。
+ * 典型结构是：先生成条件求值命令，再生成 {@code ifn_goto ifEnd}，条件为假就跳过语句体；
+ * 语句体后放一个 {@link LabelNode}，由 {@link org.harvey.vie.theory.semantic.command.CommandSegmentSupport}
+ * 展开时把标签解析成具体命令下标。
+ * <p>
+ * 如果条件已被 {@link ConstantConditionSupport} 确定为编译期常量，则直接保留可达分支，
+ * 不再生成无意义的跳转与空标签。讲完本支路可继续看 {@link IfElseStatementTranslator}，
+ * 或回到 {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

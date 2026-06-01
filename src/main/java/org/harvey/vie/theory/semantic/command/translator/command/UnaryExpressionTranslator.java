@@ -14,10 +14,14 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 翻译单目表达式，如逻辑非和算术取负。
+ * 表达式支路：翻译一元表达式，例如逻辑非 {@code !x} 和算术取负 {@code -x}。
  * <p>
- * 如果该表达式已经在常量传播阶段折叠为常量，就直接复用常量装载逻辑；
- * 否则先生成操作数求值代码，再补上对应的一元运算指令。
+ * 如果当前语法树节点已经被常量传播折叠成常量，先通过 {@link ConstantCommandSupport} 直接生成
+ * {@code load_st_*_static}。否则先注册操作数命令，再根据 {@link OperatorFactor} 追加
+ * {@code st_logical_not_boolean} 或 {@code st_negate_*}。
+ * <p>
+ * 讲完本支路回到 {@link InSuffixExpressionTranslator} 或
+ * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
  *
  * @author Temper
  */
@@ -69,4 +73,3 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }
-

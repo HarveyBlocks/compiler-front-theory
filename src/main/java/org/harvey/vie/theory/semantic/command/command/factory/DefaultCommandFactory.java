@@ -11,7 +11,14 @@ import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 /**
- * TODO 静态工厂是不解耦的
+ * 默认命令工厂：把完整的 {@link CommandFactory} 接口拆给“带类型命令”和“简单命令”两个子工厂。
+ * <p>
+ * 带类型命令由 {@link TypedCommandFactory} 负责，例如 {@code load_st_int32_address}、
+ * {@code st_plus_float64}、{@code ifn_goto}；不依赖数据类型的命令由
+ * {@link SimpleCommandFactory} 负责，例如 {@code call} 和 {@code return}。
+ * <p>
+ * 这层只是委托，不改变命令语义。讲完本类继续看
+ * {@link org.harvey.vie.theory.semantic.command.command.string.TypedStringCommandFactory} 如何把命令拼成文本。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -27,7 +34,7 @@ public class DefaultCommandFactory implements CommandFactory {
     }
 
     /**
-     * 仅用作测试和demo
+     * 仅用于测试和 demo：把字面量 token 装载成栈顶静态值。
      */
     @Override
     public SemanticCommand loadStatic(SourceToken token) {

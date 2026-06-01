@@ -5,7 +5,11 @@ import org.harvey.vie.theory.semantic.command.command.factory.SimpleCommandFacto
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 
 /**
- * TODO
+ * 简单文本命令工厂：生成不带数据类型后缀的命令。
+ * <p>
+ * {@code call n} 使用函数表下标定位被调函数；{@code return} 表示从当前函数段返回。
+ * 讲完本类回到 {@link org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory}，
+ * 或看带类型命令工厂 {@link TypedStringCommandFactory}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

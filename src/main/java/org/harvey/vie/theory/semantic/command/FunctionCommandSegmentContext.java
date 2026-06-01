@@ -9,6 +9,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * 函数命令段登记表。
+ * <p>
+ * 编译一个文件时可能有多个函数定义，{@link org.harvey.vie.theory.semantic.command.translator.command.FunctionDefinitionTranslator}
+ * 每遇到一个函数体就调用 {@link #register(FunctionCommandSegment)}。使用 {@link LinkedHashMap}
+ * 是为了保留函数出现顺序，报告和测试中的函数表下标也更稳定。
+ * <p>
+ * 讲完本类回到 {@link SemanticResultCallback}，看函数段如何进入最终结果。
+ *
  * @author Temper
  */
 public class FunctionCommandSegmentContext {

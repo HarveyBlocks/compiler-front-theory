@@ -18,7 +18,19 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * TODO
+ * 声明初始化支路：把 {@code type id = expr;} 翻译成“地址、右值、可选类型转换、写回”。
+ * <p>
+ * 讲解顺序：
+ * 1. 通过 {@link TypeAttributes} 读取声明类型和初始化表达式类型；
+ * 2. 用 {@link SemanticDiagnostics#requireAssignable} 检查能否赋值；
+ * 3. 通过 {@link #declaredIdentifier(ShiftReduceSemanticContext)} 找到符号表里的
+ * {@link IdentifierRecord}，并用 {@link org.harvey.vie.theory.semantic.command.command.factory.CommandFactory#loadIdentifierAddress(IdentifierRecord)}
+ * 生成左侧地址命令；
+ * 4. 注册右侧表达式子命令，必要时插入
+ * {@link org.harvey.vie.theory.semantic.command.command.factory.CommandFactory#stTopCast(CommandDataType, CommandDataType)}；
+ * 5. 用 {@code assign_from_st_top_to_addr_*} 写回。
+ * <p>
+ * 讲完本支路可跳到 {@link AssignStatementTranslator}，它处理普通赋值语句，结构基本相同但会区分地址左值和引用左值。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -41,9 +53,11 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
         );
         CommandNodeBuilder thisBuilder = new CommandNodeListBuilder();
         IdentifierRecord record = declaredIdentifier(context);
+        // 声明初始化的左边一定是刚声明出的局部/全局槽位地址。
         thisBuilder.add(new TerminalNode(context.getCommandFactory().loadIdentifierAddress(record)));
         children[3].register(thisBuilder);
         if (context.requiresImplicitCast(sourceType, targetType)) {
+            // 例如 int32 初始化 float64 时，在写回之前把栈顶值转换成目标类型。
             thisBuilder.add(new TerminalNode(context.getCommandFactory().stTopCast(
                     CommandDataType.forValue(sourceType),
                     CommandDataType.forValue(targetType)

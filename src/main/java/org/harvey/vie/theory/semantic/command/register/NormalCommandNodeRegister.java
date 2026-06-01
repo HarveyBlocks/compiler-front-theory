@@ -9,7 +9,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO
+ * 普通非终结注册器：保存一次规约后形成的 {@link HeadNode}。
+ * <p>
+ * 翻译器把已经拼好的子 {@link CommandNode} 数组交给它；外层调用
+ * {@link #register(CommandNodeBuilder)} 时，它会把这些子节点包装成一个 {@link HeadNode} 写入外层。
+ * 同时它会从所有子 {@link CommandNodeRegister} 收集未绑定的 {@code break}/{@code continue}，
+ * 继续向外层冒泡，直到被循环支路绑定或被 {@link org.harvey.vie.theory.semantic.command.translator.command.ProgramCommandTranslator}
+ * 判定为非法。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

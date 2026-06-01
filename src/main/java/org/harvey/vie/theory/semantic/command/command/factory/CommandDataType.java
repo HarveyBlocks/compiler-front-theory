@@ -3,7 +3,15 @@ package org.harvey.vie.theory.semantic.command.command.factory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 
 /**
- * Instruction-level data category used by command encoding.
+ * 命令层面的数据类别。
+ * <p>
+ * 它不是源语言完整类型系统，而是把 {@link SemanticType} 压缩成命令后缀需要的几类：
+ * 标量保留为 {@code boolean}/{@code int32}/{@code float64} 等，数组和结构体统一按 {@link #REF}
+ * 处理。这样命令文本可以稳定写成 {@code load_st_ref_address}、{@code assign_from_st_top_to_ref_int32}
+ * 等形式。
+ * <p>
+ * 讲完本枚举回到 {@link CommandFactory} 或
+ * {@link org.harvey.vie.theory.semantic.command.command.string.TypedStringCommandFactory}。
  *
  * @author Temper
  */

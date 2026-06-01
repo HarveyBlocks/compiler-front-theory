@@ -14,10 +14,16 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 把 do-while 循环翻译为“先执行一次，再检测条件”的跳转结构。
+ * 控制流支路：把 {@code do-while} 翻译为“先执行一次，再检测条件”的跳转结构。
  * <p>
- * 与 while 不同，循环体至少会执行一次，因此在条件恒为 false 时
- * 也仍然需要保留一次循环体代码。
+ * 与 {@link WhileStatementTranslator} 不同，循环体至少会执行一次，因此在条件恒为 {@code false} 时
+ * 也仍然需要保留一次循环体代码。普通场景下的结构是：循环体起点标签、循环体、条件检测点标签、
+ * 条件求值、{@code if_goto whileStart}、循环结束标签。
+ * <p>
+ * {@code continue} 在 do-while 中不能跳回循环体开头，而要跳到条件检测点，所以本类调用
+ * {@link WhileStatementTranslator#bindLoopLabels(CommandNodeRegister, SemanticLabel, SemanticLabel)}
+ * 时把 {@code continueLabel} 设为 {@code beforeTestLabel}。讲完本支路回到
+ * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

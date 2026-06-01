@@ -13,10 +13,14 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 翻译函数调用表达式。
+ * 函数支路：翻译函数调用表达式。
  * <p>
- * 参数求值代码会先按既定顺序入栈，随后再发出调用指令，
+ * 参数求值代码会先按语法中的实参顺序入栈，随后再发出 {@code call functionIndex}，
  * 以保证被调函数读取到的实参与语义分析阶段的顺序一致。
+ * 被调函数由 {@link #function(ShiftReduceSemanticContext)} 从 {@link FunctionRecord} 表中恢复。
+ * <p>
+ * 函数体自身不会混入入口命令，定义支路见 {@link FunctionDefinitionTranslator}；
+ * 讲完本支路回到 {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
  *
  * @author Temper
  */
@@ -52,4 +56,3 @@ public class FunctionCallTranslator implements CommandTranslator {
         return record;
     }
 }
-

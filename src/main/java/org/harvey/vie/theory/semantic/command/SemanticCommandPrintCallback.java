@@ -18,7 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * TODO
+ * 交互 demo 使用的打印回调：在 accept 前直接把命令段、符号表和结构体表打印到控制台。
+ * <p>
+ * 测试环境更常用 {@link SemanticResultCallback}，它把结果封装成
+ * {@link org.harvey.vie.theory.semantic.context.SemanticAnalysisResult}；本类主要帮助课堂现场展示。
+ * 它同样通过 {@link CommandSegmentSupport#flatten(CommandNodeRegister)} 展开入口段，并使用
+ * {@link ThreeAddressCodePrinter} 给出可读的中间代码视图。
+ * <p>
+ * 讲完本类回到主线 {@link SemanticResultCallback}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

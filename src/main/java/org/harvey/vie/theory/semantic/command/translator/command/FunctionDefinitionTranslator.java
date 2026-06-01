@@ -15,10 +15,15 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import java.util.List;
 
 /**
- * 收集函数体翻译后的命令序列，并把它登记到函数记录中。
+ * 函数支路：收集函数体翻译后的命令序列，并把它登记成独立函数段。
  * <p>
- * 函数定义本身不会直接向当前线性命令流输出指令，
- * 因而这里返回的是占位节点注册器。
+ * 函数定义本身不会直接向当前入口命令流输出指令，否则全局入口执行时会顺序落进函数体。
+ * 因此这里用 {@link CommandSegmentSupport#flatten(CommandNodeRegister)} 先把函数体命令展开成线性列表，
+ * 再通过 {@link ShiftReduceSemanticContext#registerFunctionCommandSegment(FunctionCommandSegment)}
+ * 登记到函数段上下文中，最后返回 {@link PlaceholderNodeRegister}。
+ * <p>
+ * 讲完本支路可看函数调用 {@link FunctionCallTranslator}，或继续沿主线去
+ * {@link org.harvey.vie.theory.semantic.command.SemanticResultCallback} 查看入口段和函数段如何汇总。
  *
  * @author Temper
  */

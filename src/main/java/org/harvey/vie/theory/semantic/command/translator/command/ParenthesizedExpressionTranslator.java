@@ -8,6 +8,13 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
+ * 表达式支路：处理括号表达式 {@code (expr)}。
+ * <p>
+ * 括号本身不产生命令，只改变语法结合顺序。若当前括号表达式已折叠为常量，
+ * 交给 {@link ConstantCommandSupport} 生成常量装载；否则只透传括号中的子表达式命令。
+ * 讲完本支路回到 {@link InSuffixExpressionTranslator} 或
+ * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ *
  * @author Temper
  */
 public class ParenthesizedExpressionTranslator implements CommandTranslator {
@@ -25,4 +32,3 @@ public class ParenthesizedExpressionTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 }
-
