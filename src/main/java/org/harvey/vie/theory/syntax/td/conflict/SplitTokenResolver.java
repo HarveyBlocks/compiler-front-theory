@@ -15,6 +15,7 @@ import java.util.Stack;
  * @version 1.0
  * @date 2026-04-01 22:31
  */
+@Deprecated
 public class SplitTokenResolver implements LexicalConflictResolver {
     private final ConflictTokenSplitter splitter;
 
