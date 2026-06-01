@@ -45,7 +45,7 @@ build/
 ### data ###
 *.data
 *.pdf
-
+*.docx
 
 ### config ###
 config.json
