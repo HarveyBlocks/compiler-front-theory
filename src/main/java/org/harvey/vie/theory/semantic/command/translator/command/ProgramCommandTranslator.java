@@ -11,14 +11,15 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 /**
  * 讲解主线第 3 站：程序顶层翻译器。
  * <p>
- * {@link TagStrategyCompose} 遇到 {@code PROGRAM} 标签时会进入这里。程序顶层本身不新增计算命令，
- * 所以正常情况下复用 {@link SimpleShrinkTranslator} 把所有顶层子项顺序拼成一个
- * {@link NormalCommandNodeRegister}；它额外承担一个职责：检查有没有从内层漏出来、还没有被循环绑定的
- * {@code break}/{@code continue}。
+ * {@link TagStrategyCompose} 遇到 {@code PROGRAM} 标签时会进入这里。program 是整份源程序的根非终结符，
+ * 所以它本身通常不新增计算命令，而是复用 {@link SimpleShrinkTranslator} 把所有顶层子项顺序拼接成一个
+ * {@link NormalCommandNodeRegister}。这对应编译原理里的“自底向上规约后，父节点综合子节点属性”。
  * <p>
- * 如果这些跳转还没有目标，说明它们不在任何 {@code while}/{@code do-while} 中，本类会把错误写入
- * {@link ShiftReduceSemanticContext#addError(int, String)} 并抛出异常。讲完这里，回到
- * {@link TagStrategyCompose} 看各个语句支路；支路最终汇总到 {@link CommandNodeRegister}。
+ * 本类额外做一次顶层语义检查：如果还有未绑定目标的 {@code break}/{@code continue}，
+ * 说明这些控制流语句不在任何循环里。此时通过
+ * {@link ShiftReduceSemanticContext#addError(int, String)} 把错误放入错误上下文，并抛出异常阻止生成合法结果。
+ * <p>
+ * 主线下一站：{@link CommandNodeRegister}。下一站会讲每个翻译器返回的“命令片段注册器”如何继续组合命令树。
  */
 public class ProgramCommandTranslator implements CommandTranslator {
     private final CommandTranslator delegate = new SimpleShrinkTranslator();

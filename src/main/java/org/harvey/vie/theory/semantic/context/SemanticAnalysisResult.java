@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 语义分析最终结果：同时保存入口命令段、函数命令段、结构体表和符号表。
+ * 讲解主线第 9 站：语义分析最终结果，同时保存入口命令段、函数命令段、结构体表和符号表。
  * <p>
  * 中间代码主线从 {@link org.harvey.vie.theory.semantic.command.SemanticResultCallback} 进入这里：
  * {@code entryCommands} 是程序入口段线性命令；
@@ -20,8 +20,8 @@ import java.util.List;
  * {@link #getCommands()} 是测试和报告最常用的入口，它调用
  * {@link ThreeAddressCodePrinter#print(List)} 把入口段命令对象转成文本。函数段命令则通过
  * {@link #getFunctionSegments()} 取出后再用同一个 printer 打印。
- * 讲完本类可回到 {@link org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter}，
- * 或看测试报告 {@link org.harvey.vie.theory.demo.program.ProgramSyntaxTestRunner}。
+ * <p>
+ * 主线下一站：{@link ThreeAddressCodePrinter}。下一站会讲命令对象如何真正变成报告里的 Commands 文本。
  *
  * @author Temper
  */

@@ -15,20 +15,22 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import java.util.Stack;
 
 /**
- * 讲解主线第 1 站：语法分析器每发生一次移进或规约，都会通过这个回调把语法事件同步翻译成
- * {@link CommandNodeRegister}。
+ * 讲解主线第 1 站：语法制导翻译的事件入口。
  * <p>
- * 这里没有生成 JVM 字节码，也没有写二进制指令文件；本模块生成的是一组可展开的
+ * 在《编译原理》里，语法制导翻译通常把“语义动作”挂在产生式上：语法分析器移进一个 token 或规约一个产生式时，
+ * 同步计算语义属性或生成中间代码。本类正是这个项目的语义动作入口。它监听移进/规约事件，把每个 token
+ * 或产生式翻译成 {@link CommandNodeRegister}，也就是后续可以继续组合的“命令片段注册器”。
+ * <p>
+ * 这里没有生成 JVM 字节码，也没有写二进制指令文件；本模块生成的是
  * {@link org.harvey.vie.theory.semantic.command.command.SemanticCommand} 对象，最后由
- * {@link ThreeAddressCodePrinter} 打印成类似 三地址码/四元式的文本命令，例如
+ * {@link ThreeAddressCodePrinter} 打印成三地址码/四元式风格的文本命令，例如
  * {@code load_st_int32_address 0}、{@code st_plus_int32}、{@code ifn_goto 32}。
  * <p>
- * 可以这样说：移进 token 时走 {@link TokenTranslatorStrategy}，规约产生式时走
- * {@link CommandTranslatorStrategy}；两类策略都返回 {@link CommandNodeRegister}，这些注册器先保留
- * “命令树”和未绑定的 {@code break}/{@code continue}，等最外层接受时再展开成线性命令。
+ * 移进 token 时走 {@link TokenTranslatorStrategy}，规约产生式时走
+ * {@link CommandTranslatorStrategy}；两类策略都返回 {@link CommandNodeRegister}。这些注册器先保留
+ * “命令树”和未绑定的 {@code break}/{@code continue}，等语法分析 accept 前再展开成线性命令。
  * <p>
- * 下一站看策略如何按语义标签选择具体翻译器：{@link TagStrategyCompose}。如果要直接看注册器如何承接翻译结果，
- * 跳到 {@link CommandNodeRegister}。
+ * 主线下一站：{@link TagStrategyCompose}。下一站会解释“规约到某个产生式时，究竟选择哪个翻译器”。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0

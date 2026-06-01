@@ -10,19 +10,20 @@ import org.harvey.vie.theory.semantic.command.translator.command.OperatorCategor
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 讲解主线第 2 站：把“产生式上的语义标签”映射成真正负责生成命令的 {@link CommandTranslator}。
+ * 讲解主线第 2 站：语义动作分发表，也就是“产生式标签 -> 命令翻译器”的映射表。
  * <p>
- * {@link CommandBuildCallback} 在规约时只知道当前产生式 {@link SimpleGrammarProduction}，它会调用
- * {@link #preciseStringCommand()} 拿到的策略；本类再根据 {@link ProgramSemanticTag} 选择具体翻译器。
- * 所以这张映射表就是“语法制导翻译规则表”：声明、赋值、表达式、if/while/do-while、函数、数组、结构体
- * 都从这里进入各自的翻译支路。
+ * {@link CommandBuildCallback} 在规约时拿到的是 {@link SimpleGrammarProduction}。在编译原理术语里，
+ * 这个产生式代表“刚刚规约出了某个非终结符”，而产生式上的 {@link ProgramSemanticTag}
+ * 就相当于给语义动作做分类。本类根据这些标签选择具体的 {@link CommandTranslator}。
  * <p>
- * 讲解路线建议：
- * 先看顶层 {@link ProgramCommandTranslator}，再看通用拼接 {@link SimpleShrinkTranslator} 与
- * {@link StatementListTranslator}；表达式支路看 {@link InSuffixExpressionTranslator} 和
- * {@link UnaryExpressionTranslator}；控制流支路看 {@link IfStatementTranslator}、
- * {@link IfElseStatementTranslator}、{@link WhileStatementTranslator}、{@link DoWhileStatementTranslator}。
- * 支路讲完都回到 {@link CommandNodeRegister}，因为所有翻译器最终都返回注册器。
+ * 可以把本类理解成一张语法制导翻译规则表：声明进入 {@link DeclarationWithInitializationTranslator}
+ * 或 {@link DeclarationWithoutInitializationTranslator}，赋值进入 {@link AssignStatementTranslator}，
+ * 表达式进入 {@link InSuffixExpressionTranslator}/{@link UnaryExpressionTranslator}，
+ * 控制流进入 {@link IfStatementTranslator}/{@link IfElseStatementTranslator}/
+ * {@link WhileStatementTranslator}/{@link DoWhileStatementTranslator}。
+ * <p>
+ * 主线下一站：{@link ProgramCommandTranslator}。下一站会讲最外层 program 规约后如何兜底检查
+ * {@code break}/{@code continue}，并把支路最终带回 {@link CommandNodeRegister}。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -138,7 +139,7 @@ public class TagStrategyCompose {
     /**
      * 提供给 {@link CommandBuildCallback} 的规约策略入口。
      * <p>
-     * {@link ProductionTagStrategy#resolve(SimpleGrammarProduction)} 会按当前产生式携带的标签精确匹配上面的规则；
+     * {@link ProductionTagStrategy#resolve(Object)} 会按当前产生式携带的标签精确匹配上面的规则；
      * 找不到专用规则时回退到 {@link SimpleShrinkTranslator}。
      */
     public static CommandTranslatorStrategy preciseStringCommand() {

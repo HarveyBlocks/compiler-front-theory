@@ -8,22 +8,24 @@ import org.harvey.vie.theory.semantic.command.translator.command.CommandTranslat
 import java.util.List;
 
 /**
- * 讲解主线第 4 站：命令翻译器返回的统一包装接口。
+ * 讲解主线第 4 站：命令片段注册器。
  * <p>
- * 每个 {@link CommandTranslator} 不直接返回 {@link CommandNode} 数组，而是返回
- * {@link CommandNodeRegister}。原因有两个：
- * 1. 外层产生式需要调用 {@link #register(CommandNodeBuilder)}，把子树按正确顺序写进自己的 builder；
- * 2. {@code break}/{@code continue} 需要先以 {@link UncertainLabelGotoCommand} 的形式向外冒泡，
- * 等最近的循环翻译器再绑定到真实标签。
+ * 语法制导翻译在规约时是局部工作的：一个产生式只能看到自己右部的若干子结果。
+ * 为了让父产生式继续组合这些子结果，每个 {@link CommandTranslator} 都返回
+ * {@link CommandNodeRegister}，而不是直接返回最终线性代码。
+ * <p>
+ * 这个接口承担两个编译原理概念：
+ * 第一，综合属性的传递：{@link #register(CommandNodeBuilder)} 把子树按正确顺序写入父节点；
+ * 第二，控制流回填：{@code break}/{@code continue} 先以 {@link UncertainLabelGotoCommand}
+ * 向外传播，等遇到最近循环时再绑定标签，这和教材里的 backpatching 思想一致。
  * <p>
  * 主要实现：
- * {@link TokenCommandRegister} 包一个终结命令，
- * {@link NormalCommandNodeRegister} 包一个规约后的非终结节点，
- * {@link PlaceholderNodeRegister} 表示“不产生命令”，
- * {@link MergedCommandNodeRegister} 用于常量分支裁剪后仍保留另一支路里的未绑定跳转信息。
+ * {@link TokenCommandRegister} 包一条终结命令；
+ * {@link NormalCommandNodeRegister} 包一次规约后的非终结节点；
+ * {@link PlaceholderNodeRegister} 表示“不产生命令”；
+ * {@link MergedCommandNodeRegister} 用于常量分支裁剪后仍保留死分支里的未绑定跳转诊断信息。
  * <p>
- * 讲完本接口，下一站看具体节点结构 {@link CommandNode}，再看线性展开工具
- * {@link org.harvey.vie.theory.semantic.command.CommandSegmentSupport}。
+ * 主线下一站：{@link CommandNode}。下一站会讲注册器写入的命令节点树如何表示中间代码结构。
  *
  * @author Temper
  */

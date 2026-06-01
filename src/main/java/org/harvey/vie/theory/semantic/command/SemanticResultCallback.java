@@ -12,16 +12,20 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import java.util.List;
 
 /**
- * 讲解主线第 8 站：在语法分析接受前，把命令生成结果封装为 {@link SemanticAnalysisResult}。
+ * 讲解主线第 8 站：把线性中间代码封装成语义分析结果。
  * <p>
- * {@link CommandBuildCallback} 在移进/规约过程中一直维护
- * {@link org.harvey.vie.theory.semantic.command.node.CommandContext}。到 accept 前，栈顶就是整个程序入口段的
+ * 在 LR 分析 accept 前，语法上已经确认整份程序可以归约到开始符号。此时
+ * {@link CommandBuildCallback} 维护的
+ * {@link org.harvey.vie.theory.semantic.command.node.CommandContext} 栈顶就是整个程序入口段的
  * {@link CommandNodeRegister}。本回调用 {@link CommandSegmentSupport#flatten(CommandNodeRegister)}
- * 把入口命令展开，同时从
- * {@link ShiftReduceSemanticContext#getFunctionCommandSegmentContext()} 取出函数定义支路登记的函数段。
+ * 把入口命令展开成线性中间代码。
  * <p>
- * 讲完本类继续看 {@link SemanticAnalysisResult#getCommands()} 和
- * {@link ThreeAddressCodePrinter}，那里是测试和报告真正读取命令文本的入口。
+ * 函数定义不应该混进入口段，所以函数体命令由函数支路提前登记到
+ * {@link ShiftReduceSemanticContext#getFunctionCommandSegmentContext()}。本站把入口段、函数段、
+ * 结构体表和符号表一起封装进 {@link SemanticAnalysisResult}。
+ * <p>
+ * 主线下一站：{@link SemanticAnalysisResult}。下一站会讲这个结果对象如何保存入口命令段、函数命令段，
+ * 以及 {@link SemanticAnalysisResult#getCommands()} 如何把入口段交给打印器。
  *
  * @author Temper
  */
