@@ -35,25 +35,27 @@ public class TreeBuildCallback extends BuildStackContextCallback<ShiftReduceSynt
             public Stack<ShiftReduceSyntaxTreeNode> getStackContext(ShiftReduceSemanticContext context) {
                 return context.getTreeContext();
             }
-/**
- * 函数功能：创建子节点数组。
- * 输入：
- * - n：int 类型参数。
- * 输出：ShiftReduceSyntaxTreeNode[] 类型数组。
- */
+
+            /**
+             * 函数功能：创建子节点数组。
+             * 输入：
+             * - n：int 类型参数。
+             * 输出：ShiftReduceSyntaxTreeNode[] 类型数组。
+             */
 
             @Override
             public ShiftReduceSyntaxTreeNode[] instanceChildrenArray(int n) {
                 return new ShiftReduceSyntaxTreeNode[n];
             }
-/**
- * 函数功能：在规约时创建语法树节点。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：ShiftReduceSyntaxTreeNode[] 类型参数。
- * 输出：ShiftReduceSyntaxTreeNode 类型返回值。
- */
+
+            /**
+             * 函数功能：在规约时创建语法树节点。
+             * 输入：
+             * - context：ShiftReduceSemanticContext 类型参数。
+             * - production：SimpleGrammarProduction 类型参数。
+             * - children：ShiftReduceSyntaxTreeNode[] 类型参数。
+             * 输出：ShiftReduceSyntaxTreeNode 类型返回值。
+             */
 
             @Override
             public ShiftReduceSyntaxTreeNode instanceNodeOnReduce(
@@ -62,13 +64,14 @@ public class TreeBuildCallback extends BuildStackContextCallback<ShiftReduceSynt
                     ShiftReduceSyntaxTreeNode[] children) {
                 return new HeadNode(production.getHead(), production, children);
             }
-/**
- * 函数功能：在移进时创建语法树节点。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：ShiftReduceSyntaxTreeNode 类型返回值。
- */
+
+            /**
+             * 函数功能：在移进时创建语法树节点。
+             * 输入：
+             * - context：ShiftReduceSemanticContext 类型参数。
+             * - token：SourceToken 类型参数。
+             * 输出：ShiftReduceSyntaxTreeNode 类型返回值。
+             */
 
             @Override
             public ShiftReduceSyntaxTreeNode instanceNodeOnShift(
@@ -77,13 +80,13 @@ public class TreeBuildCallback extends BuildStackContextCallback<ShiftReduceSynt
             }
         };
     }
-/**
- * 函数功能：创建 TreeBuildCallback 对象。
- * 输入：
- * - 无。
- * 输出：无。
- */
 
+    /**
+     * 函数功能：创建 TreeBuildCallback 对象。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
 
 
     public TreeBuildCallback() {

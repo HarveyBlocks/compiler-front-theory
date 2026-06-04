@@ -22,23 +22,25 @@ import java.util.Iterator;
 public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
     private final DefineNameFactory nameFactory;
     private final ProductionBodyTrieFactory trieFactory;
-/**
- * 函数功能：创建 LeftFactoringEliminatorImpl 对象。
- * 输入：
- * - factory：DefineNameFactory 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 LeftFactoringEliminatorImpl 对象。
+     * 输入：
+     * - factory：DefineNameFactory 类型参数。
+     * 输出：无。
+     */
 
     public LeftFactoringEliminatorImpl(DefineNameFactory factory) {
         this.nameFactory = factory;
         trieFactory = new ProductionBodyTrieFactoryImpl();
     }
-/**
- * 函数功能：消除语法中的指定结构。
- * 输入：
- * - context：ProductionSetContext 类型参数。
- * 输出：ProductionSetContext 类型返回值。
- */
+
+    /**
+     * 函数功能：消除语法中的指定结构。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * 输出：ProductionSetContext 类型返回值。
+     */
 
     @Override
     public ProductionSetContext eliminate(ProductionSetContext context) {
@@ -68,16 +70,17 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
         private final String baseName;
         private final ProductionSetContextBuilder contextBuilder;
         private final IdGenerator counter;
-/**
- * 函数功能：创建 TrieContext 对象。
- * 输入：
- * - baseName：String 类型参数。
- * - contextBuilder：ProductionSetContextBuilder 类型参数。
- * - counter：IdGenerator 类型参数。
- * - cur：ProductionBodyTrieNode 类型参数。
- * - defineBuilder：GrammarProductionBuilder 类型参数。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：创建 TrieContext 对象。
+         * 输入：
+         * - baseName：String 类型参数。
+         * - contextBuilder：ProductionSetContextBuilder 类型参数。
+         * - counter：IdGenerator 类型参数。
+         * - cur：ProductionBodyTrieNode 类型参数。
+         * - defineBuilder：GrammarProductionBuilder 类型参数。
+         * 输出：无。
+         */
 
         public TrieContext(
                 String baseName,
@@ -91,23 +94,25 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
             this.cur = cur;
             this.defineBuilder = defineBuilder;
         }
-/**
- * 函数功能：转换为子节点候选式。
- * 输入：
- * - child：ProductionBodyTrieNode 类型参数。
- * - childDefineBuilder：GrammarProductionBuilder 类型参数。
- * 输出：TrieContext 类型返回值。
- */
+
+        /**
+         * 函数功能：转换为子节点候选式。
+         * 输入：
+         * - child：ProductionBodyTrieNode 类型参数。
+         * - childDefineBuilder：GrammarProductionBuilder 类型参数。
+         * 输出：TrieContext 类型返回值。
+         */
 
         public TrieContext toChild(ProductionBodyTrieNode child, GrammarProductionBuilder childDefineBuilder) {
             return new TrieContext(baseName, contextBuilder, counter, child, childDefineBuilder);
         }
-/**
- * 函数功能：处理产生式体前缀树节点。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：处理产生式体前缀树节点。
+         * 输入：
+         * - 无。
+         * 输出：无。
+         */
 
 
         private void deal() {
@@ -121,12 +126,13 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
                 multipleChildren();
             }
         }
-/**
- * 函数功能：在最后一个候选式末尾连接语法符号。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：在最后一个候选式末尾连接语法符号。
+         * 输入：
+         * - 无。
+         * 输出：无。
+         */
 
         private void concatenateLast() {
             GrammarUnitSymbol value = cur.getValue();
@@ -146,12 +152,13 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
                 }
             }
         }
-/**
- * 函数功能：处理单子节点的左公因子。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：处理单子节点的左公因子。
+         * 输入：
+         * - 无。
+         * 输出：无。
+         */
 
         private void singleChild() {
             // 孩子有accept
@@ -170,12 +177,13 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
             }
 
         }
-/**
- * 函数功能：处理多子节点的左公因子。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：处理多子节点的左公因子。
+         * 输入：
+         * - 无。
+         * 输出：无。
+         */
 
         private void multipleChildren() {
             String defineName = nextDefineName();
@@ -188,12 +196,13 @@ public class LeftFactoringEliminatorImpl implements LeftFactoringEliminator {
             }
             defineBuilder.concatenateDefinitionLast(defineName);
         }
-/**
- * 函数功能：生成下一个非终结符定义名称。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+        /**
+         * 函数功能：生成下一个非终结符定义名称。
+         * 输入：
+         * - 无。
+         * 输出：字符串结果。
+         */
 
 
         private String nextDefineName() {

@@ -27,14 +27,15 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
     private static void follow1(HeadSymbol start, FollowMapBuilder mapBuilder) {
         mapBuilder.getBuilder(start).containsEndMarker = true;
     }
-/**
- * 函数功能：获取 FOLLOW 集合。
- * 输入：
- * - startHead：String 类型参数。
- * - context：ProductionSetContext 类型参数。
- * - firstMap：FirstMap 类型参数。
- * 输出：FollowMap 类型返回值。
- */
+
+    /**
+     * 函数功能：获取 FOLLOW 集合。
+     * 输入：
+     * - startHead：String 类型参数。
+     * - context：ProductionSetContext 类型参数。
+     * - firstMap：FirstMap 类型参数。
+     * 输出：FollowMap 类型返回值。
+     */
 
     @Override
     public FollowMap follow(
@@ -49,14 +50,15 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         follow3(start, firstMap, mapBuilder);
         return mapBuilder.buildMap();
     }
-/**
- * 函数功能：按第二类规则计算 FOLLOW 集合。
- * 输入：
- * - start：HeadDefineSymbol 类型参数。
- * - firstMap：FirstMap 类型参数。
- * - mapBuilder：FollowMapBuilder 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：按第二类规则计算 FOLLOW 集合。
+     * 输入：
+     * - start：HeadDefineSymbol 类型参数。
+     * - firstMap：FirstMap 类型参数。
+     * - mapBuilder：FollowMapBuilder 类型参数。
+     * 输出：无。
+     */
 
     private void follow2(HeadDefineSymbol start, FirstMap firstMap, FollowMapBuilder mapBuilder) {
         forEach(start, mapBuilder, (headBuilder, headSymbol, afterIterator) -> {
@@ -65,14 +67,15 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
             return true;
         });
     }
-/**
- * 函数功能：按第三类规则计算 FOLLOW 集合。
- * 输入：
- * - start：HeadDefineSymbol 类型参数。
- * - firstMap：FirstMap 类型参数。
- * - mapBuilder：FollowMapBuilder 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：按第三类规则计算 FOLLOW 集合。
+     * 输入：
+     * - start：HeadDefineSymbol 类型参数。
+     * - firstMap：FirstMap 类型参数。
+     * - mapBuilder：FollowMapBuilder 类型参数。
+     * 输出：无。
+     */
 
     private void follow3(HeadDefineSymbol start, FirstMap firstMap, FollowMapBuilder mapBuilder) {
         boolean changed;
@@ -86,14 +89,15 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
             });
         } while (changed);
     }
-/**
- * 函数功能：遍历并执行 FOLLOW 计算规则。
- * 输入：
- * - start：HeadSymbol 类型参数。
- * - mapBuilder：FollowMapBuilder 类型参数。
- * - function：Func 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：遍历并执行 FOLLOW 计算规则。
+     * 输入：
+     * - start：HeadSymbol 类型参数。
+     * - mapBuilder：FollowMapBuilder 类型参数。
+     * - function：Func 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     private boolean forEach(
             HeadSymbol start, FollowMapBuilder mapBuilder, Func function) {
@@ -111,15 +115,16 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         }
         return changed;
     }
-/**
- * 函数功能：遍历产生式并应用 FOLLOW 计算规则。
- * 输入：
- * - head：HeadSymbol 类型参数。
- * - mapBuilder：FollowMapBuilder 类型参数。
- * - queue：HeadQueue 类型参数。
- * - function：Func 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：遍历产生式并应用 FOLLOW 计算规则。
+     * 输入：
+     * - head：HeadSymbol 类型参数。
+     * - mapBuilder：FollowMapBuilder 类型参数。
+     * - queue：HeadQueue 类型参数。
+     * - function：Func 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     private boolean forEachProduction(
             HeadSymbol head, FollowMapBuilder mapBuilder, HeadQueue queue, Func function) {
@@ -140,15 +145,16 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         }
         return changed;
     }
-/**
- * 函数功能：遍历产生式并应用 FOLLOW 计算规则。
- * 输入：
- * - headBuilder：FollowSetBuilder 类型参数。
- * - concatenation：GrammarConcatenation 类型参数。
- * - queue：HeadQueue 类型参数。
- * - function：Func 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：遍历产生式并应用 FOLLOW 计算规则。
+     * 输入：
+     * - headBuilder：FollowSetBuilder 类型参数。
+     * - concatenation：GrammarConcatenation 类型参数。
+     * - queue：HeadQueue 类型参数。
+     * - function：Func 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     private boolean forEachProduction(
             FollowSetBuilder headBuilder, GrammarConcatenation concatenation, HeadQueue queue, Func function) {
@@ -165,14 +171,15 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         }
         return changed;
     }
-/**
- * 函数功能：将后继 FIRST 集合合并到 FOLLOW 集合。
- * 输入：
- * - builder：FollowSetBuilder 类型参数。
- * - firstMap：FirstMap 类型参数。
- * - afterIterable：AfterIterable<GrammarUnitSymbol> 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：将后继 FIRST 集合合并到 FOLLOW 集合。
+     * 输入：
+     * - builder：FollowSetBuilder 类型参数。
+     * - firstMap：FirstMap 类型参数。
+     * - afterIterable：AfterIterable<GrammarUnitSymbol> 类型参数。
+     * 输出：无。
+     */
 
     private void cupAssignFirstAfter(
             FollowSetBuilder builder,
@@ -180,13 +187,14 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
             AfterIterable<GrammarUnitSymbol> afterIterable) {
         builder.set.addAll(firstMap.first(afterIterable).firstExceptEpsilon());
     }
-/**
- * 函数功能：判断后继 FIRST 集合是否包含空串。
- * 输入：
- * - firstMap：FirstMap 类型参数。
- * - afterIterable：AfterIterable<GrammarUnitSymbol> 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断后继 FIRST 集合是否包含空串。
+     * 输入：
+     * - firstMap：FirstMap 类型参数。
+     * - afterIterable：AfterIterable<GrammarUnitSymbol> 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     private boolean afterFirstContainsEpsilon(FirstMap firstMap, AfterIterable<GrammarUnitSymbol> afterIterable) {
         for (GrammarUnitSymbol symbol : afterIterable) {
@@ -202,13 +210,14 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
         }
         return true;
     }
-/**
- * 函数功能：将头部 FOLLOW 集合合并到目标 FOLLOW 集合。
- * 输入：
- * - builder：FollowSetBuilder 类型参数。
- * - headBuilder：FollowSetBuilder 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：将头部 FOLLOW 集合合并到目标 FOLLOW 集合。
+     * 输入：
+     * - builder：FollowSetBuilder 类型参数。
+     * - headBuilder：FollowSetBuilder 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     private boolean cupAssignHeadFollow(
             FollowSetBuilder builder, FollowSetBuilder headBuilder) {
@@ -240,32 +249,35 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
 
     private static class HeadQueue {
         private final LinkedList<HeadSymbol> queue = new LinkedList<>();
-/**
- * 函数功能：移除首个语法符号。
- * 输入：
- * - 无。
- * 输出：HeadSymbol 类型返回值。
- */
+
+        /**
+         * 函数功能：移除首个语法符号。
+         * 输入：
+         * - 无。
+         * 输出：HeadSymbol 类型返回值。
+         */
 
         public HeadSymbol removeFirst() {
             return queue.removeFirst();
         }
-/**
- * 函数功能：添加到末尾。
- * 输入：
- * - headSymbol：HeadSymbol 类型参数。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：添加到末尾。
+         * 输入：
+         * - headSymbol：HeadSymbol 类型参数。
+         * 输出：无。
+         */
 
         public void addLast(HeadSymbol headSymbol) {
             queue.addLast(headSymbol);
         }
-/**
- * 函数功能：判断是否存在元素。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+        /**
+         * 函数功能：判断是否存在元素。
+         * 输入：
+         * - 无。
+         * 输出：判断结果布尔值。
+         */
 
         public boolean hasElement() {
             return !queue.isEmpty();
@@ -275,12 +287,13 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
     private static class FollowSetBuilder {
         private final Set<TerminalSymbol> set = new HashSet<>();
         private boolean containsEndMarker = false;
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：FollowSet 类型返回值。
- */
+
+        /**
+         * 函数功能：构建目标对象。
+         * 输入：
+         * - 无。
+         * 输出：FollowSet 类型返回值。
+         */
 
         public FollowSet build() {
             return new FollowSetImpl(set, containsEndMarker);
@@ -290,54 +303,59 @@ public class FollowSetFactoryImpl implements FollowSetFactory {
     private static class FollowMapBuilder {
         private final ProductionSetContext context;
         private final Map<HeadSymbol, FollowSetBuilder> followMap;
-/**
- * 函数功能：创建 FollowMapBuilder 对象。
- * 输入：
- * - context：ProductionSetContext 类型参数。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：创建 FollowMapBuilder 对象。
+         * 输入：
+         * - context：ProductionSetContext 类型参数。
+         * 输出：无。
+         */
 
 
         public FollowMapBuilder(ProductionSetContext context) {
             this.context = context;
             followMap = new HashMap<>();
         }
-/**
- * 函数功能：获取指定名称的非终结符定义。
- * 输入：
- * - startHead：String 类型参数。
- * 输出：HeadDefineSymbol 类型返回值。
- */
+
+        /**
+         * 函数功能：获取指定名称的非终结符定义。
+         * 输入：
+         * - startHead：String 类型参数。
+         * 输出：HeadDefineSymbol 类型返回值。
+         */
 
         public HeadDefineSymbol getDefinition(String startHead) {
             return context.getDefinition(startHead);
         }
-/**
- * 函数功能：获取指定头部符号的候选式集合。
- * 输入：
- * - head：HeadSymbol 类型参数。
- * 输出：GrammarAlternation 类型返回值。
- */
+
+        /**
+         * 函数功能：获取指定头部符号的候选式集合。
+         * 输入：
+         * - head：HeadSymbol 类型参数。
+         * 输出：GrammarAlternation 类型返回值。
+         */
 
         public GrammarAlternation getAlternation(HeadSymbol head) {
             return context.getAlternation(head);
         }
-/**
- * 函数功能：获取指定非终结符的 FIRST 集构建器。
- * 输入：
- * - head：HeadSymbol 类型参数。
- * 输出：FollowSetBuilder 类型返回值。
- */
+
+        /**
+         * 函数功能：获取指定非终结符的 FIRST 集构建器。
+         * 输入：
+         * - head：HeadSymbol 类型参数。
+         * 输出：FollowSetBuilder 类型返回值。
+         */
 
         public FollowSetBuilder getBuilder(HeadSymbol head) {
             return followMap.computeIfAbsent(head, k -> new FollowSetBuilder());
         }
-/**
- * 函数功能：构建映射对象。
- * 输入：
- * - 无。
- * 输出：FollowMap 类型返回值。
- */
+
+        /**
+         * 函数功能：构建映射对象。
+         * 输入：
+         * - 无。
+         * 输出：FollowMap 类型返回值。
+         */
 
         public FollowMap buildMap() {
             Map<HeadSymbol, FollowSet> collect = followMap.entrySet()

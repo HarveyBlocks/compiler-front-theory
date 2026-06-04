@@ -27,25 +27,27 @@ public class ItemSetBuilder {
     @Getter
     @Setter
     private int index = -1;
-/**
- * 函数功能：创建 ItemSetBuilder 对象。
- * 输入：
- * - familyBuilder：ItemSetFamilyBuilder 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 ItemSetBuilder 对象。
+     * 输入：
+     * - familyBuilder：ItemSetFamilyBuilder 类型参数。
+     * 输出：无。
+     */
 
     ItemSetBuilder(ItemSetFamilyBuilder familyBuilder) {
         this.familyBuilder = familyBuilder;
     }
-/**
- * 函数功能：添加指定元素。
- * 输入：
- * - context：ProductionSetContext 类型参数。
- * - productionIndex：Integer 类型参数。
- * - size：int 类型参数。
- * - addedConsumer：Consumer<ProductionItem> 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：添加指定元素。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * - productionIndex：Integer 类型参数。
+     * - size：int 类型参数。
+     * - addedConsumer：Consumer<ProductionItem> 类型参数。
+     * 输出：无。
+     */
 
     public void add(
             ProductionSetContext context,
@@ -61,22 +63,24 @@ public class ItemSetBuilder {
             }
         }
     }
-/**
- * 函数功能：添加指定元素。
- * 输入：
- * - productionItem：ProductionItem 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：添加指定元素。
+     * 输入：
+     * - productionItem：ProductionItem 类型参数。
+     * 输出：无。
+     */
 
     public void add(ProductionItem productionItem) {
         set.add(productionItem);
     }
-/**
- * 函数功能：获取下一层非终结符集合。
- * 输入：
- * - 无。
- * 输出：Set<HeadDefineSymbol> 类型集合或迭代结果。
- */
+
+    /**
+     * 函数功能：获取下一层非终结符集合。
+     * 输入：
+     * - 无。
+     * 输出：Set<HeadDefineSymbol> 类型集合或迭代结果。
+     */
 
     public Set<HeadDefineSymbol> nextHeadSet() {
         return set.stream()
@@ -88,13 +92,14 @@ public class ItemSetBuilder {
                 .map(HeadSymbol::toDefine)
                 .collect(Collectors.toSet());
     }
-/**
- * 函数功能：记录语法符号的转移结果。
- * 输入：
- * - key：GrammarUnitSymbol 类型参数。
- * - toSetId：int 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：记录语法符号的转移结果。
+     * 输入：
+     * - key：GrammarUnitSymbol 类型参数。
+     * - toSetId：int 类型参数。
+     * 输出：无。
+     */
 
     public void putGoto(GrammarUnitSymbol key, int toSetId) {
         if (key.isTerminal()) {
@@ -111,12 +116,13 @@ public class ItemSetBuilder {
             headGoto.put(head, toSetId);
         }
     }
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：ItemSet 类型返回值。
- */
+
+    /**
+     * 函数功能：构建目标对象。
+     * 输入：
+     * - 无。
+     * 输出：ItemSet 类型返回值。
+     */
 
     public ItemSet build() {
         if (index < 0) {
@@ -127,12 +133,13 @@ public class ItemSetBuilder {
         Map<HeadSymbol, Set<TerminalSymbol>> decisionRules = buildDecisionRules();
         return new ItemSetImpl(set, terminalGoto, headGoto, decisionRules);
     }
-/**
- * 函数功能：构建决策规则映射。
- * 输入：
- * - 无。
- * 输出：Set<TerminalSymbol>> 类型集合或迭代结果。
- */
+
+    /**
+     * 函数功能：构建决策规则映射。
+     * 输入：
+     * - 无。
+     * 输出：Set<TerminalSymbol>> 类型集合或迭代结果。
+     */
 
 
     private Map<HeadSymbol, Set<TerminalSymbol>> buildDecisionRules() {
@@ -156,12 +163,13 @@ public class ItemSetBuilder {
         }
         return decisionRules;
     }
-/**
- * 函数功能：构建读取符号集合。
- * 输入：
- * - 无。
- * 输出：Set<Integer>> 类型集合或迭代结果。
- */
+
+    /**
+     * 函数功能：构建读取符号集合。
+     * 输入：
+     * - 无。
+     * 输出：Set<Integer>> 类型集合或迭代结果。
+     */
 
     @Deprecated
     public Map<HeadSymbol, Set<Integer>> buildRead() {
@@ -198,12 +206,13 @@ public class ItemSetBuilder {
         }
         return readMap;
     }
-/**
- * 函数功能：判断当前对象是否与指定对象相等。
- * 输入：
- * - o：Object 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断当前对象是否与指定对象相等。
+     * 输入：
+     * - o：Object 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean equals(Object o) {
@@ -216,12 +225,13 @@ public class ItemSetBuilder {
         ItemSetBuilder that = (ItemSetBuilder) o;
         return Objects.equals(set, that.set);
     }
-/**
- * 函数功能：返回当前对象的哈希值。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：返回当前对象的哈希值。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
 
     @Override
     public int hashCode() {

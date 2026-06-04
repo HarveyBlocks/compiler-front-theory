@@ -18,12 +18,13 @@ public interface SimpleCommandFactory {
      * 输出：SemanticCommand 类型返回值。
      */
     SemanticCommand callFunction(FunctionRecord name);
-/**
- * 函数功能：生成返回命令。
- * 输入：
- * - 无。
- * 输出：SemanticCommand 类型返回值。
- */
+
+    /**
+     * 函数功能：生成返回命令。
+     * 输入：
+     * - 无。
+     * 输出：SemanticCommand 类型返回值。
+     */
 
     SemanticCommand returnCommand();
 }

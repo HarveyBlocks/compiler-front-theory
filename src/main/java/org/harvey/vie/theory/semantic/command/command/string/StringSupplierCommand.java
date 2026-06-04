@@ -15,12 +15,13 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public class StringSupplierCommand implements SemanticCommand {
     private final Supplier<String> stringSupplier;
-/**
- * 函数功能：返回当前对象的字符串表示。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+    /**
+     * 函数功能：返回当前对象的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
 
     @Override
     public String toString() {

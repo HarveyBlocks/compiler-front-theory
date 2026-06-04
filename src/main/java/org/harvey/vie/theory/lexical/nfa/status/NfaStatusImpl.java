@@ -36,6 +36,7 @@ public class NfaStatusImpl<M> extends AbstractNfaStatus<M> {
     }
 
     // res 转 nfa, 以构建合适
+
     /**
      * 函数功能：根据输入符号获取当前状态的下一个 NFA 状态。
      * 输入：

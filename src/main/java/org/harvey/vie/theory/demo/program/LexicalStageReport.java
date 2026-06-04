@@ -44,6 +44,50 @@ public class LexicalStageReport {
     }
 
     /**
+     * 函数功能：分析源代码并生成词法阶段报告。
+     * 输入：
+     * - source：待分析的源代码文本。
+     * 输出：词法阶段分析报告 LexicalStageReport。
+     */
+    public static LexicalStageReport analyze(String source) {
+        DefaultErrorContext errorContext = new DefaultErrorContext();
+        List<LexicalTokenView> filteredTokens = new ArrayList<>();
+        Map<String, IdentifierEntry> identifiers = new LinkedHashMap<>();
+        Throwable failure = null;
+        LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
+        Resource resource = new AsciiStringResource(source);
+        try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
+            while (iterator.hasNext()) {
+                SourceToken token = iterator.next();
+                if (token == SourceTokenIterator.NO_MORE_TOKEN) {
+                    continue;
+                }
+                LexicalTokenView view = LexicalTokenView.from(token);
+                ProgramTokenType type = (ProgramTokenType) token.getType();
+                if (!ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(type)) {
+                    filteredTokens.add(view);
+                }
+                if (type == ProgramTokenType.IDENTIFIER || type == ProgramTokenType.TYPE_IDENTIFIER) {
+                    identifiers.putIfAbsent(view.getLexeme(), new IdentifierEntry(
+                            identifiers.size(),
+                            view.getLexeme(),
+                            type.name(),
+                            view.getOffset()
+                    ));
+                }
+            }
+        } catch (Throwable throwable) {
+            failure = throwable;
+        }
+        return new LexicalStageReport(
+                filteredTokens,
+                new ArrayList<>(identifiers.values()),
+                List.copyOf(errorContext.getErrors()),
+                failure
+        );
+    }
+
+    /**
      * 函数功能：获取过滤后的词法单元视图列表。
      * 输入：
      * - 无。
@@ -91,50 +135,6 @@ public class LexicalStageReport {
      */
     public boolean isAccepted() {
         return failure == null && errors.isEmpty();
-    }
-
-    /**
-     * 函数功能：分析源代码并生成词法阶段报告。
-     * 输入：
-     * - source：待分析的源代码文本。
-     * 输出：词法阶段分析报告 LexicalStageReport。
-     */
-    public static LexicalStageReport analyze(String source) {
-        DefaultErrorContext errorContext = new DefaultErrorContext();
-        List<LexicalTokenView> filteredTokens = new ArrayList<>();
-        Map<String, IdentifierEntry> identifiers = new LinkedHashMap<>();
-        Throwable failure = null;
-        LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
-        Resource resource = new AsciiStringResource(source);
-        try (SourceTokenIterator iterator = analyzer.iterator(errorContext, resource)) {
-            while (iterator.hasNext()) {
-                SourceToken token = iterator.next();
-                if (token == SourceTokenIterator.NO_MORE_TOKEN) {
-                    continue;
-                }
-                LexicalTokenView view = LexicalTokenView.from(token);
-                ProgramTokenType type = (ProgramTokenType) token.getType();
-                if (!ProgramSyntaxDemo.SHOULD_BE_FILTERED.contains(type)) {
-                    filteredTokens.add(view);
-                }
-                if (type == ProgramTokenType.IDENTIFIER || type == ProgramTokenType.TYPE_IDENTIFIER) {
-                    identifiers.putIfAbsent(view.getLexeme(), new IdentifierEntry(
-                            identifiers.size(),
-                            view.getLexeme(),
-                            type.name(),
-                            view.getOffset()
-                    ));
-                }
-            }
-        } catch (Throwable throwable) {
-            failure = throwable;
-        }
-        return new LexicalStageReport(
-                filteredTokens,
-                new ArrayList<>(identifiers.values()),
-                List.copyOf(errorContext.getErrors()),
-                failure
-        );
     }
 
     public static final class LexicalTokenView {

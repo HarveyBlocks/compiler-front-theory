@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -10,6 +9,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -25,37 +25,13 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class DoWhileStatementTranslator implements CommandTranslator {
     /**
-     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 函数功能：处理普通条件分支。
      * 输入：
      * - context：ShiftReduceSemanticContext 类型参数。
      * - production：SimpleGrammarProduction 类型参数。
      * - children：CommandNodeRegister[] 类型参数。
-     * 输出：CommandNodeRegister 类型返回值。
+     * 输出：NormalCommandNodeRegister 类型返回值。
      */
-    @Override
-    public CommandNodeRegister translate(
-            ShiftReduceSemanticContext context,
-            SimpleGrammarProduction production,
-            CommandNodeRegister[] children) {
-        if (children.length != 7) {
-            throw new org.harvey.vie.theory.exception.CompilerException(
-                    "illegal statement on do while statement production."
-            );
-        }
-        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
-        if (Boolean.FALSE.equals(constantCondition)) {
-            return onFalseConstantCondition(production, children);
-        }
-        return onNormalCondition(context, production, children);
-    }
-/**
- * 函数功能：处理普通条件分支。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：CommandNodeRegister[] 类型参数。
- * 输出：NormalCommandNodeRegister 类型返回值。
- */
 
     private static NormalCommandNodeRegister onNormalCondition(
             ShiftReduceSemanticContext context,
@@ -88,13 +64,14 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         WhileStatementTranslator.bindLoopLabels(children[1], beforeTestLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
-/**
- * 函数功能：处理恒假条件分支。
- * 输入：
- * - production：SimpleGrammarProduction 类型参数。
- * - children：CommandNodeRegister[] 类型参数。
- * 输出：NormalCommandNodeRegister 类型返回值。
- */
+
+    /**
+     * 函数功能：处理恒假条件分支。
+     * 输入：
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：NormalCommandNodeRegister 类型返回值。
+     */
 
     private static NormalCommandNodeRegister onFalseConstantCondition(
             SimpleGrammarProduction production,
@@ -108,5 +85,30 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         thisBuilder.add(new LabelNode(whileEndLabel));
         WhileStatementTranslator.bindLoopLabels(children[1], whileEndLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
+    }
+
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
+    @Override
+    public CommandNodeRegister translate(
+            ShiftReduceSemanticContext context,
+            SimpleGrammarProduction production,
+            CommandNodeRegister[] children) {
+        if (children.length != 7) {
+            throw new org.harvey.vie.theory.exception.CompilerException(
+                    "illegal statement on do while statement production."
+            );
+        }
+        Boolean constantCondition = ConstantConditionSupport.booleanValue(context, 4);
+        if (Boolean.FALSE.equals(constantCondition)) {
+            return onFalseConstantCondition(production, children);
+        }
+        return onNormalCondition(context, production, children);
     }
 }

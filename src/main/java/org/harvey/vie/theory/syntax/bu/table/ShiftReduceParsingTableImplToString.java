@@ -20,6 +20,7 @@ import static org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable.NONE
 public class ShiftReduceParsingTableImplToString {
 
     // region show string
+
     /**
      * 函数功能：返回当前对象的字符串表示。
      * 输入：

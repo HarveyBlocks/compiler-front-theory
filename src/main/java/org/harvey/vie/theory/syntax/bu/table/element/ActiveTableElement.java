@@ -15,57 +15,63 @@ public interface ActiveTableElement {
      * 输出：判断结果布尔值。
      */
     boolean conflict(ActiveTableElement other);
-/**
- * 函数功能：获取指定产生式。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取指定产生式。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
 
     default int getProduction() {
         throw new UnsupportedOperationException("Do not support to invoke get production by this object");
     }
-/**
- * 函数功能：获取移进目标状态。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取移进目标状态。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
 
 
     default int nextStatus() {
         throw new UnsupportedOperationException("Do not support to invoke get production by this object");
     }
-/**
- * 函数功能：判断是否为移进动作。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否为移进动作。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     boolean isShift();
-/**
- * 函数功能：判断是否为规约动作。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否为规约动作。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     boolean isReduce();
-/**
- * 函数功能：判断是否为接受动作。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否为接受动作。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     boolean isAccept();
-/**
- * 函数功能：处理动作表元素冲突。
- * 输入：
- * - element：ActiveTableElement 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：处理动作表元素冲突。
+     * 输入：
+     * - element：ActiveTableElement 类型参数。
+     * 输出：无。
+     */
 
     default void dealConflict(ActiveTableElement element) {
         throw new UnsupportedOperationException("Can not deal conflict!");

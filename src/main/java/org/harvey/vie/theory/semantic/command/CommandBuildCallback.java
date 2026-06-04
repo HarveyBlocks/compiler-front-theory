@@ -31,13 +31,14 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
     private static class CommandSupplier implements Supplier<CommandNodeRegister> {
         private final TokenTranslatorStrategy shiftStrategies;
         private final CommandTranslatorStrategy reduceStrategies;
-/**
- * 函数功能：创建 CommandSupplier 对象。
- * 输入：
- * - shiftStrategies：TokenTranslatorStrategy 类型参数。
- * - reduceStrategies：CommandTranslatorStrategy 类型参数。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：创建 CommandSupplier 对象。
+         * 输入：
+         * - shiftStrategies：TokenTranslatorStrategy 类型参数。
+         * - reduceStrategies：CommandTranslatorStrategy 类型参数。
+         * 输出：无。
+         */
 
         public CommandSupplier(
                 TokenTranslatorStrategy shiftStrategies,
@@ -46,36 +47,39 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
             this.reduceStrategies = reduceStrategies;
 
         }
-/**
- * 函数功能：获取语义栈上下文。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * 输出：Stack<CommandNodeRegister> 类型返回值。
- */
+
+        /**
+         * 函数功能：获取语义栈上下文。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * 输出：Stack<CommandNodeRegister> 类型返回值。
+         */
 
         @Override
         public Stack<CommandNodeRegister> getStackContext(ShiftReduceSemanticContext context) {
             return context.getCommandContext();
         }
-/**
- * 函数功能：创建子节点数组。
- * 输入：
- * - n：int 类型参数。
- * 输出：CommandNodeRegister[] 类型数组。
- */
+
+        /**
+         * 函数功能：创建子节点数组。
+         * 输入：
+         * - n：int 类型参数。
+         * 输出：CommandNodeRegister[] 类型数组。
+         */
 
         @Override
         public CommandNodeRegister[] instanceChildrenArray(int n) {
             return new CommandNodeRegister[n];
         }
-/**
- * 函数功能：在规约时创建语法树节点。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：CommandNodeRegister[] 类型参数。
- * 输出：CommandNodeRegister 类型返回值。
- */
+
+        /**
+         * 函数功能：在规约时创建语法树节点。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - production：SimpleGrammarProduction 类型参数。
+         * - children：CommandNodeRegister[] 类型参数。
+         * 输出：CommandNodeRegister 类型返回值。
+         */
 
         @Override
         public CommandNodeRegister instanceNodeOnReduce(
@@ -85,13 +89,14 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
             CommandTranslator translator = reduceStrategies.get(production);
             return translator.translate(context, production, children);
         }
-/**
- * 函数功能：在移进时创建语法树节点。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：CommandNodeRegister 类型返回值。
- */
+
+        /**
+         * 函数功能：在移进时创建语法树节点。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - token：SourceToken 类型参数。
+         * 输出：CommandNodeRegister 类型返回值。
+         */
 
 
         @Override

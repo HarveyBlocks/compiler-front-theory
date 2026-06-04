@@ -3,14 +3,14 @@ package org.harvey.vie.theory.semantic.identifier;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ReducePredicate;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
-import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.semantic.tree.node.TreeContext;
+import org.harvey.vie.theory.semantic.type.SemanticType;
+import org.harvey.vie.theory.semantic.type.TypeRegister;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -24,16 +24,17 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 @AllArgsConstructor
 public class IdentifierTableBuildCallback implements ShiftReduceCallback {
     private final ReducePredicate usingPredicate;
-    private final ReducePredicate declaringPredicate ;
+    private final ReducePredicate declaringPredicate;
     private final UsingIdentifierSupplier usingIdentifierSupplier;
     private final DeclarationRecordSupplier declarationRecordSupplier;
-/**
- * 函数功能：处理规约事件。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -45,13 +46,14 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
-/**
- * 函数功能：执行规约事件的内部处理。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：执行规约事件的内部处理。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
 
     private void onReduce0(ShiftReduceSemanticContext context, SimpleGrammarProduction production)
             throws CompileException {
@@ -67,13 +69,14 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
             registerIdentifier(context, headNode);
         }
     }
-/**
- * 函数功能：判断标识符是否存在。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - headNode：HeadNode 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：判断标识符是否存在。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - headNode：HeadNode 类型参数。
+     * 输出：无。
+     */
 
     private void existIdentifier(ShiftReduceSemanticContext context, HeadNode headNode) throws CompileException {
         SourceToken identifierToken = usingIdentifierSupplier.identifier(headNode);
@@ -83,13 +86,14 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
             throw new CompileException("identifier is not declared in current visible scopes.");
         }
     }
-/**
- * 函数功能：注册标识符记录。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - headNode：HeadNode 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：注册标识符记录。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - headNode：HeadNode 类型参数。
+     * 输出：无。
+     */
 
     private void registerIdentifier(ShiftReduceSemanticContext context, HeadNode headNode)
             throws CompileException {
@@ -131,29 +135,32 @@ public class IdentifierTableBuildCallback implements ShiftReduceCallback {
          * 输出：SourceToken 类型返回值。
          */
         SourceToken identifier(HeadNode declarationReducedNode);
-/**
- * 函数功能：判断声明是否带初始化。
- * 输入：
- * - declarationReducedNode：HeadNode 类型参数。
- * 输出：判断结果布尔值。
- */
+
+        /**
+         * 函数功能：判断声明是否带初始化。
+         * 输入：
+         * - declarationReducedNode：HeadNode 类型参数。
+         * 输出：判断结果布尔值。
+         */
 
         boolean initialized(HeadNode declarationReducedNode);
-/**
- * 函数功能：获取类型头节点。
- * 输入：
- * - declarationReducedNode：HeadNode 类型参数。
- * 输出：HeadNode 类型返回值。
- */
+
+        /**
+         * 函数功能：获取类型头节点。
+         * 输入：
+         * - declarationReducedNode：HeadNode 类型参数。
+         * 输出：HeadNode 类型返回值。
+         */
 
         HeadNode typeHeadNode(HeadNode declarationReducedNode);
-/**
- * 函数功能：获取初始化常量值。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - declarationReducedNode：HeadNode 类型参数。
- * 输出：ConstantValue 类型返回值。
- */
+
+        /**
+         * 函数功能：获取初始化常量值。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - declarationReducedNode：HeadNode 类型参数。
+         * 输出：ConstantValue 类型返回值。
+         */
 
         default ConstantValue initializerValue(ShiftReduceSemanticContext context, HeadNode declarationReducedNode) {
             return null;

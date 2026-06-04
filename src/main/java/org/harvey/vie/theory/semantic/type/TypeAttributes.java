@@ -7,15 +7,15 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
 /**
  * 读取当前归约节点及其子节点类型属性的工具类。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * TypeAttributes 封装了一个常见访问模式：
- *
+ * <p>
  * 1. 从 ShiftReduceSemanticContext 中取得当前归约出的 HeadNode。
  * 2. 根据子节点下标找到对应语法树节点。
  * 3. 从 TypeContext 中读取 TypeRegister、SemanticType 或定位 token。
- *
+ * <p>
  * 这样命令翻译器和其他 callback 不需要重复写这些取值逻辑。
  */
 public final class TypeAttributes {
@@ -52,7 +52,9 @@ public final class TypeAttributes {
      * 输出：SemanticType 类型返回值。
      */
     public static SemanticType childType(ShiftReduceSemanticContext context, int index) {
-        return child(context, index).requireType("semantic type is required for child #" + index + " but the child has no type.");
+        return child(context, index).requireType("semantic type is required for child #" +
+                                                 index +
+                                                 " but the child has no type.");
     }
 
     /**
@@ -64,7 +66,9 @@ public final class TypeAttributes {
      */
     public static SemanticType childInstructionType(ShiftReduceSemanticContext context, int index) {
         return child(context, index)
-                .requireInstructionType("instruction type is required for child #" + index + " but the child has no instruction type.");
+                .requireInstructionType("instruction type is required for child #" +
+                                        index +
+                                        " but the child has no instruction type.");
     }
 
     /**

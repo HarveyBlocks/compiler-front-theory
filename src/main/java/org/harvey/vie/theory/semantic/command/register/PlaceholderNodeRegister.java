@@ -18,12 +18,13 @@ public class PlaceholderNodeRegister implements CommandNodeRegister {
      */
     public PlaceholderNodeRegister() {
     }
-/**
- * 函数功能：注册指定对象。
- * 输入：
- * - outer：CommandNodeBuilder 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：注册指定对象。
+     * 输入：
+     * - outer：CommandNodeBuilder 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void register(CommandNodeBuilder outer) {

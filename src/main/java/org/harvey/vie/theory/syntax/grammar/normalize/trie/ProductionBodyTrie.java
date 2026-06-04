@@ -17,12 +17,13 @@ public interface ProductionBodyTrie {
      * 输出：无。
      */
     void add(GrammarConcatenation concatenation);
-/**
- * 函数功能：获取根节点。
- * 输入：
- * - 无。
- * 输出：ProductionBodyTrieNode 类型返回值。
- */
+
+    /**
+     * 函数功能：获取根节点。
+     * 输入：
+     * - 无。
+     * 输出：ProductionBodyTrieNode 类型返回值。
+     */
 
     ProductionBodyTrieNode getRoot();
 

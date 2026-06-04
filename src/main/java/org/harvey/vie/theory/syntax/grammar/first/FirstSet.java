@@ -15,61 +15,66 @@ import java.util.Set;
  */
 public interface FirstSet {
     FirstSet EPSILON = new EpsilonFirstSet();
-/**
- * 函数功能：获取不包含空串的 FIRST 集合。
- * 输入：
- * - 无。
- * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
- */
+
+    /**
+     * 函数功能：获取不包含空串的 FIRST 集合。
+     * 输入：
+     * - 无。
+     * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+     */
 
     Set<TerminalSymbol> firstExceptEpsilon();
-/**
- * 函数功能：判断是否包含指定元素。
- * 输入：
- * - symbol：GrammarSymbol 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否包含指定元素。
+     * 输入：
+     * - symbol：GrammarSymbol 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     boolean contains(GrammarSymbol symbol);
-/**
- * 函数功能：判断集合是否包含空串符号。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断集合是否包含空串符号。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     boolean containsEpsilon();
 }
 
 class EpsilonFirstSet implements FirstSet {
-/**
- * 函数功能：获取不包含空串的 FIRST 集合。
- * 输入：
- * - 无。
- * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
- */
+    /**
+     * 函数功能：获取不包含空串的 FIRST 集合。
+     * 输入：
+     * - 无。
+     * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+     */
 
     @Override
     public Set<TerminalSymbol> firstExceptEpsilon() {
         return Collections.emptySet();
     }
-/**
- * 函数功能：判断是否包含指定元素。
- * 输入：
- * - symbol：GrammarSymbol 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否包含指定元素。
+     * 输入：
+     * - symbol：GrammarSymbol 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean contains(GrammarSymbol symbol) {
         return false;
     }
-/**
- * 函数功能：判断集合是否包含空串符号。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断集合是否包含空串符号。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean containsEpsilon() {

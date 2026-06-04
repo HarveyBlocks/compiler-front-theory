@@ -17,32 +17,24 @@ public enum CommandDataType {
     REF("ref");
 
     private final String mnemonic;
-/**
- * 函数功能：创建 CommandDataType 对象。
- * 输入：
- * - mnemonic：String 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 CommandDataType 对象。
+     * 输入：
+     * - mnemonic：String 类型参数。
+     * 输出：无。
+     */
 
     CommandDataType(String mnemonic) {
         this.mnemonic = mnemonic;
     }
-/**
- * 函数功能：获取操作符助记符。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
 
-    public String mnemonic() {
-        return mnemonic;
-    }
-/**
- * 函数功能：获取存储类型对应的命令数据类型。
- * 输入：
- * - type：SemanticType 类型参数。
- * 输出：CommandDataType 类型返回值。
- */
+    /**
+     * 函数功能：获取存储类型对应的命令数据类型。
+     * 输入：
+     * - type：SemanticType 类型参数。
+     * 输出：CommandDataType 类型返回值。
+     */
 
     public static CommandDataType forStorage(SemanticType type) {
         if (type.isReferenceType()) {
@@ -50,12 +42,13 @@ public enum CommandDataType {
         }
         return forScalar(type);
     }
-/**
- * 函数功能：获取值类型对应的命令数据类型。
- * 输入：
- * - type：SemanticType 类型参数。
- * 输出：CommandDataType 类型返回值。
- */
+
+    /**
+     * 函数功能：获取值类型对应的命令数据类型。
+     * 输入：
+     * - type：SemanticType 类型参数。
+     * 输出：CommandDataType 类型返回值。
+     */
 
     public static CommandDataType forValue(SemanticType type) {
         if (type.isReferenceType()) {
@@ -63,12 +56,13 @@ public enum CommandDataType {
         }
         return forScalar(type);
     }
-/**
- * 函数功能：获取标量类型对应的命令数据类型。
- * 输入：
- * - type：SemanticType 类型参数。
- * 输出：CommandDataType 类型返回值。
- */
+
+    /**
+     * 函数功能：获取标量类型对应的命令数据类型。
+     * 输入：
+     * - type：SemanticType 类型参数。
+     * 输出：CommandDataType 类型返回值。
+     */
 
     private static CommandDataType forScalar(SemanticType type) {
         switch (type.getKind()) {
@@ -91,5 +85,16 @@ public enum CommandDataType {
             default:
                 throw new IllegalStateException("unsupported semantic type kind: " + type.getKind());
         }
+    }
+
+    /**
+     * 函数功能：获取操作符助记符。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
+
+    public String mnemonic() {
+        return mnemonic;
     }
 }

@@ -42,6 +42,16 @@ public class RegexCharSet implements SimpleCollection<String> {
     }
 
     /**
+     * 函数功能：按给定元素创建正则字符集合。
+     * 输入：
+     * - ele：用于创建集合的字符串元素数组。
+     * 输出：创建得到的 RegexCharSet。
+     */
+    public static RegexCharSet of(String... ele) {
+        return new RegexCharSet(Set.of(ele));
+    }
+
+    /**
      * 函数功能：获取正则字符集合的正则字符串表示。
      * 输入：
      * - 无。
@@ -50,16 +60,6 @@ public class RegexCharSet implements SimpleCollection<String> {
     @Override
     public String toString() {
         return set.stream().collect(Collectors.joining("|", "(", ")"));
-    }
-
-    /**
-     * 函数功能：按给定元素创建正则字符集合。
-     * 输入：
-     * - ele：用于创建集合的字符串元素数组。
-     * 输出：创建得到的 RegexCharSet。
-     */
-    public static RegexCharSet of(String... ele) {
-        return new RegexCharSet(Set.of(ele));
     }
 
     /**
@@ -92,6 +92,8 @@ public class RegexCharSet implements SimpleCollection<String> {
      */
     public RegexCharSet exclude(String... s) {
         Set<String> exclusive = Set.of(s);
-        return new RegexCharSet(this.set.stream().filter(Predicate.not(exclusive::contains)).collect(Collectors.toSet()));
+        return new RegexCharSet(this.set.stream()
+                .filter(Predicate.not(exclusive::contains))
+                .collect(Collectors.toSet()));
     }
 }

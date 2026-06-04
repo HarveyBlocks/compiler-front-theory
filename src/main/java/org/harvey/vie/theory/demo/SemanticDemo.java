@@ -38,6 +38,9 @@ import java.util.Map;
  * @author Temper
  */
 public class SemanticDemo {
+    static final TokenTranslator defaultTokenTranslator = new DoNothingTokenTranslator();
+    static final CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
+
     /**
      * 函数功能：构建仅包含基础语义回调的移进归约回调注册器。
      * 输入：
@@ -96,9 +99,6 @@ public class SemanticDemo {
         register.add(new PassiveErrorCallback());
         return register;
     }
-
-    static final TokenTranslator defaultTokenTranslator = new DoNothingTokenTranslator();
-    static final CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
 
     /**
      * 函数功能：创建语法制导翻译回调。

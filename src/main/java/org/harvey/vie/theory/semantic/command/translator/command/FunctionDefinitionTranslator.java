@@ -24,30 +24,6 @@ import java.util.List;
  */
 public class FunctionDefinitionTranslator implements CommandTranslator {
     /**
-     * 函数功能：翻译语法节点并返回命令节点注册器。
-     * 输入：
-     * - context：ShiftReduceSemanticContext 类型参数。
-     * - production：SimpleGrammarProduction 类型参数。
-     * - children：CommandNodeRegister[] 类型参数。
-     * 输出：CommandNodeRegister 类型返回值。
-     */
-    @Override
-    public CommandNodeRegister translate(
-            ShiftReduceSemanticContext context,
-            SimpleGrammarProduction production,
-            CommandNodeRegister[] children) {
-        if (children.length != 2) {
-            throw new CompilerException("function definition requires function head and block.");
-        }
-        FunctionRecord function = function(context);
-        List<org.harvey.vie.theory.semantic.command.command.SemanticCommand> commands =
-                CommandSegmentSupport.flatten(children[1]);
-        // 函数体命令单独挂到函数记录上，供后续统一输出或执行。
-        context.registerFunctionCommandSegment(new FunctionCommandSegment(function, commands));
-        return new PlaceholderNodeRegister();
-    }
-
-    /**
      * 函数功能：获取函数记录。
      * 输入：
      * - context：ShiftReduceSemanticContext 类型参数。
@@ -82,5 +58,29 @@ public class FunctionDefinitionTranslator implements CommandTranslator {
             throw new CompilerException("current reduced head is absent for function definition.");
         }
         return context.getTreeContext().peek().toHead();
+    }
+
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
+    @Override
+    public CommandNodeRegister translate(
+            ShiftReduceSemanticContext context,
+            SimpleGrammarProduction production,
+            CommandNodeRegister[] children) {
+        if (children.length != 2) {
+            throw new CompilerException("function definition requires function head and block.");
+        }
+        FunctionRecord function = function(context);
+        List<org.harvey.vie.theory.semantic.command.command.SemanticCommand> commands =
+                CommandSegmentSupport.flatten(children[1]);
+        // 函数体命令单独挂到函数记录上，供后续统一输出或执行。
+        context.registerFunctionCommandSegment(new FunctionCommandSegment(function, commands));
+        return new PlaceholderNodeRegister();
     }
 }

@@ -10,6 +10,7 @@ import lombok.Getter;
 @Getter
 public class FunctionBodyState {
     private final FunctionRecord function;
+
     /**
      * 函数功能：创建 FunctionBodyState 对象。
      * 输入：

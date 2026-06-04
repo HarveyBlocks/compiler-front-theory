@@ -22,12 +22,13 @@ public final class ArrayCreationDimensions {
      */
     private ArrayCreationDimensions() {
     }
-/**
- * 函数功能：汇总数组创建维度信息。
- * 输入：
- * - node：ShiftReduceSyntaxTreeNode 类型参数。
- * 输出：Summary 类型返回值。
- */
+
+    /**
+     * 函数功能：汇总数组创建维度信息。
+     * 输入：
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * 输出：Summary 类型返回值。
+     */
 
     public static Summary summarize(ShiftReduceSyntaxTreeNode node) {
         Summary summary = new Summary();
@@ -47,13 +48,14 @@ public final class ArrayCreationDimensions {
         }
         return summary;
     }
-/**
- * 函数功能：汇总并校验数组创建维度信息。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - node：ShiftReduceSyntaxTreeNode 类型参数。
- * 输出：Summary 类型返回值。
- */
+
+    /**
+     * 函数功能：汇总并校验数组创建维度信息。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * 输出：Summary 类型返回值。
+     */
 
     public static Summary summarizeAndValidate(ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         Summary summary = new Summary();
@@ -91,27 +93,38 @@ public final class ArrayCreationDimensions {
         }
         return summary;
     }
-/**
- * 函数功能：遍历数组创建维度节点。
- * 输入：
- * - node：ShiftReduceSyntaxTreeNode 类型参数。
- * - consumer：java.util.function.Consumer<HeadNode> 类型参数。
- * 输出：无。
- */
 
-    private static void visitDimensions(ShiftReduceSyntaxTreeNode node, java.util.function.Consumer<HeadNode> consumer) {
+    /**
+     * 函数功能：遍历数组创建维度节点。
+     * 输入：
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * - consumer：java.util.function.Consumer<HeadNode> 类型参数。
+     * 输出：无。
+     */
+
+    private static void visitDimensions(
+            ShiftReduceSyntaxTreeNode node,
+            java.util.function.Consumer<HeadNode> consumer) {
         if (node == null || !node.isHead()) {
             return;
         }
         ArrayDeque<HeadNode> stack = new ArrayDeque<>();
         HeadNode cursor = node.toHead();
         while (true) {
-            if (cursor.matchTags(ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.SEQUENCE)) {
+            if (cursor.matchTags(
+                    ProgramSemanticTag.LIST,
+                    ProgramSemanticTag.ARRAY_CREATION_DIM,
+                    ProgramSemanticTag.SEQUENCE
+            )) {
                 stack.push(cursor.get(1).toHead());
                 cursor = cursor.get(0).toHead();
                 continue;
             }
-            if (cursor.matchTags(ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.FORWARD)) {
+            if (cursor.matchTags(
+                    ProgramSemanticTag.LIST,
+                    ProgramSemanticTag.ARRAY_CREATION_DIM,
+                    ProgramSemanticTag.FORWARD
+            )) {
                 stack.push(cursor.get(0).toHead());
                 break;
             }

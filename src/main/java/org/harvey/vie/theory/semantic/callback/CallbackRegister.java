@@ -9,7 +9,7 @@ import org.harvey.vie.theory.util.SimpleCollection;
  * @version 1.0
  * @date 2026-04-08 13:00
  */
-public  interface CallbackRegister<T extends SemanticCallback> extends SimpleCollection<T> {
+public interface CallbackRegister<T extends SemanticCallback> extends SimpleCollection<T> {
     /**
      * 函数功能：添加指定元素。
      * 输入：

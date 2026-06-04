@@ -3,14 +3,14 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
-import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -20,14 +20,15 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 @AllArgsConstructor
 public class InSuffixExpressionTranslator implements CommandTranslator {
     private final OperatorFactor operatorFactor;
-/**
- * 函数功能：翻译语法节点并返回命令节点注册器。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：CommandNodeRegister[] 类型参数。
- * 输出：CommandNodeRegister 类型返回值。
- */
+
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
 
     @Override
     public CommandNodeRegister translate(
@@ -63,15 +64,16 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         )));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
-/**
- * 函数功能：推断运算指令类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - leftType：SemanticType 类型参数。
- * - rightType：SemanticType 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：SemanticType 类型返回值。
- */
+
+    /**
+     * 函数功能：推断运算指令类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - leftType：SemanticType 类型参数。
+     * - rightType：SemanticType 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：SemanticType 类型返回值。
+     */
 
     private SemanticType inferInstructionType(
             ShiftReduceSemanticContext context,
@@ -92,15 +94,16 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         }
         throw new IllegalStateException("unsupported infix operator: " + operatorFactor.mnemonic());
     }
-/**
- * 函数功能：推断逻辑运算指令类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - leftType：SemanticType 类型参数。
- * - rightType：SemanticType 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：SemanticType 类型返回值。
- */
+
+    /**
+     * 函数功能：推断逻辑运算指令类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - leftType：SemanticType 类型参数。
+     * - rightType：SemanticType 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：SemanticType 类型返回值。
+     */
 
     private SemanticType logicalInstructionType(
             ShiftReduceSemanticContext context,
@@ -111,15 +114,16 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         SemanticDiagnostics.requireBoolean(context, rightType, token, "logical operator requires boolean operands.");
         return SemanticType.scalar(SemanticType.Kind.BOOLEAN);
     }
-/**
- * 函数功能：推断相等性运算指令类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - leftType：SemanticType 类型参数。
- * - rightType：SemanticType 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：SemanticType 类型返回值。
- */
+
+    /**
+     * 函数功能：推断相等性运算指令类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - leftType：SemanticType 类型参数。
+     * - rightType：SemanticType 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：SemanticType 类型返回值。
+     */
 
     private SemanticType equalityInstructionType(
             ShiftReduceSemanticContext context,
@@ -137,15 +141,16 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         }
         return numericComparable ? context.commonBinaryType(leftType, rightType) : leftType;
     }
-/**
- * 函数功能：推断关系运算指令类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - leftType：SemanticType 类型参数。
- * - rightType：SemanticType 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：SemanticType 类型返回值。
- */
+
+    /**
+     * 函数功能：推断关系运算指令类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - leftType：SemanticType 类型参数。
+     * - rightType：SemanticType 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：SemanticType 类型返回值。
+     */
 
     private SemanticType relationalInstructionType(
             ShiftReduceSemanticContext context,
@@ -156,15 +161,16 @@ public class InSuffixExpressionTranslator implements CommandTranslator {
         SemanticDiagnostics.requireNumeric(context, rightType, token, "relational operator requires numeric operands.");
         return context.commonBinaryType(leftType, rightType);
     }
-/**
- * 函数功能：推断算术运算指令类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - leftType：SemanticType 类型参数。
- * - rightType：SemanticType 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：SemanticType 类型返回值。
- */
+
+    /**
+     * 函数功能：推断算术运算指令类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - leftType：SemanticType 类型参数。
+     * - rightType：SemanticType 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：SemanticType 类型返回值。
+     */
 
     private SemanticType arithmeticInstructionType(
             ShiftReduceSemanticContext context,

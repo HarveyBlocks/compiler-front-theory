@@ -5,24 +5,24 @@ import org.harvey.vie.theory.semantic.type.SemanticType;
 
 /**
  * 表示编译期可以确定的常量值。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * ConstantValue 是常量折叠和常量传播阶段使用的值对象。
  * 它同时保存：
- *
+ * <p>
  * 1. type：常量的语义类型。
  * 2. value：常量的实际 Java 值。
- *
+ * <p>
  * 例如：
- *
+ * <p>
  * 1. int32 常量使用 Integer 保存。
  * 2. float64 常量使用 Double 保存。
  * 3. boolean 常量使用 Boolean 保存。
  * 4. null 字面量使用 type = NULL，value = null 保存。
- *
+ * <p>
  * 注意：
- *
+ * <p>
  * 该类只表示“已经确定是常量”的值。
  * 如果某个表达式不是编译期常量，通常不会绑定 ConstantValue。
  */

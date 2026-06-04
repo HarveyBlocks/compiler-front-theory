@@ -12,28 +12,28 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
  * 在赋值语句归约后维护标识符的常量传播状态。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * IdentifierConstantStateCallback 负责处理一个很关键的常量传播规则：
- *
+ * <p>
  * 如果某个变量被重新赋值，那么它之前在符号表中保存的编译期常量值就不再可靠，
  * 必须清除。
- *
+ * <p>
  * 例如：
- *
+ * <p>
  * int32 a = 1;
  * b = a + 2;      // 此时 a 可以作为常量 1 传播
  * a = input;      // 此处之后 a 的常量状态应失效
- *
+ * <p>
  * 这保证后续中间代码生成不会错误地把已经被修改过的变量继续当作常量使用。
  */
 public class IdentifierConstantStateCallback implements ShiftReduceCallback {
     /**
      * 判断当前归约产生式是否是赋值语句或赋值表达式。
-     *
+     * <p>
      * 注意：
-     *
+     * <p>
      * 该 predicate 只根据 ProgramSemanticTag.ASSIGNMENT 匹配，
      * 具体产生式结构由语法定义和 tag 标注决定。
      */

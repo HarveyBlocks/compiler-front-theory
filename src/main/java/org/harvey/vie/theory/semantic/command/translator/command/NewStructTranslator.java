@@ -32,7 +32,7 @@ public class NewStructTranslator implements CommandTranslator {
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
             SimpleGrammarProduction production,
-        CommandNodeRegister[] children) {
+            CommandNodeRegister[] children) {
         HeadNode head = context.getTreeContext().peek().toHead();
         SourceToken nameToken = head.get(1).toToken().getSource();
         StructRecord record = context.getStruct(nameToken);

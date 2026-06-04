@@ -13,34 +13,37 @@ import java.util.List;
  */
 public class CallbackRegisterImpl<T extends SemanticCallback> implements CallbackRegister<T> {
     private final List<T> list = new ArrayList<>();
-/**
- * 函数功能：获取元素数量。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取元素数量。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
 
     @Override
     public int size() {
         return list.size();
     }
-/**
- * 函数功能：获取当前对象的迭代器。
- * 输入：
- * - 无。
- * 输出：Iterator<T> 类型集合或迭代结果。
- */
+
+    /**
+     * 函数功能：获取当前对象的迭代器。
+     * 输入：
+     * - 无。
+     * 输出：Iterator<T> 类型集合或迭代结果。
+     */
 
     @Override
     public Iterator<T> iterator() {
         return list.iterator();
     }
-/**
- * 函数功能：添加指定元素。
- * 输入：
- * - callable：T 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：添加指定元素。
+     * 输入：
+     * - callable：T 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void add(T callable) {

@@ -17,54 +17,60 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
  */
 public interface ShiftReduceParsingTable extends Storage {
     int NONE = ItemSet.NONE;
-/**
- * 函数功能：获取起始元素。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取起始元素。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
 
     int getStart();
-/**
- * 函数功能：获取规约后跳转的状态。
- * 输入：
- * - originStatus：int 类型参数。
- * - head：HeadSymbol 类型参数。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取规约后跳转的状态。
+     * 输入：
+     * - originStatus：int 类型参数。
+     * - head：HeadSymbol 类型参数。
+     * 输出：整数结果。
+     */
 
     int gotoNext(int originStatus, HeadSymbol head);
-/**
- * 函数功能：查询动作表中的下一动作。
- * 输入：
- * - originStatus：int 类型参数。
- * - terminal：int 类型参数。
- * 输出：ActiveTableElement 类型返回值。
- */
+
+    /**
+     * 函数功能：查询动作表中的下一动作。
+     * 输入：
+     * - originStatus：int 类型参数。
+     * - terminal：int 类型参数。
+     * 输出：ActiveTableElement 类型返回值。
+     */
 
     ActiveTableElement activeNext(int originStatus, int terminal);
-/**
- * 函数功能：获取指定产生式。
- * 输入：
- * - i：int 类型参数。
- * 输出：SimpleGrammarProduction 类型返回值。
- */
+
+    /**
+     * 函数功能：获取指定产生式。
+     * 输入：
+     * - i：int 类型参数。
+     * 输出：SimpleGrammarProduction 类型返回值。
+     */
 
     SimpleGrammarProduction getProduction(int i);
-/**
- * 函数功能：判断词法单元是否匹配终结符。
- * 输入：
- * - token：SourceToken 类型参数。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：判断词法单元是否匹配终结符。
+     * 输入：
+     * - token：SourceToken 类型参数。
+     * 输出：整数结果。
+     */
 
     int matchTerminal(SourceToken token);
-/**
- * 函数功能：获取产生式编号。
- * 输入：
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取产生式编号。
+     * 输入：
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：整数结果。
+     */
 
     Integer getProductionId(SimpleGrammarProduction production);
 

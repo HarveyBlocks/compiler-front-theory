@@ -31,103 +31,6 @@ public class AppTest extends TestCase {
         return suite;
     }
 
-    public void testProgramSemanticCases() {
-        SemanticRunReport runReport = ProgramSyntaxTestRunner.run();
-        List<TestCaseResult> failures = runReport.getResults().stream()
-                .filter(result -> !result.isExpectationMatched())
-                .collect(Collectors.toList());
-        assertTrue(buildFailureMessage(runReport, failures), failures.isEmpty());
-
-        assertTrue("summary report should exist: " + runReport.getSummaryReport(), Files.exists(runReport.getSummaryReport()));
-
-        assertExpectedAcceptance(runReport, "text1");
-        assertExpectedAcceptance(runReport, "text2");
-        assertExpectedAcceptance(runReport, "text3");
-        assertExpectedAcceptance(runReport, "text5-sibling-scope");
-        assertExpectedAcceptance(runReport, "text6-break-before-inner-while");
-        assertExpectedAcceptance(runReport, "text12-int32-to-float64-implicit-cast");
-        assertExpectedAcceptance(runReport, "text14-mixed-relational-int-float");
-        assertExpectedAcceptance(runReport, "text15-continue-in-while");
-        assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
-        assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
-        assertExpectedAcceptance(runReport, "text20-double-break-binding");
-        assertExpectedAcceptance(runReport, "text21-constant-folding");
-        assertExpectedAcceptance(runReport, "text22-constant-propagation");
-        assertExpectedAcceptance(runReport, "text23-constant-reassigned");
-        assertExpectedAcceptance(runReport, "text24-if-true-inline");
-        assertExpectedAcceptance(runReport, "text25-if-false-elided");
-        assertExpectedAcceptance(runReport, "text26-while-false-elided");
-        assertExpectedAcceptance(runReport, "text27-do-while-false-once");
-        assertExpectedAcceptance(runReport, "text28-nested-if-constant-inner-then");
-        assertExpectedAcceptance(runReport, "text29-nested-if-constant-inner-else");
-        assertExpectedAcceptance(runReport, "text30-nested-if-outer-false");
-        assertExpectedAcceptance(runReport, "text31-function-return");
-        assertExpectedAcceptance(runReport, "text32-function-call");
-        assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
-        assertExpectedAcceptance(runReport, "text41-struct-declare-and-access");
-        assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
-        assertExpectedAcceptance(runReport, "text45-array-create-fully-specified");
-        assertExpectedAcceptance(runReport, "text46-array-create-tail-omitted-one");
-        assertExpectedAcceptance(runReport, "text47-array-create-tail-omitted-two");
-        assertExpectedAcceptance(runReport, "text48-function-multi-arg-order");
-        assertExpectedAcceptance(runReport, "text49-nested-struct-array-lvalue-assignment");
-        assertExpectedAcceptance(runReport, "text50-function-nested-struct-array-params");
-
-        assertExpectedRejection(runReport, "text4-unary-invalid");
-        assertExpectedRejection(runReport, "text7-condition-int-invalid");
-        assertExpectedRejection(runReport, "text8-array-index-boolean-invalid");
-        assertExpectedRejection(runReport, "text9-assignment-bool-to-int-invalid");
-        assertExpectedRejection(runReport, "text10-logical-int-invalid");
-        assertExpectedRejection(runReport, "text11-arithmetic-boolean-invalid");
-        assertExpectedRejection(runReport, "text13-float64-to-int32-invalid");
-        assertExpectedRejection(runReport, "text17-continue-outside-loop-invalid");
-        assertExpectedRejection(runReport, "text18-break-outside-loop-invalid");
-        assertExpectedRejection(runReport, "text33-function-missing-return-invalid");
-        assertExpectedRejection(runReport, "text34-void-return-value-invalid");
-        assertExpectedRejection(runReport, "text35-return-outside-function-invalid");
-        assertExpectedRejection(runReport, "text37-function-call-arg-count-invalid");
-        assertExpectedRejection(runReport, "text38-if-false-break-invalid");
-        assertExpectedRejection(runReport, "text39-if-false-continue-invalid");
-        assertExpectedRejection(runReport, "text40-function-conditional-return-invalid");
-        assertExpectedRejection(runReport, "text43-struct-duplicate-field-invalid");
-        assertExpectedRejection(runReport, "text44-struct-missing-field-invalid");
-
-        assertSiblingScopeOffsets(runReport);
-        assertNoUnknownTypedReference(runReport, "text3");
-        assertDanglingElseControlFlow(runReport);
-        assertDoWhileBackEdgeTargetsBody(runReport);
-        assertWideningCastPlacement(runReport);
-        assertMixedRelationalCastPlacement(runReport);
-        assertWhileContinueTargetsCondition(runReport);
-        assertDoWhileContinueTargetsCondition(runReport);
-        assertNestedLoopBinding(runReport);
-        assertDoubleBreakBinding(runReport);
-        assertConstantFolding(runReport);
-        assertConstantPropagation(runReport);
-        assertConstantInvalidation(runReport);
-        assertIfTrueInlined(runReport);
-        assertIfFalseElided(runReport);
-        assertWhileFalseElided(runReport);
-        assertDoWhileFalseOnce(runReport);
-        assertNestedIfConstantThen(runReport);
-        assertNestedIfConstantElse(runReport);
-        assertNestedIfOuterFalse(runReport);
-        assertFunctionReturn(runReport);
-        assertFunctionCall(runReport);
-        assertFunctionCallArgOrder(runReport);
-        assertFunctionSegmentation(runReport);
-        assertFunctionMultiArgOrder(runReport);
-        assertStructDeclarationAndAccess(runReport);
-        assertStructNullAssignment(runReport);
-        assertArrayCreationInstructions(runReport);
-        assertNestedStructArrayLValueAssignment(runReport);
-        assertFunctionStructAndArrayParameters(runReport);
-        assertDeadBranchControlFlowIsStillDiagnosed(runReport);
-        assertConditionalReturnDoesNotSatisfyFunction(runReport);
-        assertErrorContextCoverage(runReport);
-        assertStructErrors(runReport);
-    }
-
     private static void assertSiblingScopeOffsets(SemanticRunReport runReport) {
         TestCaseResult siblingScope = assertExpectedAcceptance(runReport, "text5-sibling-scope");
         SemanticAnalysisResult siblingResult = siblingScope.getSemanticResult();
@@ -136,14 +39,22 @@ public class AppTest extends TestCase {
         IdentifierRecord right = findRecordByName(siblingResult.getIdentifierRecords(), "right");
         assertNotNull("missing symbol left", left);
         assertNotNull("missing symbol right", right);
-        assertFalse("sibling scope declarations should have different declaration records", left.getNo() == right.getNo());
+        assertFalse(
+                "sibling scope declarations should have different declaration records",
+                left.getNo() == right.getNo()
+        );
         assertEquals("sibling scope declarations should reuse local offset", left.getOffset(), right.getOffset());
     }
 
     private static void assertNoUnknownTypedReference(SemanticRunReport runReport, String caseName) {
         TestCaseResult result = assertExpectedAcceptance(runReport, caseName);
-        assertFalse("typed loads should not degrade to unknown references",
-                result.getSemanticResult().getCommands().stream().anyMatch(command -> command.contains("load_st_unknown_address")));
+        assertFalse(
+                "typed loads should not degrade to unknown references",
+                result.getSemanticResult()
+                        .getCommands()
+                        .stream()
+                        .anyMatch(command -> command.contains("load_st_unknown_address"))
+        );
     }
 
     private static void assertDanglingElseControlFlow(SemanticRunReport runReport) {
@@ -155,8 +66,16 @@ public class AppTest extends TestCase {
         assertTrue("outer if false branch should jump to final join", outerFalseJump >= 0);
         assertTrue("inner if false branch should jump to else branch start", innerFalseJump >= 0);
         assertTrue("then branch should skip else branch via goto", thenJoinGoto > innerFalseJump);
-        assertEquals("outer if false branch should target final join", 32, parseGotoTarget(commands.get(outerFalseJump)));
-        assertEquals("inner if false branch should target else branch start", 25, parseGotoTarget(commands.get(innerFalseJump)));
+        assertEquals(
+                "outer if false branch should target final join",
+                32,
+                parseGotoTarget(commands.get(outerFalseJump))
+        );
+        assertEquals(
+                "inner if false branch should target else branch start",
+                25,
+                parseGotoTarget(commands.get(innerFalseJump))
+        );
         assertEquals("then branch should skip to final join", 32, parseGotoTarget(commands.get(thenJoinGoto)));
     }
 
@@ -178,26 +97,31 @@ public class AppTest extends TestCase {
     private static void assertWideningCastPlacement(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text12-int32-to-float64-implicit-cast");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands,
+        assertContainsSequence(
+                commands,
                 "load_st_float64_address 1",
                 "load_st_int32_address 0",
                 "st_top_addr_to_val_int32",
                 "st_top_int32_cast_float64",
-                "assign_from_st_top_to_addr_float64");
-        assertContainsSequence(commands,
+                "assign_from_st_top_to_addr_float64"
+        );
+        assertContainsSequence(
+                commands,
                 "load_st_float64_address 1",
                 "load_st_int32_address 0",
                 "st_top_addr_to_val_int32",
                 "st_top_int32_cast_float64",
                 "load_st_float64_static 2.5",
                 "st_plus_float64",
-                "assign_from_st_top_to_addr_float64");
+                "assign_from_st_top_to_addr_float64"
+        );
     }
 
     private static void assertMixedRelationalCastPlacement(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text14-mixed-relational-int-float");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands,
+        assertContainsSequence(
+                commands,
                 "load_st_boolean_address 2",
                 "load_st_int32_address 0",
                 "st_top_addr_to_val_int32",
@@ -205,7 +129,8 @@ public class AppTest extends TestCase {
                 "load_st_float64_address 1",
                 "st_top_addr_to_val_float64",
                 "st_less_float64",
-                "assign_from_st_top_to_addr_boolean");
+                "assign_from_st_top_to_addr_boolean"
+        );
     }
 
     private static void assertDoubleBreakBinding(SemanticRunReport runReport) {
@@ -258,28 +183,48 @@ public class AppTest extends TestCase {
         assertTrue("inner continue should jump back to inner loop condition start", innerContinue >= 0);
         assertTrue("inner break should jump to inner loop exit", innerBreak >= 0);
         assertTrue("outer loop back edge should jump to outer condition start", outerLoopBack >= 0);
-        assertEquals("inner continue should target the inner loop condition", 14, parseGotoTarget(commands.get(innerContinue)));
+        assertEquals(
+                "inner continue should target the inner loop condition",
+                14,
+                parseGotoTarget(commands.get(innerContinue))
+        );
         assertEquals("inner break should target the inner loop exit", 44, parseGotoTarget(commands.get(innerBreak)));
-        assertEquals("outer loop back edge should target the outer loop condition", 6, parseGotoTarget(commands.get(outerLoopBack)));
+        assertEquals(
+                "outer loop back edge should target the outer loop condition",
+                6,
+                parseGotoTarget(commands.get(outerLoopBack))
+        );
     }
 
     private static void assertErrorContextCoverage(SemanticRunReport runReport) {
-        assertTrue("condition type rejection should be recorded in error context",
-                assertExpectedRejection(runReport, "text7-condition-int-invalid").getErrorCount() > 0);
-        assertTrue("assignment type rejection should be recorded in error context",
-                assertExpectedRejection(runReport, "text9-assignment-bool-to-int-invalid").getErrorCount() > 0);
-        assertTrue("break outside loop should be recorded in error context",
-                assertExpectedRejection(runReport, "text18-break-outside-loop-invalid").getErrorCount() > 0);
+        assertTrue(
+                "condition type rejection should be recorded in error context",
+                assertExpectedRejection(runReport, "text7-condition-int-invalid").getErrorCount() > 0
+        );
+        assertTrue(
+                "assignment type rejection should be recorded in error context",
+                assertExpectedRejection(runReport, "text9-assignment-bool-to-int-invalid").getErrorCount() > 0
+        );
+        assertTrue(
+                "break outside loop should be recorded in error context",
+                assertExpectedRejection(runReport, "text18-break-outside-loop-invalid").getErrorCount() > 0
+        );
 
-        assertEquals("logical operator rejection currently bypasses error context",
+        assertEquals(
+                "logical operator rejection currently bypasses error context",
                 0,
-                assertExpectedRejection(runReport, "text10-logical-int-invalid").getErrorCount());
-        assertEquals("arithmetic operator rejection currently bypasses error context",
+                assertExpectedRejection(runReport, "text10-logical-int-invalid").getErrorCount()
+        );
+        assertEquals(
+                "arithmetic operator rejection currently bypasses error context",
                 0,
-                assertExpectedRejection(runReport, "text11-arithmetic-boolean-invalid").getErrorCount());
-        assertEquals("array index rejection currently bypasses error context",
+                assertExpectedRejection(runReport, "text11-arithmetic-boolean-invalid").getErrorCount()
+        );
+        assertEquals(
+                "array index rejection currently bypasses error context",
                 0,
-                assertExpectedRejection(runReport, "text8-array-index-boolean-invalid").getErrorCount());
+                assertExpectedRejection(runReport, "text8-array-index-boolean-invalid").getErrorCount()
+        );
     }
 
     private static void assertConstantFolding(SemanticRunReport runReport) {
@@ -316,7 +261,8 @@ public class AppTest extends TestCase {
         assertNotNull("missing symbol b", b);
         assertNull("a should lose constant state after reassignment", a.getConstantValue());
         assertNull("b should not be treated as constant after reading reassigned a", b.getConstantValue());
-        assertContainsSequence(semanticResult.getCommands(),
+        assertContainsSequence(
+                semanticResult.getCommands(),
                 "load_st_int32_static 2",
                 "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address " + b.getOffset(),
@@ -324,15 +270,23 @@ public class AppTest extends TestCase {
                 "st_top_addr_to_val_int32",
                 "load_st_int32_static 1",
                 "st_plus_int32",
-                "assign_from_st_top_to_addr_int32");
+                "assign_from_st_top_to_addr_int32"
+        );
     }
 
     private static void assertIfTrueInlined(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text24-if-true-inline");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("if(true) should be inlined without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
-        assertFalse("if(true) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
-        assertContainsSequence(commands,
+        assertFalse(
+                "if(true) should be inlined without conditional branch",
+                commands.stream().anyMatch(c -> c.startsWith("ifn_goto"))
+        );
+        assertFalse(
+                "if(true) should not emit unconditional gotos",
+                commands.stream().anyMatch(c -> c.startsWith("goto "))
+        );
+        assertContainsSequence(
+                commands,
                 "load_st_int32_address 0",
                 "load_st_int32_static 1",
                 "assign_from_st_top_to_addr_int32",
@@ -341,43 +295,67 @@ public class AppTest extends TestCase {
                 "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_addr_int32");
+                "assign_from_st_top_to_addr_int32"
+        );
     }
 
     private static void assertIfFalseElided(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text25-if-false-elided");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("if(false) should be removed without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
-        assertFalse("if(false) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
-        assertContainsSequence(commands,
+        assertFalse(
+                "if(false) should be removed without conditional branch",
+                commands.stream().anyMatch(c -> c.startsWith("ifn_goto"))
+        );
+        assertFalse(
+                "if(false) should not emit unconditional gotos",
+                commands.stream().anyMatch(c -> c.startsWith("goto "))
+        );
+        assertContainsSequence(
+                commands,
                 "load_st_int32_address 0",
                 "load_st_int32_static 1",
                 "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_addr_int32");
+                "assign_from_st_top_to_addr_int32"
+        );
     }
 
     private static void assertWhileFalseElided(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text26-while-false-elided");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("while(false) should be removed without conditional branch", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
-        assertFalse("while(false) should not emit unconditional gotos", commands.stream().anyMatch(c -> c.startsWith("goto ")));
-        assertContainsSequence(commands,
+        assertFalse(
+                "while(false) should be removed without conditional branch",
+                commands.stream().anyMatch(c -> c.startsWith("ifn_goto"))
+        );
+        assertFalse(
+                "while(false) should not emit unconditional gotos",
+                commands.stream().anyMatch(c -> c.startsWith("goto "))
+        );
+        assertContainsSequence(
+                commands,
                 "load_st_int32_address 0",
                 "load_st_int32_static 1",
                 "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_addr_int32");
+                "assign_from_st_top_to_addr_int32"
+        );
     }
 
     private static void assertDoWhileFalseOnce(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text27-do-while-false-once");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("do-while(false) should not emit conditional branch", commands.stream().anyMatch(c -> c.startsWith("if_goto")));
-        assertFalse("do-while(false) should not emit back edges", commands.stream().anyMatch(c -> c.startsWith("goto ")));
-        assertContainsSequence(commands,
+        assertFalse(
+                "do-while(false) should not emit conditional branch",
+                commands.stream().anyMatch(c -> c.startsWith("if_goto"))
+        );
+        assertFalse(
+                "do-while(false) should not emit back edges",
+                commands.stream().anyMatch(c -> c.startsWith("goto "))
+        );
+        assertContainsSequence(
+                commands,
                 "load_st_int32_address 0",
                 "load_st_int32_static 1",
                 "assign_from_st_top_to_addr_int32",
@@ -386,23 +364,36 @@ public class AppTest extends TestCase {
                 "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address 0",
                 "load_st_int32_static 3",
-                "assign_from_st_top_to_addr_int32");
+                "assign_from_st_top_to_addr_int32"
+        );
     }
 
     private static void assertNestedIfConstantThen(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text28-nested-if-constant-inner-then");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("nested constant if should not keep conditional branches", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
+        assertFalse(
+                "nested constant if should not keep conditional branches",
+                commands.stream().anyMatch(c -> c.startsWith("ifn_goto"))
+        );
         assertTrue("nested constant if should resolve to then branch", commands.contains("load_st_int32_static 1"));
-        assertFalse("nested constant if should not keep else assignment 2", commands.contains("load_st_int32_static 2"));
+        assertFalse(
+                "nested constant if should not keep else assignment 2",
+                commands.contains("load_st_int32_static 2")
+        );
         assertFalse("outer if(true) should not keep else assignment 3", commands.contains("load_st_int32_static 3"));
     }
 
     private static void assertNestedIfConstantElse(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text29-nested-if-constant-inner-else");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("nested constant if should not keep conditional branches", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
-        assertFalse("nested constant if should not keep then assignment 1", commands.contains("load_st_int32_static 1"));
+        assertFalse(
+                "nested constant if should not keep conditional branches",
+                commands.stream().anyMatch(c -> c.startsWith("ifn_goto"))
+        );
+        assertFalse(
+                "nested constant if should not keep then assignment 1",
+                commands.contains("load_st_int32_static 1")
+        );
         assertTrue("nested constant if should resolve to else branch", commands.contains("load_st_int32_static 2"));
         assertFalse("outer if(true) should not keep else assignment 3", commands.contains("load_st_int32_static 3"));
     }
@@ -410,16 +401,32 @@ public class AppTest extends TestCase {
     private static void assertNestedIfOuterFalse(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text30-nested-if-outer-false");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertFalse("outer false branch should remove conditional branches", commands.stream().anyMatch(c -> c.startsWith("ifn_goto")));
-        assertFalse("outer false branch should remove inner then assignment 1", commands.contains("load_st_int32_static 1"));
-        assertFalse("outer false branch should remove inner else assignment 2", commands.contains("load_st_int32_static 2"));
+        assertFalse(
+                "outer false branch should remove conditional branches",
+                commands.stream().anyMatch(c -> c.startsWith("ifn_goto"))
+        );
+        assertFalse(
+                "outer false branch should remove inner then assignment 1",
+                commands.contains("load_st_int32_static 1")
+        );
+        assertFalse(
+                "outer false branch should remove inner else assignment 2",
+                commands.contains("load_st_int32_static 2")
+        );
         assertTrue("outer false branch should keep else assignment 3", commands.contains("load_st_int32_static 3"));
     }
 
     private static void assertFunctionReturn(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text31-function-return");
         List<String> commands = functionCommands(result.getSemanticResult(), "addOne");
-        assertContainsSequence(commands, "load_st_int32_address 0", "st_top_addr_to_val_int32", "load_st_int32_static 1", "st_plus_int32", "return");
+        assertContainsSequence(
+                commands,
+                "load_st_int32_address 0",
+                "st_top_addr_to_val_int32",
+                "load_st_int32_static 1",
+                "st_plus_int32",
+                "return"
+        );
     }
 
     private static void assertFunctionCall(SemanticRunReport runReport) {
@@ -429,26 +436,52 @@ public class AppTest extends TestCase {
     }
 
     private static void assertFunctionSegmentation(SemanticRunReport runReport) {
-        SemanticAnalysisResult returnOnly = assertExpectedAcceptance(runReport, "text31-function-return").getSemanticResult();
+        SemanticAnalysisResult returnOnly = assertExpectedAcceptance(
+                runReport,
+                "text31-function-return"
+        ).getSemanticResult();
         assertTrue("function-only program should not synthesize entry commands", returnOnly.getCommands().isEmpty());
-        assertEquals("function-only program should have one function segment", 1, returnOnly.getFunctionSegments().size());
-        assertEquals("function-only program should have one function table entry", 1, returnOnly.getFunctionTable().size());
-        assertEquals("function-only program should not have global locals", 0, returnOnly.getEntryLocalVariables().length);
+        assertEquals(
+                "function-only program should have one function segment",
+                1,
+                returnOnly.getFunctionSegments().size()
+        );
+        assertEquals(
+                "function-only program should have one function table entry",
+                1,
+                returnOnly.getFunctionTable().size()
+        );
+        assertEquals(
+                "function-only program should not have global locals",
+                0,
+                returnOnly.getEntryLocalVariables().length
+        );
         assertEquals("function parameter should belong to function local table", 1,
-                returnOnly.getFunctionLocalVariables(returnOnly.getFunctionTable().get(0)).length);
+                returnOnly.getFunctionLocalVariables(returnOnly.getFunctionTable().get(0)).length
+        );
 
-        SemanticAnalysisResult callCase = assertExpectedAcceptance(runReport, "text32-function-call").getSemanticResult();
+        SemanticAnalysisResult callCase = assertExpectedAcceptance(
+                runReport,
+                "text32-function-call"
+        ).getSemanticResult();
         assertEquals("call case should keep one function table entry", 1, callCase.getFunctionTable().size());
         assertEquals("call case should keep one function segment", 1, callCase.getFunctionSegments().size());
         assertEquals("call case should keep one global local", 1, callCase.getEntryLocalVariables().length);
         assertEquals("call case should keep one function local", 1,
-                callCase.getFunctionLocalVariables(callCase.getFunctionTable().get(0)).length);
-        assertEquals("call target should reference function table index 0", 0, callCase.getFunctionTable().get(0).getTableIndex());
+                callCase.getFunctionLocalVariables(callCase.getFunctionTable().get(0)).length
+        );
+        assertEquals(
+                "call target should reference function table index 0",
+                0,
+                callCase.getFunctionTable().get(0).getTableIndex()
+        );
         assertEquals("function table entry should match callee name", "inc",
-                SourceTokenStringMapping.utf8(callCase.getFunctionTable().get(0).getSignature().getNameToken()));
+                SourceTokenStringMapping.utf8(callCase.getFunctionTable().get(0).getSignature().getNameToken())
+        );
         assertEquals("entry segment should only contain global code for call case", 4, callCase.getCommands().size());
         assertEquals("function segment should keep function body isolated", 5,
-                functionCommands(callCase, "inc").size());
+                functionCommands(callCase, "inc").size()
+        );
     }
 
     private static void assertStructDeclarationAndAccess(SemanticRunReport runReport) {
@@ -461,19 +494,33 @@ public class AppTest extends TestCase {
         assertEquals("struct table index should start from 0", 0, point.getTableIndex());
         assertEquals("struct name should be preserved in struct table", "Point", point.displayName());
         assertEquals("struct field count should match declaration", 2, point.getFields().size());
-        assertEquals("first field should be x", "x", SourceTokenStringMapping.utf8(point.getFields().get(0).getNameToken()));
+        assertEquals(
+                "first field should be x",
+                "x",
+                SourceTokenStringMapping.utf8(point.getFields().get(0).getNameToken())
+        );
         assertEquals("first field offset should be 0", 0, point.getFields().get(0).getOffset());
-        assertEquals("second field should be y", "y", SourceTokenStringMapping.utf8(point.getFields().get(1).getNameToken()));
+        assertEquals(
+                "second field should be y",
+                "y",
+                SourceTokenStringMapping.utf8(point.getFields().get(1).getNameToken())
+        );
         assertEquals("second field offset should be 1", 1, point.getFields().get(1).getOffset());
         List<String> commands = semanticResult.getCommands();
         assertTrue("struct construction should reference struct table index", commands.contains("new_struct 0"));
-        assertTrue("member access should emit field bias", commands.stream().anyMatch(c -> c.startsWith("bias_from_st_top_to_ref_int32")));
+        assertTrue(
+                "member access should emit field bias",
+                commands.stream().anyMatch(c -> c.startsWith("bias_from_st_top_to_ref_int32"))
+        );
     }
 
     private static void assertStructNullAssignment(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertTrue("null assignment should be allowed for struct references", commands.contains("load_st_null_static null"));
+        assertTrue(
+                "null assignment should be allowed for struct references",
+                commands.contains("load_st_null_static null")
+        );
     }
 
     private static void assertArrayCreationInstructions(SemanticRunReport runReport) {
@@ -515,13 +562,28 @@ public class AppTest extends TestCase {
     }
 
     private static void assertNestedStructArrayLValueAssignment(SemanticRunReport runReport) {
-        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(runReport, "text49-nested-struct-array-lvalue-assignment")
+        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(
+                runReport,
+                "text49-nested-struct-array-lvalue-assignment"
+        )
                 .getSemanticResult();
         List<String> commands = semanticResult.getCommands();
-        assertTrue("nested struct-array assignment should allocate school root object", commands.contains("new_struct 3"));
-        assertTrue("nested struct-array assignment should allocate grade array", commands.contains("new_array_ref 1 1"));
-        assertTrue("nested struct-array assignment should allocate classroom array", commands.contains("new_array_ref 1 1"));
-        assertTrue("nested struct-array assignment should allocate student array", commands.contains("new_array_ref 1 1"));
+        assertTrue(
+                "nested struct-array assignment should allocate school root object",
+                commands.contains("new_struct 3")
+        );
+        assertTrue(
+                "nested struct-array assignment should allocate grade array",
+                commands.contains("new_array_ref 1 1")
+        );
+        assertTrue(
+                "nested struct-array assignment should allocate classroom array",
+                commands.contains("new_array_ref 1 1")
+        );
+        assertTrue(
+                "nested struct-array assignment should allocate student array",
+                commands.contains("new_array_ref 1 1")
+        );
         assertStructFieldOffset(semanticResult, "School", "grade", 1);
         assertStructFieldOffset(semanticResult, "Grade", "class", 1);
         assertStructFieldOffset(semanticResult, "ClassRoom", "student", 1);
@@ -583,35 +645,64 @@ public class AppTest extends TestCase {
     }
 
     private static void assertFunctionStructAndArrayParameters(SemanticRunReport runReport) {
-        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(runReport, "text50-function-nested-struct-array-params")
+        SemanticAnalysisResult semanticResult = assertExpectedAcceptance(
+                runReport,
+                "text50-function-nested-struct-array-params"
+        )
                 .getSemanticResult();
-        assertEquals("combined parameter case should register three functions", 3, semanticResult.getFunctionTable().size());
+        assertEquals(
+                "combined parameter case should register three functions",
+                3,
+                semanticResult.getFunctionTable().size()
+        );
 
         var readStudent = semanticResult.getFunctionTable().get(0);
         var readStudentArray = semanticResult.getFunctionTable().get(1);
         var pickFromSchool = semanticResult.getFunctionTable().get(2);
 
         assertEquals("first function name should be preserved", "readStudent",
-                SourceTokenStringMapping.utf8(readStudent.getSignature().getNameToken()));
+                SourceTokenStringMapping.utf8(readStudent.getSignature().getNameToken())
+        );
         assertEquals("second function name should be preserved", "readStudentArray",
-                SourceTokenStringMapping.utf8(readStudentArray.getSignature().getNameToken()));
+                SourceTokenStringMapping.utf8(readStudentArray.getSignature().getNameToken())
+        );
         assertEquals("third function name should be preserved", "pickFromSchool",
-                SourceTokenStringMapping.utf8(pickFromSchool.getSignature().getNameToken()));
+                SourceTokenStringMapping.utf8(pickFromSchool.getSignature().getNameToken())
+        );
 
         assertEquals("readStudent should have one parameter", 1, readStudent.getParameters().size());
-        assertTrue("readStudent parameter should be struct-typed", readStudent.getParameters().get(0).getType().isStruct());
+        assertTrue(
+                "readStudent parameter should be struct-typed",
+                readStudent.getParameters().get(0).getType().isStruct()
+        );
 
         assertEquals("readStudentArray should have two parameters", 2, readStudentArray.getParameters().size());
-        assertTrue("readStudentArray first parameter should be an array", readStudentArray.getParameters().get(0).getType().isArray());
-        assertTrue("readStudentArray first parameter element type should be struct",
-                readStudentArray.getParameters().get(0).getType().arrayElementType().isStruct());
+        assertTrue(
+                "readStudentArray first parameter should be an array",
+                readStudentArray.getParameters().get(0).getType().isArray()
+        );
+        assertTrue(
+                "readStudentArray first parameter element type should be struct",
+                readStudentArray.getParameters().get(0).getType().arrayElementType().isStruct()
+        );
 
         assertEquals("pickFromSchool should have three parameters", 3, pickFromSchool.getParameters().size());
-        assertTrue("pickFromSchool first parameter should be struct array", pickFromSchool.getParameters().get(0).getType().isArray());
-        assertTrue("pickFromSchool second parameter should be nested array", pickFromSchool.getParameters().get(1).getType().isArray());
-        assertTrue("pickFromSchool second parameter should remain array after one element dereference",
-                pickFromSchool.getParameters().get(1).getType().arrayElementType().isArray());
-        assertTrue("pickFromSchool third parameter should be struct", pickFromSchool.getParameters().get(2).getType().isStruct());
+        assertTrue(
+                "pickFromSchool first parameter should be struct array",
+                pickFromSchool.getParameters().get(0).getType().isArray()
+        );
+        assertTrue(
+                "pickFromSchool second parameter should be nested array",
+                pickFromSchool.getParameters().get(1).getType().isArray()
+        );
+        assertTrue(
+                "pickFromSchool second parameter should remain array after one element dereference",
+                pickFromSchool.getParameters().get(1).getType().arrayElementType().isArray()
+        );
+        assertTrue(
+                "pickFromSchool third parameter should be struct",
+                pickFromSchool.getParameters().get(2).getType().isStruct()
+        );
 
         List<String> entryCommands = semanticResult.getCommands();
         assertContainsSequence(
@@ -674,23 +765,39 @@ public class AppTest extends TestCase {
     private static void assertFunctionCallArgOrder(SemanticRunReport runReport) {
         TestCaseResult result = assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
         List<String> commands = result.getSemanticResult().getCommands();
-        assertContainsSequence(commands,
+        assertContainsSequence(
+                commands,
                 "assign_from_st_top_to_addr_int32",
                 "load_st_int32_address 0",
                 "st_top_addr_to_val_int32",
                 "load_st_int32_static 2",
                 "st_plus_int32",
-                "call 0");
+                "call 0"
+        );
     }
 
     private static void assertFunctionMultiArgOrder(SemanticRunReport runReport) {
         SemanticAnalysisResult semanticResult = assertExpectedAcceptance(runReport, "text48-function-multi-arg-order")
                 .getSemanticResult();
-        assertEquals("multi-arg function case should have one function table entry", 1, semanticResult.getFunctionTable().size());
+        assertEquals(
+                "multi-arg function case should have one function table entry",
+                1,
+                semanticResult.getFunctionTable().size()
+        );
         assertEquals("first parameter should keep source order", "left",
-                SourceTokenStringMapping.utf8(semanticResult.getFunctionTable().get(0).getParameters().get(0).getNameToken()));
+                SourceTokenStringMapping.utf8(semanticResult.getFunctionTable()
+                        .get(0)
+                        .getParameters()
+                        .get(0)
+                        .getNameToken())
+        );
         assertEquals("second parameter should keep source order", "right",
-                SourceTokenStringMapping.utf8(semanticResult.getFunctionTable().get(0).getParameters().get(1).getNameToken()));
+                SourceTokenStringMapping.utf8(semanticResult.getFunctionTable()
+                        .get(0)
+                        .getParameters()
+                        .get(1)
+                        .getNameToken())
+        );
         assertContainsSequence(
                 semanticResult.getCommands(),
                 "load_st_int32_static 1",
@@ -725,8 +832,10 @@ public class AppTest extends TestCase {
         assertTrue("case should be expected rejection: " + caseName, result.isExpectedFailure());
         assertTrue("case should be observed rejected: " + caseName, result.isObservedRejected());
         assertTrue("case should match expectation: " + caseName, result.isExpectationMatched());
-        assertTrue("rejected case should record errors or failure: " + caseName,
-                result.getErrorCount() > 0 || result.getFailure() != null);
+        assertTrue(
+                "rejected case should record errors or failure: " + caseName,
+                result.getErrorCount() > 0 || result.getFailure() != null
+        );
         return result;
     }
 
@@ -840,6 +949,106 @@ public class AppTest extends TestCase {
                 .orElseThrow(() -> new AssertionError("missing field " + structName + "." + fieldName))
                 .getOffset();
         assertEquals("unexpected field offset for " + structName + "." + fieldName, expectedOffset, actualOffset);
+    }
+
+    public void testProgramSemanticCases() {
+        SemanticRunReport runReport = ProgramSyntaxTestRunner.run();
+        List<TestCaseResult> failures = runReport.getResults().stream()
+                .filter(result -> !result.isExpectationMatched())
+                .collect(Collectors.toList());
+        assertTrue(buildFailureMessage(runReport, failures), failures.isEmpty());
+
+        assertTrue(
+                "summary report should exist: " + runReport.getSummaryReport(),
+                Files.exists(runReport.getSummaryReport())
+        );
+
+        assertExpectedAcceptance(runReport, "text1");
+        assertExpectedAcceptance(runReport, "text2");
+        assertExpectedAcceptance(runReport, "text3");
+        assertExpectedAcceptance(runReport, "text5-sibling-scope");
+        assertExpectedAcceptance(runReport, "text6-break-before-inner-while");
+        assertExpectedAcceptance(runReport, "text12-int32-to-float64-implicit-cast");
+        assertExpectedAcceptance(runReport, "text14-mixed-relational-int-float");
+        assertExpectedAcceptance(runReport, "text15-continue-in-while");
+        assertExpectedAcceptance(runReport, "text16-continue-in-do-while");
+        assertExpectedAcceptance(runReport, "text19-nested-break-continue-binding");
+        assertExpectedAcceptance(runReport, "text20-double-break-binding");
+        assertExpectedAcceptance(runReport, "text21-constant-folding");
+        assertExpectedAcceptance(runReport, "text22-constant-propagation");
+        assertExpectedAcceptance(runReport, "text23-constant-reassigned");
+        assertExpectedAcceptance(runReport, "text24-if-true-inline");
+        assertExpectedAcceptance(runReport, "text25-if-false-elided");
+        assertExpectedAcceptance(runReport, "text26-while-false-elided");
+        assertExpectedAcceptance(runReport, "text27-do-while-false-once");
+        assertExpectedAcceptance(runReport, "text28-nested-if-constant-inner-then");
+        assertExpectedAcceptance(runReport, "text29-nested-if-constant-inner-else");
+        assertExpectedAcceptance(runReport, "text30-nested-if-outer-false");
+        assertExpectedAcceptance(runReport, "text31-function-return");
+        assertExpectedAcceptance(runReport, "text32-function-call");
+        assertExpectedAcceptance(runReport, "text36-function-call-arg-order");
+        assertExpectedAcceptance(runReport, "text41-struct-declare-and-access");
+        assertExpectedAcceptance(runReport, "text42-struct-null-assignment");
+        assertExpectedAcceptance(runReport, "text45-array-create-fully-specified");
+        assertExpectedAcceptance(runReport, "text46-array-create-tail-omitted-one");
+        assertExpectedAcceptance(runReport, "text47-array-create-tail-omitted-two");
+        assertExpectedAcceptance(runReport, "text48-function-multi-arg-order");
+        assertExpectedAcceptance(runReport, "text49-nested-struct-array-lvalue-assignment");
+        assertExpectedAcceptance(runReport, "text50-function-nested-struct-array-params");
+
+        assertExpectedRejection(runReport, "text4-unary-invalid");
+        assertExpectedRejection(runReport, "text7-condition-int-invalid");
+        assertExpectedRejection(runReport, "text8-array-index-boolean-invalid");
+        assertExpectedRejection(runReport, "text9-assignment-bool-to-int-invalid");
+        assertExpectedRejection(runReport, "text10-logical-int-invalid");
+        assertExpectedRejection(runReport, "text11-arithmetic-boolean-invalid");
+        assertExpectedRejection(runReport, "text13-float64-to-int32-invalid");
+        assertExpectedRejection(runReport, "text17-continue-outside-loop-invalid");
+        assertExpectedRejection(runReport, "text18-break-outside-loop-invalid");
+        assertExpectedRejection(runReport, "text33-function-missing-return-invalid");
+        assertExpectedRejection(runReport, "text34-void-return-value-invalid");
+        assertExpectedRejection(runReport, "text35-return-outside-function-invalid");
+        assertExpectedRejection(runReport, "text37-function-call-arg-count-invalid");
+        assertExpectedRejection(runReport, "text38-if-false-break-invalid");
+        assertExpectedRejection(runReport, "text39-if-false-continue-invalid");
+        assertExpectedRejection(runReport, "text40-function-conditional-return-invalid");
+        assertExpectedRejection(runReport, "text43-struct-duplicate-field-invalid");
+        assertExpectedRejection(runReport, "text44-struct-missing-field-invalid");
+
+        assertSiblingScopeOffsets(runReport);
+        assertNoUnknownTypedReference(runReport, "text3");
+        assertDanglingElseControlFlow(runReport);
+        assertDoWhileBackEdgeTargetsBody(runReport);
+        assertWideningCastPlacement(runReport);
+        assertMixedRelationalCastPlacement(runReport);
+        assertWhileContinueTargetsCondition(runReport);
+        assertDoWhileContinueTargetsCondition(runReport);
+        assertNestedLoopBinding(runReport);
+        assertDoubleBreakBinding(runReport);
+        assertConstantFolding(runReport);
+        assertConstantPropagation(runReport);
+        assertConstantInvalidation(runReport);
+        assertIfTrueInlined(runReport);
+        assertIfFalseElided(runReport);
+        assertWhileFalseElided(runReport);
+        assertDoWhileFalseOnce(runReport);
+        assertNestedIfConstantThen(runReport);
+        assertNestedIfConstantElse(runReport);
+        assertNestedIfOuterFalse(runReport);
+        assertFunctionReturn(runReport);
+        assertFunctionCall(runReport);
+        assertFunctionCallArgOrder(runReport);
+        assertFunctionSegmentation(runReport);
+        assertFunctionMultiArgOrder(runReport);
+        assertStructDeclarationAndAccess(runReport);
+        assertStructNullAssignment(runReport);
+        assertArrayCreationInstructions(runReport);
+        assertNestedStructArrayLValueAssignment(runReport);
+        assertFunctionStructAndArrayParameters(runReport);
+        assertDeadBranchControlFlowIsStillDiagnosed(runReport);
+        assertConditionalReturnDoesNotSatisfyFunction(runReport);
+        assertErrorContextCoverage(runReport);
+        assertStructErrors(runReport);
     }
 }
 

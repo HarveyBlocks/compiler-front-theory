@@ -8,16 +8,16 @@ import org.harvey.vie.theory.semantic.command.LocationKind;
 
 /**
  * 保存绑定在语法树节点上的类型属性。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * TypeRegister 是 SemanticType 的属性包装器。
  * 语义分析不仅需要知道“表达式最终类型是什么”，还需要知道：
- *
+ * <p>
  * 1. 生成指令时应采用什么操作数类型。
  * 2. 报错或定位时应该指向哪个 token。
  * 3. 该表达式作为左值时保存的是地址还是引用。
- *
+ * <p>
  * 因此它同时保存 type、instructionType、anchorToken、locationKind。
  */
 @Getter

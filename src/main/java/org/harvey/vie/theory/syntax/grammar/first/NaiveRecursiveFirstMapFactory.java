@@ -14,12 +14,12 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
  * @date 2026-03-31 00:43
  */
 public class NaiveRecursiveFirstMapFactory implements FirstMapFactory {
-/**
- * 函数功能：获取 FIRST 集合。
- * 输入：
- * - context：ProductionSetContext 类型参数。
- * 输出：FirstMap 类型返回值。
- */
+    /**
+     * 函数功能：获取 FIRST 集合。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * 输出：FirstMap 类型返回值。
+     */
 
     @Override
     public FirstMap first(ProductionSetContext context) {
@@ -29,13 +29,14 @@ public class NaiveRecursiveFirstMapFactory implements FirstMapFactory {
         }
         return builder.build();
     }
-/**
- * 函数功能：获取 FIRST 集合。
- * 输入：
- * - head：HeadSymbol 类型参数。
- * - mapBuilder：FirstMapBuilder 类型参数。
- * 输出：FirstSetBuilder 类型返回值。
- */
+
+    /**
+     * 函数功能：获取 FIRST 集合。
+     * 输入：
+     * - head：HeadSymbol 类型参数。
+     * - mapBuilder：FirstMapBuilder 类型参数。
+     * 输出：FirstSetBuilder 类型返回值。
+     */
 
     private FirstSetBuilder first(HeadSymbol head, FirstMapBuilder mapBuilder) {
         FirstSetBuilder builder = mapBuilder.getBuilder(head);
@@ -51,14 +52,15 @@ public class NaiveRecursiveFirstMapFactory implements FirstMapFactory {
         }
         return builder;
     }
-/**
- * 函数功能：获取 FIRST 集合。
- * 输入：
- * - concatenation：GrammarConcatenation 类型参数。
- * - setBuilder：FirstSetBuilder 类型参数。
- * - mapBuilder：FirstMapBuilder 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：获取 FIRST 集合。
+     * 输入：
+     * - concatenation：GrammarConcatenation 类型参数。
+     * - setBuilder：FirstSetBuilder 类型参数。
+     * - mapBuilder：FirstMapBuilder 类型参数。
+     * 输出：无。
+     */
 
     private void first(GrammarConcatenation concatenation, FirstSetBuilder setBuilder, FirstMapBuilder mapBuilder) {
         if (concatenation.isEmpty()) {
@@ -78,13 +80,14 @@ public class NaiveRecursiveFirstMapFactory implements FirstMapFactory {
         setBuilder.setContainsEpsilon(allEpsilon);
         mapBuilder.addAllTerminal(concatenation);
     }
-/**
- * 函数功能：获取语法符号对应的 FIRST 集构建器。
- * 输入：
- * - concatenable：GrammarUnitSymbol 类型参数。
- * - mapBuilder：FirstMapBuilder 类型参数。
- * 输出：FirstSetBuilder 类型返回值。
- */
+
+    /**
+     * 函数功能：获取语法符号对应的 FIRST 集构建器。
+     * 输入：
+     * - concatenable：GrammarUnitSymbol 类型参数。
+     * - mapBuilder：FirstMapBuilder 类型参数。
+     * 输出：FirstSetBuilder 类型返回值。
+     */
 
     private FirstSetBuilder innerBuilder(GrammarUnitSymbol concatenable, FirstMapBuilder mapBuilder) {
         if (concatenable.isTerminal()) {

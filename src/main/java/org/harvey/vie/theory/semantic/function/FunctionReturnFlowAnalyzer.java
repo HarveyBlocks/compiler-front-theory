@@ -17,12 +17,13 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
  */
 public final class FunctionReturnFlowAnalyzer {
     private final ProductionTagStrategy<ReturnRule> rules;
-/**
- * 函数功能：创建 FunctionReturnFlowAnalyzer 对象。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 FunctionReturnFlowAnalyzer 对象。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
 
     public FunctionReturnFlowAnalyzer() {
         ReturnRule never = (context, head) -> false;
@@ -44,19 +45,6 @@ public final class FunctionReturnFlowAnalyzer {
                 .when(returnRule, ProgramSemanticTag.RETURN)
                 .when(matchIf, ProgramSemanticTag.CONDITIONAL, ProgramSemanticTag.ELSE_BRANCH);
     }
-
-    @FunctionalInterface
-    private interface ReturnRule {
-        /**
-         * 函数功能：判断输入是否满足条件。
-         * 输入：
-         * - context：ShiftReduceSemanticContext 类型参数。
-         * - head：HeadNode 类型参数。
-         * 输出：判断结果布尔值。
-         */
-        boolean test(ShiftReduceSemanticContext context, HeadNode head);
-    }
-
 
     /**
      * 函数功能：判断语法节点是否保证返回。
@@ -143,6 +131,18 @@ public final class FunctionReturnFlowAnalyzer {
             return null;
         }
         return value.bool();
+    }
+
+    @FunctionalInterface
+    private interface ReturnRule {
+        /**
+         * 函数功能：判断输入是否满足条件。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - head：HeadNode 类型参数。
+         * 输出：判断结果布尔值。
+         */
+        boolean test(ShiftReduceSemanticContext context, HeadNode head);
     }
 
 }

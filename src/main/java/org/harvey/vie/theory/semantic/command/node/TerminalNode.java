@@ -17,22 +17,24 @@ import java.util.List;
 public class TerminalNode extends IRandomAccess.EmptyImpl<CommandNode> implements
         CommandNode {
     private final SemanticCommand command;
-/**
- * 函数功能：创建 TerminalNode 对象。
- * 输入：
- * - command：SemanticCommand 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 TerminalNode 对象。
+     * 输入：
+     * - command：SemanticCommand 类型参数。
+     * 输出：无。
+     */
 
     public TerminalNode(SemanticCommand command) {
         this.command = command;
     }
-/**
- * 函数功能：将命令节点展开到命令列表。
- * 输入：
- * - result：List<SemanticCommand> 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：将命令节点展开到命令列表。
+     * 输入：
+     * - result：List<SemanticCommand> 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void flat(List<SemanticCommand> result) {

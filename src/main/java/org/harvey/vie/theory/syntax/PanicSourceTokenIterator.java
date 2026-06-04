@@ -18,15 +18,16 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
  */
 @AllArgsConstructor
 public class PanicSourceTokenIterator {
-    private SourceTokenIterator iterator;
     private final ErrorContext errorContext;
     private final TokenFilterPredict tokenFilterPredict;
-/**
- * 函数功能：获取当前词法单元。
- * 输入：
- * - 无。
- * 输出：SourceToken 类型返回值。
- */
+    private SourceTokenIterator iterator;
+
+    /**
+     * 函数功能：获取当前词法单元。
+     * 输入：
+     * - 无。
+     * 输出：SourceToken 类型返回值。
+     */
 
     public SourceToken currentToken() {
         while (true) {
@@ -49,12 +50,13 @@ public class PanicSourceTokenIterator {
             }
         }
     }
-/**
- * 函数功能：消费当前词法单元。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：消费当前词法单元。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
 
 
     public void consumeCurrentToken() {
@@ -64,12 +66,13 @@ public class PanicSourceTokenIterator {
             throw new CompilerException("Incorrect current-next using: for consumed token what should be filtered");
         }
     }
-/**
- * 函数功能：消费当前词法单元并返回消费结果。
- * 输入：
- * - 无。
- * 输出：SourceToken 类型返回值。
- */
+
+    /**
+     * 函数功能：消费当前词法单元并返回消费结果。
+     * 输入：
+     * - 无。
+     * 输出：SourceToken 类型返回值。
+     */
 
     private SourceToken consumeCurrentToken0() {
 
@@ -82,12 +85,13 @@ public class PanicSourceTokenIterator {
             );
         }
     }
-/**
- * 函数功能：判断是否存在下一个元素。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否存在下一个元素。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     public boolean hasNext() {
         return currentToken() != SourceTokenIterator.NO_MORE_TOKEN;

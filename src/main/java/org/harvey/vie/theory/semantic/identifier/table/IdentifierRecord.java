@@ -5,8 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
-import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 import java.util.Objects;
@@ -32,12 +32,13 @@ public class IdentifierRecord {
 
     @Setter
     private ConstantValue constantValue;
-/**
- * 函数功能：返回当前对象的字符串表示。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+    /**
+     * 函数功能：返回当前对象的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
 
     @Override
     public String toString() {
@@ -48,12 +49,13 @@ public class IdentifierRecord {
                " initialized=" + initialized +
                " constant=" + (constantValue == null ? "<none>" : constantValue.toString());
     }
-/**
- * 函数功能：获取记录的显示字符串。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+    /**
+     * 函数功能：获取记录的显示字符串。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
 
     public String displayString() {
         return toString();

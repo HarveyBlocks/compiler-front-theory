@@ -18,12 +18,13 @@ public interface GrammarBuilder {
      * 输出：GrammarBuilder 类型返回值。
      */
     GrammarBuilder addProduction(GrammarProduction production);
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：ProductionSet 类型返回值。
- */
+
+    /**
+     * 函数功能：构建目标对象。
+     * 输入：
+     * - 无。
+     * 输出：ProductionSet 类型返回值。
+     */
 
     ProductionSet build();
 }

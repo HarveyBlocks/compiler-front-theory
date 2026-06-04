@@ -17,12 +17,13 @@ public interface ItemSetFamily extends SimpleCollection<ItemSet> {
      * 输出：ItemSet 类型返回值。
      */
     ItemSet get(int i);
-/**
- * 函数功能：获取起始项目集索引。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：获取起始项目集索引。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
 
     int startIndex();
 

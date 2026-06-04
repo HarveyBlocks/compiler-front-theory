@@ -13,12 +13,13 @@ import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 @AllArgsConstructor
 public class StringCommand implements SemanticCommand {
     private final String value;
-/**
- * 函数功能：返回当前对象的字符串表示。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+    /**
+     * 函数功能：返回当前对象的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
 
     @Override
     public String toString() {

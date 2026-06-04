@@ -22,12 +22,13 @@ public class SimpleStringCommandFactory implements SimpleCommandFactory {
     public SemanticCommand callFunction(FunctionRecord name) {
         return new StringCommand("call " + name.getTableIndex());
     }
-/**
- * 函数功能：生成返回命令。
- * 输入：
- * - 无。
- * 输出：SemanticCommand 类型返回值。
- */
+
+    /**
+     * 函数功能：生成返回命令。
+     * 输入：
+     * - 无。
+     * 输出：SemanticCommand 类型返回值。
+     */
 
     @Override
     public SemanticCommand returnCommand() {

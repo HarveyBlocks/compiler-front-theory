@@ -23,11 +23,11 @@ public enum RegexOperator {
     ESCAPE((byte) '\\'),
     ;
 
-    private final byte c;
     private static final Map<Byte, RegexOperator> ENUM_DICT = CollectionUtil.dictOnEnum(
             RegexOperator.values(),
             RegexOperator::getC
     );
+    private final byte c;
 
     /**
      * 函数功能：创建指定字符编码的正则操作符枚举项。

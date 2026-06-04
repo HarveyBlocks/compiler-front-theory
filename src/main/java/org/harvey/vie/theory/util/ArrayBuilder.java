@@ -91,6 +91,6 @@ public class ArrayBuilder<T> {
      * 输出：是否为空的布尔值。
      */
     public boolean isEmpty() {
-        return pos==0;
+        return pos == 0;
     }
 }

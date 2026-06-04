@@ -11,45 +11,28 @@ import java.util.StringJoiner;
 
 /**
  * 表示语义分析阶段使用的类型。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * 这个类是类型系统中的值对象，用来描述一个表达式、变量、函数返回值、
  * 结构体字段或数组元素在语义层面的类型。
- *
+ * <p>
  * 它包含三类信息：
- *
+ * <p>
  * 1. kind：基础类型种类，例如 int32、float64、struct、void。
  * 2. dimensions：数组维度信息。为空表示标量；非空表示数组。
  * 3. namedTypeKey：命名类型的唯一键，当前主要用于 struct 类型。
- *
+ * <p>
  * 注意：
- *
+ * <p>
  * SemanticType 本身不负责查符号表，也不判断某个 struct 是否已经声明。
  * 它只描述“类型长什么样”。声明存在性检查由语义上下文和相关 callback 完成。
  */
 @Getter
 public final class SemanticType {
-    /**
-     * 类型种类枚举。
-     *
-     * 作用：
-     *
-     * 描述语言当前支持的基础类型。
-     *
-     * 注意：
-     *
-     * 数组不是单独的 Kind，而是通过 kind + dimensions 组合表示。
-     * 例如 int32[] 表示为 kind = INT32，dimensions 非空。
-     */
-    public enum Kind {
-        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID, STRUCT, NULL;
-    }
-
     private final Kind kind;
     private final List<Integer> dimensions;
     private final IdentifierKey namedTypeKey;
-
     /**
      * 函数功能：创建 Kind 对象。
      * 输入：
@@ -246,8 +229,6 @@ public final class SemanticType {
         return equals(target) || isNumericScalar() && target.isNumericScalar();
     }
 
-
-
     /**
      * 函数功能：返回当前对象的字符串表示。
      * 输入：
@@ -294,5 +275,21 @@ public final class SemanticType {
     @Override
     public int hashCode() {
         return Objects.hash(kind, dimensions, namedTypeKey);
+    }
+
+    /**
+     * 类型种类枚举。
+     * <p>
+     * 作用：
+     * <p>
+     * 描述语言当前支持的基础类型。
+     * <p>
+     * 注意：
+     * <p>
+     * 数组不是单独的 Kind，而是通过 kind + dimensions 组合表示。
+     * 例如 int32[] 表示为 kind = INT32，dimensions 非空。
+     */
+    public enum Kind {
+        BOOLEAN, CHARACTER, INT32, FLOAT64, STRING, VOID, STRUCT, NULL;
     }
 }

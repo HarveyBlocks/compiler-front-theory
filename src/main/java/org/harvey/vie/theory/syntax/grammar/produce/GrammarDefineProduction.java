@@ -18,12 +18,13 @@ public interface GrammarDefineProduction extends GrammarProduction {
      * 输出：HeadDefineSymbol 类型返回值。
      */
     HeadDefineSymbol getDefine();
-/**
- * 函数功能：获取产生式头部符号。
- * 输入：
- * - 无。
- * 输出：HeadSymbol 类型返回值。
- */
+
+    /**
+     * 函数功能：获取产生式头部符号。
+     * 输入：
+     * - 无。
+     * 输出：HeadSymbol 类型返回值。
+     */
 
     @Override
     default HeadSymbol getHead() {

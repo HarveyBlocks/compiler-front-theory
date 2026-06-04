@@ -17,12 +17,13 @@ public interface TagGrammarSymbol {
      * 输出：无。
      */
     void addTag(SemanticTag[] array);
-/**
- * 函数功能：获取语义标签数组。
- * 输入：
- * - 无。
- * 输出：SemanticTag[] 类型数组。
- */
+
+    /**
+     * 函数功能：获取语义标签数组。
+     * 输入：
+     * - 无。
+     * 输出：SemanticTag[] 类型数组。
+     */
 
     SemanticTag[] getTags();
 }

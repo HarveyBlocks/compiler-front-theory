@@ -17,12 +17,13 @@ public final class TagReducePredicateFactory {
      */
     private TagReducePredicateFactory() {
     }
-/**
- * 函数功能：创建语法标签判定器。
- * 输入：
- * - expected：SemanticTag... 类型参数。
- * 输出：ReducePredicate 类型返回值。
- */
+
+    /**
+     * 函数功能：创建语法标签判定器。
+     * 输入：
+     * - expected：SemanticTag... 类型参数。
+     * 输出：ReducePredicate 类型返回值。
+     */
 
     public static ReducePredicate predicate(SemanticTag... expected) {
         return production -> production.matchTags(expected);

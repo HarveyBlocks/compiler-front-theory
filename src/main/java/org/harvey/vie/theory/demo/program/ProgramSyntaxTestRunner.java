@@ -10,10 +10,10 @@ import org.harvey.vie.theory.io.resource.AsciiStringResource;
 import org.harvey.vie.theory.io.resource.Resource;
 import org.harvey.vie.theory.lexical.analysis.LexicalAnalyzer;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
+import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegisterImpl;
 import org.harvey.vie.theory.semantic.command.FunctionCommandSegment;
 import org.harvey.vie.theory.semantic.context.SemanticAnalysisResult;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
-import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallbackRegisterImpl;
 import org.harvey.vie.theory.semantic.display.SemanticDisplaySupport;
 import org.harvey.vie.theory.semantic.function.FunctionRecord;
 import org.harvey.vie.theory.semantic.identifier.table.IdentifierRecord;
@@ -349,11 +349,15 @@ public final class ProgramSyntaxTestRunner {
         StringBuilder builder = new StringBuilder();
         builder.append("# Program Semantic Test: ").append(caseName).append("\n\n");
         builder.append("- Expected: ").append(expectedFailure ? "REJECT" : "ACCEPT").append("\n");
-        builder.append("- Observed: ").append(observedRejected ? "REJECT" : observedAccepted ? "ACCEPT" : "UNKNOWN").append("\n");
+        builder.append("- Observed: ")
+                .append(observedRejected ? "REJECT" : observedAccepted ? "ACCEPT" : "UNKNOWN")
+                .append("\n");
         builder.append("- Matched Expectation: ").append(matchedExpectation ? "YES" : "NO").append("\n");
         builder.append("- Errors: ").append(errorContext.size()).append("\n");
         builder.append("- Commands: ").append(semanticResult == null ? 0 : semanticResult.commandCount()).append("\n");
-        builder.append("- Symbols: ").append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length).append("\n");
+        builder.append("- Symbols: ")
+                .append(semanticResult == null ? 0 : semanticResult.getIdentifierRecords().length)
+                .append("\n");
         builder.append("- Generated At: ").append(LocalDateTime.now()).append("\n\n");
         builder.append("## Source\n\n```text\n").append(source).append("\n```\n\n");
         writeRequestedExtraSections(builder, phaseReportCase, lexicalReport, syntaxTrace);
@@ -505,7 +509,9 @@ public final class ProgramSyntaxTestRunner {
     private static void writeSyntaxTrace(StringBuilder builder, SyntaxTraceReport syntaxTrace) {
         List<SyntaxTraceReport.TraceEntry> entries = syntaxTrace.snapshot();
         builder.append("- Steps: ").append(entries.size()).append("\n");
-        builder.append("- Error Type: ").append(syntaxTrace.getErrorType() == null ? "<none>" : syntaxTrace.getErrorType().name()).append("\n");
+        builder.append("- Error Type: ")
+                .append(syntaxTrace.getErrorType() == null ? "<none>" : syntaxTrace.getErrorType().name())
+                .append("\n");
         builder.append("- Shared Analysis Table Report: ").append(COMMON_SYNTAX_REPORT).append("\n\n");
         builder.append("### Analysis Stack And Process Trace\n\n");
         if (entries.isEmpty()) {
@@ -579,14 +585,18 @@ public final class ProgramSyntaxTestRunner {
      * - structTable：结构体记录列表。
      * 输出：无。
      */
-    private static void writeIdentifierTable(StringBuilder builder, IdentifierRecord[] records, List<StructRecord> structTable) {
+    private static void writeIdentifierTable(
+            StringBuilder builder,
+            IdentifierRecord[] records,
+            List<StructRecord> structTable) {
         if (records == null || records.length == 0) {
             builder.append("_None_\n");
             return;
         }
         builder.append("```text\n");
         Arrays.stream(records)
-                .forEach(record -> builder.append(SemanticDisplaySupport.formatIdentifierRecord(record, structTable)).append('\n'));
+                .forEach(record -> builder.append(SemanticDisplaySupport.formatIdentifierRecord(record, structTable))
+                        .append('\n'));
         builder.append("```\n");
     }
 
@@ -611,7 +621,10 @@ public final class ProgramSyntaxTestRunner {
                 .append(SemanticDisplaySupport.formatFunctionSignature(function, semanticResult.getStructTable()))
                 .append("\n\n");
         builder.append("### Commands\n\n");
-        writeCommands(builder, new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands()));
+        writeCommands(
+                builder,
+                new org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter().print(segment.getCommands())
+        );
         builder.append("\n### Local Variables\n\n");
         writeIdentifierTable(
                 builder,
@@ -769,7 +782,9 @@ public final class ProgramSyntaxTestRunner {
         }
 
     }
-    private static final class SyntaxTraceReportProxy implements org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback {
+
+    private static final class SyntaxTraceReportProxy implements
+            org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback {
         private final SyntaxTraceReport delegate;
 
         /**
@@ -790,8 +805,9 @@ public final class ProgramSyntaxTestRunner {
          * 输出：无。
          */
         @Override
-        public void beforeAccept(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
-                                 org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
+        public void beforeAccept(
+                org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
+                org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
             delegate.beforeAccept(context, production);
         }
 
@@ -803,8 +819,9 @@ public final class ProgramSyntaxTestRunner {
          * 输出：无。
          */
         @Override
-        public void onAccept(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
-                             org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
+        public void onAccept(
+                org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
+                org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
             delegate.onAccept(context, production);
         }
 
@@ -816,8 +833,9 @@ public final class ProgramSyntaxTestRunner {
          * 输出：无。
          */
         @Override
-        public void onReduce(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
-                             org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
+        public void onReduce(
+                org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
+                org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
             delegate.onReduce(context, production);
         }
 
@@ -830,9 +848,10 @@ public final class ProgramSyntaxTestRunner {
          * 输出：无。
          */
         @Override
-        public void onShift(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
-                            int nextStatus,
-                            org.harvey.vie.theory.lexical.analysis.token.SourceToken token) {
+        public void onShift(
+                org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
+                int nextStatus,
+                org.harvey.vie.theory.lexical.analysis.token.SourceToken token) {
             delegate.onShift(context, nextStatus, token);
         }
 
@@ -844,8 +863,9 @@ public final class ProgramSyntaxTestRunner {
          * 输出：无。
          */
         @Override
-        public void onError(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
-                            org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType errorType) {
+        public void onError(
+                org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
+                org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType errorType) {
             delegate.onError(context, errorType);
         }
     }

@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNode;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;

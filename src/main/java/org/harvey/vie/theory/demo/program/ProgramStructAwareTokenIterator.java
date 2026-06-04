@@ -171,7 +171,11 @@ public class ProgramStructAwareTokenIterator implements SourceTokenIterator {
         if (!isStructTypeUse(currentIndex)) {
             return token;
         }
-        return SourceTokenImpl.create(ProgramTokenType.TYPE_IDENTIFIER, new byte[][]{token.getLexeme()}, token.getOffset());
+        return SourceTokenImpl.create(
+                ProgramTokenType.TYPE_IDENTIFIER,
+                new byte[][]{token.getLexeme()},
+                token.getOffset()
+        );
     }
 
     /**
@@ -220,9 +224,9 @@ public class ProgramStructAwareTokenIterator implements SourceTokenIterator {
         int previous = previousSignificantIndex(currentIndex);
         int next = nextSignificantIndex(currentIndex);
         if (previous >= 0
-                && tokenType(previous) == ProgramTokenType.KEYWORD_STRUCT
-                && next >= 0
-                && tokenType(next) == ProgramTokenType.OPERATOR_BRACE_OPEN) {
+            && tokenType(previous) == ProgramTokenType.KEYWORD_STRUCT
+            && next >= 0
+            && tokenType(next) == ProgramTokenType.OPERATOR_BRACE_OPEN) {
             declaredStructs.add(SourceTokenStringMapping.utf8(raw.token));
         }
     }
@@ -275,8 +279,8 @@ public class ProgramStructAwareTokenIterator implements SourceTokenIterator {
         }
         ProgramTokenType type = (ProgramTokenType) entry.token.getType();
         return type != ProgramTokenType.SPACE
-                && type != ProgramTokenType.COMMENT_BLOCK
-                && type != ProgramTokenType.COMMENT_LINE;
+               && type != ProgramTokenType.COMMENT_BLOCK
+               && type != ProgramTokenType.COMMENT_LINE;
     }
 
     /**

@@ -37,15 +37,16 @@ public class ActiveTableSerializer {
         }
         return len;
     }
-/**
- * 函数功能：从输入流加载对象。
- * 输入：
- * - acceptStatus：int 类型参数。
- * - endMark：int 类型参数。
- * - arrayFactory：Factory 类型参数。
- * - is：InputStream 类型参数。
- * 输出：ActiveTableElement[][] 类型数组。
- */
+
+    /**
+     * 函数功能：从输入流加载对象。
+     * 输入：
+     * - acceptStatus：int 类型参数。
+     * - endMark：int 类型参数。
+     * - arrayFactory：Factory 类型参数。
+     * - is：InputStream 类型参数。
+     * 输出：ActiveTableElement[][] 类型数组。
+     */
 
     public static ActiveTableElement[][] load(int acceptStatus, int endMark, Factory arrayFactory, InputStream is)
             throws IOException {

@@ -12,23 +12,25 @@ import java.util.List;
  */
 public class CommandNodeListBuilder implements CommandNodeBuilder {
     private final List<CommandNode> list = new ArrayList<>();
-/**
- * 函数功能：添加指定元素。
- * 输入：
- * - node：CommandNode 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：添加指定元素。
+     * 输入：
+     * - node：CommandNode 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void add(CommandNode node) {
         list.add(node);
     }
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：CommandNode[] 类型数组。
- */
+
+    /**
+     * 函数功能：构建目标对象。
+     * 输入：
+     * - 无。
+     * 输出：CommandNode[] 类型数组。
+     */
 
     @Override
     public CommandNode[] build() {

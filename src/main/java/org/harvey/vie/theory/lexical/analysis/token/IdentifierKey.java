@@ -26,7 +26,7 @@ public class IdentifierKey {
      * - token：提供标识符词素的源词法单元。
      * 输出：生成的 IdentifierKey。
      */
-    public static IdentifierKey generate(SourceToken token){
+    public static IdentifierKey generate(SourceToken token) {
         return generate(token.getLexeme());
     }
 

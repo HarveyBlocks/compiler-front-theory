@@ -16,14 +16,15 @@ import java.util.Objects;
 @AllArgsConstructor
 public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
     private final DefineNameFactory factory;
-/**
- * 函数功能：转换为直接左递归处理上下文。
- * 输入：
- * - context：ProductionSetContext 类型参数。
- * - production：GrammarDefineProduction 类型参数。
- * - i：int 类型参数。
- * 输出：GrammarAlternation 类型返回值。
- */
+
+    /**
+     * 函数功能：转换为直接左递归处理上下文。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * - production：GrammarDefineProduction 类型参数。
+     * - i：int 类型参数。
+     * 输出：GrammarAlternation 类型返回值。
+     */
 
     private static GrammarAlternation toDirective(
             ProductionSetContext context, GrammarDefineProduction production, int i) {
@@ -35,14 +36,15 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         return productionBody;
     }
-/**
- * 函数功能：转换单个候选式的直接左递归处理上下文。
- * 输入：
- * - productionBody：GrammarAlternation 类型参数。
- * - directAlternation：GrammarAlternation 类型参数。
- * - subProduction：GrammarDefineProduction 类型参数。
- * 输出：GrammarAlternation 类型返回值。
- */
+
+    /**
+     * 函数功能：转换单个候选式的直接左递归处理上下文。
+     * 输入：
+     * - productionBody：GrammarAlternation 类型参数。
+     * - directAlternation：GrammarAlternation 类型参数。
+     * - subProduction：GrammarDefineProduction 类型参数。
+     * 输出：GrammarAlternation 类型返回值。
+     */
 
     private static GrammarAlternation toDirectiveEach(
             GrammarAlternation productionBody,
@@ -60,14 +62,15 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         return directAlternation;
     }
-/**
- * 函数功能：消除间接左递归。
- * 输入：
- * - directAlternation：GrammarAlternation 类型参数。
- * - subProduction：GrammarDefineProduction 类型参数。
- * - concatenation：GrammarConcatenation 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：消除间接左递归。
+     * 输入：
+     * - directAlternation：GrammarAlternation 类型参数。
+     * - subProduction：GrammarDefineProduction 类型参数。
+     * - concatenation：GrammarConcatenation 类型参数。
+     * 输出：无。
+     */
 
     private static void eliminateIndirect(
             GrammarAlternation directAlternation,
@@ -86,12 +89,13 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
             directAlternation.alternate(newConcatenation);
         }
     }
-/**
- * 函数功能：构造语法符号连接体。
- * 输入：
- * - symbol：AlterableSymbol 类型参数。
- * 输出：GrammarConcatenation 类型返回值。
- */
+
+    /**
+     * 函数功能：构造语法符号连接体。
+     * 输入：
+     * - symbol：AlterableSymbol 类型参数。
+     * 输出：GrammarConcatenation 类型返回值。
+     */
 
     private static GrammarConcatenation concatenation(AlterableSymbol symbol) {
         if (symbol.isEpsilon()) {
@@ -102,14 +106,15 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         return symbol.toConcatenation();
     }
-/**
- * 函数功能：构造无左递归的语法符号连接体。
- * 输入：
- * - newDefineBuilder：GrammarProductionBuilder 类型参数。
- * - concatenation：GrammarConcatenation 类型参数。
- * - intermediaryDefineName：String 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：构造无左递归的语法符号连接体。
+     * 输入：
+     * - newDefineBuilder：GrammarProductionBuilder 类型参数。
+     * - concatenation：GrammarConcatenation 类型参数。
+     * - intermediaryDefineName：String 类型参数。
+     * 输出：无。
+     */
 
     private static void concatenationNoRecursion(
             GrammarProductionBuilder newDefineBuilder,
@@ -121,13 +126,14 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         newDefineBuilder.concatenateDefinitionLast(intermediaryDefineName);
     }
-/**
- * 函数功能：消除直接左递归。
- * 输入：
- * - intermediaryDefineBuilder：GrammarProductionBuilder 类型参数。
- * - concatenation：GrammarConcatenation 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：消除直接左递归。
+     * 输入：
+     * - intermediaryDefineBuilder：GrammarProductionBuilder 类型参数。
+     * - concatenation：GrammarConcatenation 类型参数。
+     * 输出：无。
+     */
 
     private static void eliminateDirectRecursion(
             GrammarProductionBuilder intermediaryDefineBuilder, GrammarConcatenation concatenation) {
@@ -137,13 +143,14 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         intermediaryDefineBuilder.concatenateSelfLast();
     }
-/**
- * 函数功能：在最后一个候选式末尾连接语法符号。
- * 输入：
- * - builder：GrammarProductionBuilder 类型参数。
- * - symbol：GrammarUnitSymbol 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：在最后一个候选式末尾连接语法符号。
+     * 输入：
+     * - builder：GrammarProductionBuilder 类型参数。
+     * - symbol：GrammarUnitSymbol 类型参数。
+     * 输出：无。
+     */
 
     private static void concatenateLast(GrammarProductionBuilder builder, GrammarUnitSymbol symbol) {
         Objects.requireNonNull(symbol);
@@ -159,12 +166,13 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
             }
         }
     }
-/**
- * 函数功能：消除语法中的指定结构。
- * 输入：
- * - context：ProductionSetContext 类型参数。
- * 输出：ProductionSetContext 类型返回值。
- */
+
+    /**
+     * 函数功能：消除语法中的指定结构。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * 输出：ProductionSetContext 类型返回值。
+     */
 
     @Override
     public ProductionSetContext eliminate(ProductionSetContext context) {
@@ -178,14 +186,15 @@ public class LeftRecursionEliminatorImpl implements LeftRecursionEliminator {
         }
         return contextBuilder.build();
     }
-/**
- * 函数功能：消除直接左递归。
- * 输入：
- * - contextBuilder：ProductionSetContextBuilder 类型参数。
- * - production：GrammarDefineProduction 类型参数。
- * - directiveBody：GrammarAlternation 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：消除直接左递归。
+     * 输入：
+     * - contextBuilder：ProductionSetContextBuilder 类型参数。
+     * - production：GrammarDefineProduction 类型参数。
+     * - directiveBody：GrammarAlternation 类型参数。
+     * 输出：无。
+     */
 
     private void eliminateDirectRecursion(
             ProductionSetContextBuilder contextBuilder,

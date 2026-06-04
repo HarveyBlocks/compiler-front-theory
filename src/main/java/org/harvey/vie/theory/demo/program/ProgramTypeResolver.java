@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.demo.program;
 
-import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeResolver;

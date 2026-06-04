@@ -6,15 +6,15 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 
 /**
  * 读取当前归约节点及其子节点常量属性的工具类。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * ConstantAttributes 封装了一个常见访问模式：
- *
+ * <p>
  * 1. 从 ShiftReduceSemanticContext 中取得当前刚归约出的 HeadNode。
  * 2. 按子节点下标找到对应语法树节点。
  * 3. 从 ConstantValueContext 中读取常量值或判断是否存在常量属性。
- *
+ * <p>
  * 在语法制导翻译阶段，如果某个表达式已经被折叠成编译期常量，
  * 后续命令翻译器就可以直接生成 loadConstant 指令，减少运行期求值代码。
  */

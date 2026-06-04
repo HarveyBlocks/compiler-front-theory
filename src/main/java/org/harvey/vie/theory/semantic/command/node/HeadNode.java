@@ -18,24 +18,26 @@ import java.util.List;
 public class HeadNode extends IRandomAccess.ArrayImpl<CommandNode> implements
         CommandNode {
     private final SimpleGrammarProduction production;
-/**
- * 函数功能：创建 HeadNode 对象。
- * 输入：
- * - children：CommandNode[] 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 HeadNode 对象。
+     * 输入：
+     * - children：CommandNode[] 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
 
     public HeadNode(CommandNode[] children, SimpleGrammarProduction production) {
         super(children);
         this.production = production;
     }
-/**
- * 函数功能：将命令节点展开到命令列表。
- * 输入：
- * - result：List<SemanticCommand> 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：将命令节点展开到命令列表。
+     * 输入：
+     * - result：List<SemanticCommand> 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void flat(List<SemanticCommand> result) {

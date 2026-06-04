@@ -29,26 +29,64 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
 
     private final ArgumentStepper argumentStepper = new ArgumentStepper();
     private final ParameterStepper parameterStepper = new ParameterStepper();
-/**
- * 函数功能：处理规约事件。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：解析函数返回类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
+
+    private static TypeRegister resolveReturnType(ShiftReduceSemanticContext context, HeadNode head) {
+        TypeRegister direct = context.getType(head.get(0));
+        if (direct != null) {
+            return direct;
+        }
+        ShiftReduceSyntaxTreeNode first = head.get(0);
+        if (first.isToken()) {
+            SourceToken token = first.toToken().getSource();
+            SemanticType type = context.typeToken(token);
+            if (type != null) {
+                return TypeRegister.simple(type, token);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * 函数功能：获取指定位置的词法单元。
+     * 输入：
+     * - head：HeadNode 类型参数。
+     * - index：int 类型参数。
+     * 输出：SourceToken 类型返回值。
+     */
+
+    private static SourceToken tokenAt(HeadNode head, int index) {
+        return ShiftReduceSyntaxTreeNode.anchor(head.get(index));
+    }
+
+    /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         onReduce0(context, production);
         ShiftReduceCallback.super.onReduce(context, production);
     }
-/**
- * 函数功能：执行规约事件的内部处理。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：执行规约事件的内部处理。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
 
     private void onReduce0(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
@@ -57,13 +95,14 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         HeadNode head = context.getTreeContext().peek().toHead();
         REDUCE_ACTIONS.resolve(production).accept(this, context, head);
     }
-/**
- * 函数功能：准备函数声明或定义信息。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - head：HeadNode 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：准备函数声明或定义信息。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：无。
+     */
 
     private void prepareFunction(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken nameToken = tokenAt(head, 1);
@@ -85,14 +124,15 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         context.registerFunction(record);
         context.markPendingFunction(record);
     }
-/**
- * 函数功能：校验函数返回值。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - head：HeadNode 类型参数。
- * - hasValue：boolean 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：校验函数返回值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * - hasValue：boolean 类型参数。
+     * 输出：无。
+     */
 
     private void validateReturnValue(ShiftReduceSemanticContext context, HeadNode head, boolean hasValue) {
         SourceToken returnToken = tokenAt(head, 0);
@@ -116,20 +156,22 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         if (valueType == null) {
             throw new CompilerException("return value type is missing.");
         }
-        SemanticDiagnostics.requireAssignable(context,
+        SemanticDiagnostics.requireAssignable(
+                context,
                 valueType.requireType("return value type is required."),
                 returnType,
                 returnToken,
                 "return value type does not match function return type."
         );
     }
-/**
- * 函数功能：校验函数调用。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - head：HeadNode 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：校验函数调用。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：无。
+     */
 
     private void validateCall(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken nameToken = tokenAt(head, 0);
@@ -145,7 +187,8 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         for (int i = 0; i < args.size(); i++) {
             SemanticType sourceType = args.get(i).requireType("argument type is required.");
             SemanticType targetType = record.getParameters().get(i).getType();
-            SemanticDiagnostics.requireAssignable(context,
+            SemanticDiagnostics.requireAssignable(
+                    context,
                     sourceType,
                     targetType,
                     nameToken,
@@ -153,13 +196,14 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
             );
         }
     }
-/**
- * 函数功能：收集函数参数。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - node：ShiftReduceSyntaxTreeNode 类型参数。
- * 输出：List<FunctionParameter> 类型集合或迭代结果。
- */
+
+    /**
+     * 函数功能：收集函数参数。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * 输出：List<FunctionParameter> 类型集合或迭代结果。
+     */
 
     private List<FunctionParameter> collectParameters(
             ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
@@ -183,47 +227,14 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
         }
         return result;
     }
-/**
- * 函数功能：解析函数返回类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - head：HeadNode 类型参数。
- * 输出：TypeRegister 类型返回值。
- */
 
-    private static TypeRegister resolveReturnType(ShiftReduceSemanticContext context, HeadNode head) {
-        TypeRegister direct = context.getType(head.get(0));
-        if (direct != null) {
-            return direct;
-        }
-        ShiftReduceSyntaxTreeNode first = head.get(0);
-        if (first.isToken()) {
-            SourceToken token = first.toToken().getSource();
-            SemanticType type = context.typeToken(token);
-            if (type != null) {
-                return TypeRegister.simple(type, token);
-            }
-        }
-        return null;
-    }
-/**
- * 函数功能：获取指定位置的词法单元。
- * 输入：
- * - head：HeadNode 类型参数。
- * - index：int 类型参数。
- * 输出：SourceToken 类型返回值。
- */
-
-    private static SourceToken tokenAt(HeadNode head, int index) {
-        return ShiftReduceSyntaxTreeNode.anchor(head.get(index));
-    }
-/**
- * 函数功能：收集函数调用实参类型。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - node：ShiftReduceSyntaxTreeNode 类型参数。
- * 输出：List<TypeRegister> 类型集合或迭代结果。
- */
+    /**
+     * 函数功能：收集函数调用实参类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * 输出：List<TypeRegister> 类型集合或迭代结果。
+     */
 
     private List<TypeRegister> collectArgumentTypes(
             ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
@@ -295,14 +306,15 @@ public class FunctionSemanticCallback implements ShiftReduceCallback {
                 callback.validateCall(context, head);
             }
         };
-/**
- * 函数功能：处理或判断接受结果。
- * 输入：
- * - callback：FunctionSemanticCallback 类型参数。
- * - context：ShiftReduceSemanticContext 类型参数。
- * - head：HeadNode 类型参数。
- * 输出：无。
- */
+
+        /**
+         * 函数功能：处理或判断接受结果。
+         * 输入：
+         * - callback：FunctionSemanticCallback 类型参数。
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - head：HeadNode 类型参数。
+         * 输出：无。
+         */
 
         abstract void accept(FunctionSemanticCallback callback, ShiftReduceSemanticContext context, HeadNode head);
     }

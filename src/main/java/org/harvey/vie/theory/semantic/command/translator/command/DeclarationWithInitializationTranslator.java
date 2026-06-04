@@ -25,14 +25,49 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  * @date 2026-04-20 08:29
  */
 public class DeclarationWithInitializationTranslator implements CommandTranslator {
-/**
- * 函数功能：翻译语法节点并返回命令节点注册器。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：CommandNodeRegister[] 类型参数。
- * 输出：CommandNodeRegister 类型返回值。
- */
+    /**
+     * 函数功能：获取已声明的标识符记录。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：IdentifierRecord 类型返回值。
+     */
+
+    private static IdentifierRecord declaredIdentifier(ShiftReduceSemanticContext context) {
+        HeadNode head = currentReducedHead(context);
+        ShiftReduceSyntaxTreeNode child = head.get(1);
+        if (!child.isToken()) {
+            throw new CompilerException("declaration identifier requires a token child.");
+        }
+        SourceToken token = child.toToken().getSource();
+        IdentifierRecord record = context.getIdentifier(token);
+        if (record == null) {
+            throw new CompilerException("declaration identifier is not registered in current scope.");
+        }
+        return record;
+    }
+
+    /**
+     * 函数功能：获取当前规约头节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：HeadNode 类型返回值。
+     */
+
+    private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
+        if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
+            throw new CompilerException("current reduced head is absent for declaration initialization.");
+        }
+        return context.getTreeContext().peek().toHead();
+    }
+
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
 
     @Override
     public CommandNodeRegister translate(
@@ -61,38 +96,5 @@ public class DeclarationWithInitializationTranslator implements CommandTranslato
                 CommandDataType.forStorage(targetType)
         )));
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
-    }
-/**
- * 函数功能：获取已声明的标识符记录。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * 输出：IdentifierRecord 类型返回值。
- */
-
-    private static IdentifierRecord declaredIdentifier(ShiftReduceSemanticContext context) {
-        HeadNode head = currentReducedHead(context);
-        ShiftReduceSyntaxTreeNode child = head.get(1);
-        if (!child.isToken()) {
-            throw new CompilerException("declaration identifier requires a token child.");
-        }
-        SourceToken token = child.toToken().getSource();
-        IdentifierRecord record = context.getIdentifier(token);
-        if (record == null) {
-            throw new CompilerException("declaration identifier is not registered in current scope.");
-        }
-        return record;
-    }
-/**
- * 函数功能：获取当前规约头节点。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * 输出：HeadNode 类型返回值。
- */
-
-    private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
-        if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
-            throw new CompilerException("current reduced head is absent for declaration initialization.");
-        }
-        return context.getTreeContext().peek().toHead();
     }
 }

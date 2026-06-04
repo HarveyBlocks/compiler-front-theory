@@ -19,20 +19,22 @@ public interface ProductionSet extends SimpleCollection<GrammarProduction> {
      * 输出：ReferredHeadSymbol 类型返回值。
      */
     ReferredHeadSymbol getHead(int i);
-/**
- * 函数功能：获取产生式体。
- * 输入：
- * - i：int 类型参数。
- * 输出：AlterableSymbol 类型返回值。
- */
+
+    /**
+     * 函数功能：获取产生式体。
+     * 输入：
+     * - i：int 类型参数。
+     * 输出：AlterableSymbol 类型返回值。
+     */
 
     AlterableSymbol getBody(int i);
-/**
- * 函数功能：获取指定位置或键对应的元素。
- * 输入：
- * - i：int 类型参数。
- * 输出：GrammarProduction 类型返回值。
- */
+
+    /**
+     * 函数功能：获取指定位置或键对应的元素。
+     * 输入：
+     * - i：int 类型参数。
+     * 输出：GrammarProduction 类型返回值。
+     */
 
     GrammarProduction get(int i);
 

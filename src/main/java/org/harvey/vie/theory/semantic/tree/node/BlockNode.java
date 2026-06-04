@@ -15,15 +15,16 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
 @Getter
 public class BlockNode extends HeadNode {
     private final IdentifierRecord[] scope;
-/**
- * 函数功能：创建 BlockNode 对象。
- * 输入：
- * - symbol：HeadSymbol 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：ShiftReduceSyntaxTreeNode[] 类型参数。
- * - scope：IdentifierRecord[] 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 BlockNode 对象。
+     * 输入：
+     * - symbol：HeadSymbol 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：ShiftReduceSyntaxTreeNode[] 类型参数。
+     * - scope：IdentifierRecord[] 类型参数。
+     * 输出：无。
+     */
 
     public BlockNode(
             HeadSymbol symbol,

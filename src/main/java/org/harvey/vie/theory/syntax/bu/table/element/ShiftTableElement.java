@@ -15,6 +15,7 @@ public interface ShiftTableElement extends ActiveTableElement {
      * 输出：整数结果。
      */
     int nextStatus();
+
     /**
      * 函数功能：判断动作表元素是否冲突。
      * 输入：
@@ -32,34 +33,37 @@ public interface ShiftTableElement extends ActiveTableElement {
         }
         return false;
     }
-/**
- * 函数功能：判断是否为移进动作。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否为移进动作。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     default boolean isShift() {
         return true;
     }
-/**
- * 函数功能：判断是否为规约动作。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否为规约动作。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     default boolean isReduce() {
         return false;
     }
-/**
- * 函数功能：判断是否为接受动作。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否为接受动作。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     default boolean isAccept() {

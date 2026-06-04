@@ -15,12 +15,13 @@ public interface CommandNodeBuilder {
      * 输出：无。
      */
     void add(CommandNode node);
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：CommandNode[] 类型数组。
- */
+
+    /**
+     * 函数功能：构建目标对象。
+     * 输入：
+     * - 无。
+     * 输出：CommandNode[] 类型数组。
+     */
 
     CommandNode[] build();
 }

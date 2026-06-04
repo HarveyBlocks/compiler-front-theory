@@ -12,13 +12,13 @@ import org.harvey.vie.theory.semantic.context.SemanticResult;
  * @date 2026-03-31 23:16
  */
 public interface PredictivePhaser {
-/**
- * 函数功能：执行语法分析并返回语义结果。
- * 输入：
- * - iterator：SourceTokenIterator 类型参数。
- * - errorContext：ErrorContext 类型参数。
- * 输出：SemanticResult 类型返回值。
- */
+    /**
+     * 函数功能：执行语法分析并返回语义结果。
+     * 输入：
+     * - iterator：SourceTokenIterator 类型参数。
+     * - errorContext：ErrorContext 类型参数。
+     * 输出：SemanticResult 类型返回值。
+     */
 
     SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext);
 }

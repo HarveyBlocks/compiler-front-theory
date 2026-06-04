@@ -3,10 +3,10 @@ package org.harvey.vie.theory.demo.semantic.callable;
 import org.harvey.vie.theory.demo.semantic.node.GrammarSyntaxTreeNode;
 import org.harvey.vie.theory.exception.CompileException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
-import org.harvey.vie.theory.semantic.context.PredictiveSemanticContext;
-import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.semantic.callback.td.PredicativeErrorType;
 import org.harvey.vie.theory.semantic.callback.td.PredictiveCallback;
+import org.harvey.vie.theory.semantic.context.PredictiveSemanticContext;
+import org.harvey.vie.theory.semantic.context.SemanticResult;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarConcatenation;
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
@@ -38,6 +38,15 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
         this.lexicalConflictResolver = lexicalConflictResolver;
     }
 
+    /**
+     * 函数功能：从预测分析语义上下文中取得语法树构建上下文。
+     * 输入：
+     * - ctx：预测分析语义上下文。
+     * 输出：TreeContext 构建上下文。
+     */
+    private static TreeContext getTreeContext(PredictiveSemanticContext ctx) {
+        return (TreeContext) ctx.getResult();
+    }
 
     /**
      * 函数功能：初始化预测分析语法树构建上下文。
@@ -208,17 +217,6 @@ public class TreeBuilderPredictiveCallback implements PredictiveCallback {
         }
         System.err.println("Situations that cannot be found in the phasing table.");
     }
-
-    /**
-     * 函数功能：从预测分析语义上下文中取得语法树构建上下文。
-     * 输入：
-     * - ctx：预测分析语义上下文。
-     * 输出：TreeContext 构建上下文。
-     */
-    private static TreeContext getTreeContext(PredictiveSemanticContext ctx) {
-        return (TreeContext) ctx.getResult();
-    }
-
 
     private static class TreeContext implements SemanticResult {
         public static final TerminalSymbol END_MARK = PredictiveParsingTable.END_MARK_SYMBOL;

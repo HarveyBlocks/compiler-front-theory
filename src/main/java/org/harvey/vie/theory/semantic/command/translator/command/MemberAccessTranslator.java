@@ -1,9 +1,9 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
+import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
-import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;

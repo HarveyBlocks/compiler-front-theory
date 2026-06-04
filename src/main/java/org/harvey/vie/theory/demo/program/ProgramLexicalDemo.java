@@ -28,6 +28,7 @@ import java.util.List;
 @Slf4j
 public class ProgramLexicalDemo {
 
+    public static final boolean FLUSH_TABLE = RuntimeProperties.lexicalFlushTable();
     private static final RegexCharSet WHITESPACE_NEWLINE = RegexCharSet.of("\n", "\r");
     private static final RegexCharSet WHITESPACE_WITHOUT_NEWLINE = RegexCharSet.of(" ", "\t", "\f");
     private static final RegexCharSet WHITESPACE = RegexCharSet.unionAll(
@@ -35,31 +36,12 @@ public class ProgramLexicalDemo {
     );
     private static final RegexCharSet NON_ZERO_DIGIT = RegexCharSet.of("1", "2", "3", "4", "5", "6", "7", "8", "9");
     private static final RegexCharSet DIGIT = RegexCharSet.unionAll(RegexCharSet.of("0"), NON_ZERO_DIGIT);
-    private static final RegexCharSet LOWER_LETTER = RegexCharSet.of(
-            "a", "b", "c", "d", "e", "f", "g", "h", "i",
-            "j", "k", "l", "m", "n", "o", "p", "q", "r",
-            "s", "t", "u", "v", "w", "x", "y", "z"
-    );
-    private static final RegexCharSet UPPER_LETTER = RegexCharSet.of(
-            "A", "B", "C", "D", "E", "F", "G", "H", "I",
-            "J", "K", "L", "M", "N", "O", "P", "Q", "R",
-            "S", "T", "U", "V", "W", "X", "Y", "Z"
-    );
-    private static final RegexCharSet OPERATOR = RegexCharSet.of(
-            "!", "%", "^", "&", "\\*", "\\(", "\\)", "-", "+",
-            "=", "{", "}", "[", "]", "\\|", "\\\\", ":", ";",
-            "\"", "'", "<", ">", ",", ".", "?", "/"
-    );
-    private static final RegexCharSet OTHER = RegexCharSet.of("@", "#", "$", "_");
     private static final RegexCharSet ANY_WITHOUT_NEWLINE = RegexCharSet.unionAll(
             DIGIT, WHITESPACE_WITHOUT_NEWLINE, LOWER_LETTER, UPPER_LETTER, OPERATOR, OTHER
     );
     private static final RegexCharSet ANY = RegexCharSet.unionAll(
             DIGIT, WHITESPACE, LOWER_LETTER, UPPER_LETTER, OPERATOR, OTHER
     );
-    public static final boolean FLUSH_TABLE = RuntimeProperties.lexicalFlushTable();
-    private static volatile LexicalAnalyzer cachedAnalyzer;
-
     private static final List<LexicalPattern> REGEX_PATTERNS = List.of(
             new LexicalPattern(WHITESPACE + "" + WHITESPACE + "*", ProgramTokenType.SPACE),
             new LexicalPattern(
@@ -126,6 +108,23 @@ public class ProgramLexicalDemo {
                                RegexCharSet.unionAll(UPPER_LETTER, LOWER_LETTER, DIGIT, RegexCharSet.of("_")) +
                                "*", ProgramTokenType.IDENTIFIER)
     );
+    private static final RegexCharSet LOWER_LETTER = RegexCharSet.of(
+            "a", "b", "c", "d", "e", "f", "g", "h", "i",
+            "j", "k", "l", "m", "n", "o", "p", "q", "r",
+            "s", "t", "u", "v", "w", "x", "y", "z"
+    );
+    private static final RegexCharSet UPPER_LETTER = RegexCharSet.of(
+            "A", "B", "C", "D", "E", "F", "G", "H", "I",
+            "J", "K", "L", "M", "N", "O", "P", "Q", "R",
+            "S", "T", "U", "V", "W", "X", "Y", "Z"
+    );
+    private static final RegexCharSet OPERATOR = RegexCharSet.of(
+            "!", "%", "^", "&", "\\*", "\\(", "\\)", "-", "+",
+            "=", "{", "}", "[", "]", "\\|", "\\\\", ":", ";",
+            "\"", "'", "<", ">", ",", ".", "?", "/"
+    );
+    private static final RegexCharSet OTHER = RegexCharSet.of("@", "#", "$", "_");
+    private static volatile LexicalAnalyzer cachedAnalyzer;
 
     /**
      * 函数功能：运行程序词法分析演示入口。
@@ -205,7 +204,8 @@ public class ProgramLexicalDemo {
             if (cachedAnalyzer == null) {
                 AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
                 RegexDfaStatusTable table = buildTable(alphabetCharacterFactory);
-                SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
+                SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(
+                        alphabetCharacterFactory);
                 DefaultLexicalAnalyzer baseAnalyzer = new DefaultLexicalAnalyzer(table, saca);
                 cachedAnalyzer = (errorContext, resource) ->
                         new ProgramStructAwareTokenIterator(baseAnalyzer.iterator(errorContext, resource));

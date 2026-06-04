@@ -19,12 +19,13 @@ public interface FollowSet {
      * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
      */
     Set<TerminalSymbol> followExceptEndMarker();
-/**
- * 函数功能：判断是否包含指定内容。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否包含指定内容。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     boolean containsEndMarker();
 }

@@ -4,14 +4,14 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 
 /**
  * 将词法 token 映射为语义类型的解析接口。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * TypeResolver 把具体语言的 token 类型和通用的 SemanticType 解耦。
  * semantic/type 包只依赖这个接口，不直接依赖某个具体语言的 token 枚举。
- *
+ * <p>
  * 例如：
- *
+ * <p>
  * 1. CONSTANT_INTEGER 可以解析为 int32。
  * 2. TYPE_FLOAT64 可以解析为 float64。
  * 3. TYPE_IDENTIFIER 可以解析为 struct 类型。

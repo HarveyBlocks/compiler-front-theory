@@ -19,36 +19,39 @@ public final class SyntaxTreeListIterator<T> implements Iterator<T> {
     private final ArrayDeque<T> deferredItems = new ArrayDeque<>();
     private ShiftReduceSyntaxTreeNode cursor;
     private T nextItem;
-/**
- * 函数功能：创建 SyntaxTreeListIterator 对象。
- * 输入：
- * - start：ShiftReduceSyntaxTreeNode 类型参数。
- * - stepper：Stepper<T> 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 SyntaxTreeListIterator 对象。
+     * 输入：
+     * - start：ShiftReduceSyntaxTreeNode 类型参数。
+     * - stepper：Stepper<T> 类型参数。
+     * 输出：无。
+     */
 
     public SyntaxTreeListIterator(ShiftReduceSyntaxTreeNode start, Stepper<T> stepper) {
         this.cursor = start;
         this.stepper = Objects.requireNonNull(stepper);
         this.nextItem = advance();
     }
-/**
- * 函数功能：判断是否存在下一个元素。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否存在下一个元素。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean hasNext() {
         return nextItem != null;
     }
-/**
- * 函数功能：获取下一个元素。
- * 输入：
- * - 无。
- * 输出：T 类型返回值。
- */
+
+    /**
+     * 函数功能：获取下一个元素。
+     * 输入：
+     * - 无。
+     * 输出：T 类型返回值。
+     */
 
     @Override
     public T next() {
@@ -59,12 +62,13 @@ public final class SyntaxTreeListIterator<T> implements Iterator<T> {
         nextItem = advance();
         return current;
     }
-/**
- * 函数功能：推进到下一个序列状态。
- * 输入：
- * - 无。
- * 输出：T 类型返回值。
- */
+
+    /**
+     * 函数功能：推进到下一个序列状态。
+     * 输入：
+     * - 无。
+     * 输出：T 类型返回值。
+     */
 
     private T advance() {
         while (true) {

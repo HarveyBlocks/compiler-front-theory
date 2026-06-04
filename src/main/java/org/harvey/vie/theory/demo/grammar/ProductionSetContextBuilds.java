@@ -233,55 +233,6 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
-    @AllArgsConstructor(access = AccessLevel.PRIVATE)
-    static class StringTokenType implements TokenType {
-        private final String hint;
-        private static final Map<String, StringTokenType> POOL = new HashMap<>();
-
-        /**
-         * 函数功能：按提示文本获取共享的字符串词法单元类型。
-         * 输入：
-         * - hint：词法单元的提示文本。
-         * 输出：提示文本对应的 TokenType。
-         */
-        public static TokenType of(String hint) {
-            return POOL.computeIfAbsent(hint, StringTokenType::new);
-        }
-
-        /**
-         * 函数功能：序列化字符串词法单元类型。
-         * 输入：
-         * - os：接收序列化数据的输出流。
-         * 输出：写入的字节数。
-         */
-        @Override
-        public int store(OutputStream os) throws IOException {
-            throw new UnsupportedEncodingException("just test");
-        }
-
-        /**
-         * 函数功能：获取字符串词法单元类型的优先级。
-         * 输入：
-         * - 无。
-         * 输出：词法单元优先级整数。
-         */
-        @Override
-        public int getPriority() {
-            return 0;
-        }
-
-        /**
-         * 函数功能：获取字符串词法单元类型的提示文本。
-         * 输入：
-         * - 无。
-         * 输出：词法单元提示字符串。
-         */
-        @Override
-        public @NonNull String hint() {
-            return hint;
-        }
-    }
-
     /**
      * 函数功能：构建作业题一的文法产生式上下文。
      * 输入：
@@ -405,5 +356,54 @@ public class ProductionSetContextBuilds {
                 .alternateTerminal(of("true"))
                 .alternateTerminal(of("false"));
         return contextBuilder.build();
+    }
+
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    static class StringTokenType implements TokenType {
+        private static final Map<String, StringTokenType> POOL = new HashMap<>();
+        private final String hint;
+
+        /**
+         * 函数功能：按提示文本获取共享的字符串词法单元类型。
+         * 输入：
+         * - hint：词法单元的提示文本。
+         * 输出：提示文本对应的 TokenType。
+         */
+        public static TokenType of(String hint) {
+            return POOL.computeIfAbsent(hint, StringTokenType::new);
+        }
+
+        /**
+         * 函数功能：序列化字符串词法单元类型。
+         * 输入：
+         * - os：接收序列化数据的输出流。
+         * 输出：写入的字节数。
+         */
+        @Override
+        public int store(OutputStream os) throws IOException {
+            throw new UnsupportedEncodingException("just test");
+        }
+
+        /**
+         * 函数功能：获取字符串词法单元类型的优先级。
+         * 输入：
+         * - 无。
+         * 输出：词法单元优先级整数。
+         */
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+        /**
+         * 函数功能：获取字符串词法单元类型的提示文本。
+         * 输入：
+         * - 无。
+         * 输出：词法单元提示字符串。
+         */
+        @Override
+        public @NonNull String hint() {
+            return hint;
+        }
     }
 }

@@ -23,7 +23,6 @@ import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFact
 import org.harvey.vie.theory.semantic.command.command.string.SimpleStringCommandFactory;
 import org.harvey.vie.theory.semantic.command.command.string.TypedStringCommandFactory;
 import org.harvey.vie.theory.semantic.context.SemanticResult;
-import org.harvey.vie.theory.semantic.function.FunctionManager;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaser;
 import org.harvey.vie.theory.syntax.bu.ShiftReducePhaserImpl;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
@@ -74,68 +73,11 @@ import java.util.function.BiFunction;
 @Slf4j
 public class SyntaxDemo {
 
-    private static class Predicative {
-        /**
-         * 函数功能：运行预测分析演示入口。
-         * 输入：
-         * - args：命令行参数数组。
-         * 输出：无。
-         */
-        public static void main(String[] args) {
-            SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
-                // syntax analyzer
-                PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable("E");
-                GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
-                PredictivePhaserImpl phaser = new PredictivePhaserImpl(
-                        start,
-                        predictiveParsingTable,
-                        SemanticDemo.buildPredicativeRegister(),
-                        t -> true
-                );
-                return phaser.phase(iter, errCtx);
-            });
-            System.out.println(result);
-        }
-    }
-
     public static final CommandFactory STRING_COMMAND_FACTORY = new DefaultCommandFactory(
             new TypedStringCommandFactory(ProgramSyntaxDemo.TYPE_RESOLVER),
             new SimpleStringCommandFactory()
     );
-
-    private static class ShiftReduce {
-        /**
-         * 函数功能：运行移进归约分析演示入口。
-         * 输入：
-         * - args：命令行参数数组。
-         * 输出：无。
-         */
-        public static void main(String[] args) {
-            SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
-                ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
-                System.out.println(context);
-                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable(
-                        "S",
-                        context,
-                        "syntax_simple.data",
-                        is -> null, /*不是Program的, 不支持Tag*/
-                        (t1, t2) -> 0 /*不是Program的, 不支持Tag*/
-                );
-                ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
-                        shiftReduceParsingTable,
-                        t -> true,
-                        SemanticDemo.buildSimpleShiftReduceRegister(),
-                        STRING_COMMAND_FACTORY,
-                        null, // 未定
-                        ProgramSyntaxDemo.CONSTANT_RESOLVER,
-                        null
-                );
-                return phaser.phase(iter, errCtx);
-            });
-            System.out.println(result);
-        }
-    }
-
+    public static final boolean FLUSH_TABLE = RuntimeProperties.syntaxFlushTable();
     private static final TerminalFactory TERMINAL_FACTORY = terminal -> new TokenTypeTerminalSymbol((TokenType) terminal);
     private static final TerminalMatcherFactory MATCHER_FACTORY = array -> (TerminalMatcher) token -> {
         for (int i = 0; i < array.length; i++) {
@@ -147,6 +89,7 @@ public class SyntaxDemo {
                                     token.hintString() +
                                     ". For can not found in grammar production set.");
     };
+    private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
     /**
      * 函数功能：对输入文本执行词法分析并交给指定语法分析流程处理。
@@ -188,9 +131,6 @@ public class SyntaxDemo {
         SourceAlphabetCharacterAdaptorImpl saca = new SourceAlphabetCharacterAdaptorImpl(alphabetCharacterFactory);
         return new DefaultLexicalAnalyzer(table, saca);
     }
-
-    public static final boolean FLUSH_TABLE = RuntimeProperties.syntaxFlushTable();
-    private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
     /**
      * 函数功能：构建或加载移进归约分析表并缓存结果。
@@ -420,6 +360,63 @@ public class SyntaxDemo {
      */
     public static void main(String[] args) {
         buildPredictiveParsingTable("bexpr");
+    }
+
+    private static class Predicative {
+        /**
+         * 函数功能：运行预测分析演示入口。
+         * 输入：
+         * - args：命令行参数数组。
+         * 输出：无。
+         */
+        public static void main(String[] args) {
+            SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
+                // syntax analyzer
+                PredictiveParsingTable predictiveParsingTable = buildPredictiveParsingTable("E");
+                GrammarUnitSymbol start = predictiveParsingTable.headStart("E");
+                PredictivePhaserImpl phaser = new PredictivePhaserImpl(
+                        start,
+                        predictiveParsingTable,
+                        SemanticDemo.buildPredicativeRegister(),
+                        t -> true
+                );
+                return phaser.phase(iter, errCtx);
+            });
+            System.out.println(result);
+        }
+    }
+
+    private static class ShiftReduce {
+        /**
+         * 函数功能：运行移进归约分析演示入口。
+         * 输入：
+         * - args：命令行参数数组。
+         * 输出：无。
+         */
+        public static void main(String[] args) {
+            SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
+                ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
+                System.out.println(context);
+                ShiftReduceParsingTable shiftReduceParsingTable = buildShiftReduceParsingTable(
+                        "S",
+                        context,
+                        "syntax_simple.data",
+                        is -> null, /*不是Program的, 不支持Tag*/
+                        (t1, t2) -> 0 /*不是Program的, 不支持Tag*/
+                );
+                ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
+                        shiftReduceParsingTable,
+                        t -> true,
+                        SemanticDemo.buildSimpleShiftReduceRegister(),
+                        STRING_COMMAND_FACTORY,
+                        null, // 未定
+                        ProgramSyntaxDemo.CONSTANT_RESOLVER,
+                        null
+                );
+                return phaser.phase(iter, errCtx);
+            });
+            System.out.println(result);
+        }
     }
 }
 

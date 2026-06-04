@@ -16,6 +16,13 @@ import java.util.Optional;
 @Getter
 @AllArgsConstructor
 public class AsciiAlphabetCharacter extends AbstractAlphabetCharacter {
+    private static final Map<Byte, String> ESCAPE_MAP = Map.of(
+            (byte) '\f', "\\f",
+            (byte) '\t', "\\t",
+            (byte) '\r', "\\r",
+            (byte) '\n', "\\n",
+            (byte) ' ', "` `"
+    );
     private final byte ascii;
 
     /**
@@ -39,14 +46,6 @@ public class AsciiAlphabetCharacter extends AbstractAlphabetCharacter {
     public int uniqueCode() {
         return ascii;
     }
-
-    private static final Map<Byte, String> ESCAPE_MAP = Map.of(
-            (byte) '\f', "\\f",
-            (byte) '\t', "\\t",
-            (byte) '\r', "\\r",
-            (byte) '\n', "\\n",
-            (byte) ' ', "` `"
-    );
 
     /**
      * 函数功能：获取 ASCII 字符的字符串表示。

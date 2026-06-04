@@ -8,11 +8,11 @@ import java.util.Properties;
 
 /**
  * Centralized runtime property access.
- *
+ * <p>
  * Configuration source priority:
  * 1. JVM system properties
  * 2. Config file
- *
+ * <p>
  * Config file path priority:
  * 1. JVM system property {@value #CONFIG_PATH_PROPERTY}
  * 2. {@value #DEFAULT_CONFIG_PATH}

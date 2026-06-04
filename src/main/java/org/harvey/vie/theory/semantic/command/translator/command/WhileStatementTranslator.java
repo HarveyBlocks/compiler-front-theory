@@ -1,6 +1,5 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
-import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.command.DefaultSemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
@@ -11,6 +10,7 @@ import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -25,6 +25,27 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  * @date 2026-04-21 00:35
  */
 public class WhileStatementTranslator implements CommandTranslator {
+    /**
+     * 函数功能：绑定循环体中的跳转标签。
+     * 输入：
+     * - body：CommandNodeRegister 类型参数。
+     * - continueLabel：SemanticLabel 类型参数。
+     * - breakLabel：SemanticLabel 类型参数。
+     * 输出：无。
+     */
+    static void bindLoopLabels(CommandNodeRegister body, SemanticLabel continueLabel, SemanticLabel breakLabel) {
+        for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainBreaks()) {
+            if (!gotoCommand.isResolved()) {
+                gotoCommand.setLabel(breakLabel);
+            }
+        }
+        for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainContinues()) {
+            if (!gotoCommand.isResolved()) {
+                gotoCommand.setLabel(continueLabel);
+            }
+        }
+    }
+
     /**
      * 函数功能：翻译语法节点并返回命令节点注册器。
      * 输入：
@@ -72,26 +93,5 @@ public class WhileStatementTranslator implements CommandTranslator {
         thisBuilder.add(new LabelNode(whileEndLabel)); // L2
         bindLoopLabels(children[4], whileStartLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
-    }
-
-    /**
-     * 函数功能：绑定循环体中的跳转标签。
-     * 输入：
-     * - body：CommandNodeRegister 类型参数。
-     * - continueLabel：SemanticLabel 类型参数。
-     * - breakLabel：SemanticLabel 类型参数。
-     * 输出：无。
-     */
-    static void bindLoopLabels(CommandNodeRegister body, SemanticLabel continueLabel, SemanticLabel breakLabel) {
-        for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainBreaks()) {
-            if (!gotoCommand.isResolved()) {
-                gotoCommand.setLabel(breakLabel);
-            }
-        }
-        for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainContinues()) {
-            if (!gotoCommand.isResolved()) {
-                gotoCommand.setLabel(continueLabel);
-            }
-        }
     }
 }

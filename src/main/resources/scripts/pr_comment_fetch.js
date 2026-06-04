@@ -1,7 +1,6 @@
 // 使用示例:
 // node pr_comment_fetch.js ./config-example.json
 
-
 const https = require('node:https');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -26,7 +25,7 @@ try {
 	console.error('Invalid JSON:', e.message);
 	process.exit(1);
 }
-const { token, owner, repo, pr, contextLines = 3, outputFile } = config;
+const {token, owner, repo, pr, contextLines = 3, outputFile} = config;
 if (!token || !owner || !repo || !pr) {
 	console.error('Config must contain: token, owner, repo, pr');
 	process.exit(1);
@@ -43,12 +42,15 @@ const HEADERS = {
 
 function get(url) {
 	return new Promise((resolve, reject) => {
-		https.get(url, { headers: HEADERS }, (res) => {
+		https.get(url, {headers: HEADERS}, (res) => {
 			let data = '';
 			res.on('data', chunk => data += chunk);
 			res.on('end', () => {
-				try { resolve({ data: JSON.parse(data), headers: res.headers }); }
-				catch (e) { reject(e); }
+				try {
+					resolve({data: JSON.parse(data), headers: res.headers});
+				} catch (e) {
+					reject(e);
+				}
 			});
 		}).on('error', reject);
 	});
@@ -65,7 +67,7 @@ async function paginate(url) {
 	const results = [];
 	let current = url;
 	while (current) {
-		const { data, headers } = await get(current);
+		const {data, headers} = await get(current);
 		results.push(...data);
 		current = getNextPage(headers);
 	}
@@ -83,7 +85,7 @@ async function fetchFileContent(commitSha, filePath) {
 
 	const url = `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}?ref=${commitSha}`;
 	try {
-		const { data } = await get(url);
+		const {data} = await get(url);
 		const text = data.content && data.encoding === 'base64'
 				? Buffer.from(data.content, 'base64').toString('utf8')
 				: null;
@@ -221,16 +223,18 @@ async function generateMarkdown(issueComments, reviewComments, contextSize) {
 		const issueUrl = `https://api.github.com/repos/${owner}/${repo}/issues/${pr}/comments`;
 		const reviewUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${pr}/comments`;
 
-		console.log('issueUrl: ',issueUrl);
-		console.log('reviewUrl: ',reviewUrl);
+		console.log('issueUrl: ', issueUrl);
+		console.log('reviewUrl: ', reviewUrl);
 		const [issueComments, reviewComments] = await Promise.all([
 			paginate(issueUrl),
 			paginate(reviewUrl),
 		]);
 
-		console.error(`Found ${issueComments.length} PR comments, ${reviewComments.length} review comments.`);
+		console.error(
+				`Found ${issueComments.length} PR comments, ${reviewComments.length} review comments.`);
 		console.error('Generating Markdown...');
-		const markdown = await generateMarkdown(issueComments, reviewComments, contextLines);
+		const markdown = await generateMarkdown(
+				issueComments, reviewComments, contextLines);
 
 		if (outputFile) {
 			fs.writeFileSync(outputFile, markdown, 'utf8');

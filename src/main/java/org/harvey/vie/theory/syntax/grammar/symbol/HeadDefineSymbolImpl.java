@@ -21,25 +21,27 @@ import java.nio.charset.StandardCharsets;
 @Getter
 @EqualsAndHashCode(callSuper = false)
 @AllArgsConstructor
-public class HeadDefineSymbolImpl  extends AbstractTagGrammarSymbol implements HeadDefineSymbol {
+public class HeadDefineSymbolImpl extends AbstractTagGrammarSymbol implements HeadDefineSymbol {
     private final String name;
-/**
- * 函数功能：返回当前对象的字符串表示。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+    /**
+     * 函数功能：返回当前对象的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
 
     @Override
     public String toString() {
         return name;
     }
-/**
- * 函数功能：将对象写入输出流。
- * 输入：
- * - os：OutputStream 类型参数。
- * 输出：整数结果。
- */
+
+    /**
+     * 函数功能：将对象写入输出流。
+     * 输入：
+     * - os：OutputStream 类型参数。
+     * 输出：整数结果。
+     */
 
     @Override
     public int store(OutputStream os) throws IOException {

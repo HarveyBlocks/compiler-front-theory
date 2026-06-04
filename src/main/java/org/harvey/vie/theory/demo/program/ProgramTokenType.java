@@ -90,21 +90,6 @@ public enum ProgramTokenType implements TokenType {
         return Storages.storeInteger(os, ordinal());
     }
 
-    public static class Loader implements TokenType.Loader<ProgramTokenType> {
-
-        /**
-         * 函数功能：从输入流读取编号并还原程序词法单元类型。
-         * 输入：
-         * - is：包含序列化编号的输入流。
-         * 输出：编号对应的 ProgramTokenType；负数编号返回 null。
-         */
-        @Override
-        public ProgramTokenType load(InputStream is) throws IOException {
-            int id = Loaders.loadInteger(is);
-            return id < 0 ? null : ProgramTokenType.values()[id];
-        }
-    }
-
     /**
      * 函数功能：获取程序词法单元类型的匹配优先级。
      * 输入：
@@ -125,5 +110,20 @@ public enum ProgramTokenType implements TokenType {
     @Override
     public @NonNull String hint() {
         return name();
+    }
+
+    public static class Loader implements TokenType.Loader<ProgramTokenType> {
+
+        /**
+         * 函数功能：从输入流读取编号并还原程序词法单元类型。
+         * 输入：
+         * - is：包含序列化编号的输入流。
+         * 输出：编号对应的 ProgramTokenType；负数编号返回 null。
+         */
+        @Override
+        public ProgramTokenType load(InputStream is) throws IOException {
+            int id = Loaders.loadInteger(is);
+            return id < 0 ? null : ProgramTokenType.values()[id];
+        }
     }
 }

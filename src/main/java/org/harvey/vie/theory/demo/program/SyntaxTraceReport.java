@@ -158,7 +158,13 @@ public class SyntaxTraceReport implements ShiftReduceCallback {
          * - stackBefore：动作执行前的状态栈文本。
          * 输出：无。
          */
-        public TraceEntry(String phase, String tokenType, String lexeme, int offset, String action, String stackBefore) {
+        public TraceEntry(
+                String phase,
+                String tokenType,
+                String lexeme,
+                int offset,
+                String action,
+                String stackBefore) {
             this.phase = phase;
             this.tokenType = tokenType;
             this.lexeme = lexeme;

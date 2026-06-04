@@ -28,40 +28,43 @@ public class TreeLogCallback implements ShiftReduceCallback {
         log.info("Stack:" + context.getTreeContext());
         ShiftReduceCallback.super.onAccept(context, production);
     }
-/**
- * 函数功能：处理规约事件。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         log.debug("Stack:" + context.getTreeContext());
         ShiftReduceCallback.super.onReduce(context, production);
     }
-/**
- * 函数功能：处理移进事件。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - nextStatus：int 类型参数。
- * - token：SourceToken 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：处理移进事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - nextStatus：int 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void onShift(ShiftReduceSemanticContext context, int nextStatus, SourceToken token) {
         log.debug("Stack:" + context.getTreeContext());
         ShiftReduceCallback.super.onShift(context, nextStatus, token);
     }
-/**
- * 函数功能：处理语义或语法错误事件。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - errorType：ShiftReduceErrorType 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：处理语义或语法错误事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - errorType：ShiftReduceErrorType 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void onError(ShiftReduceSemanticContext context, ShiftReduceErrorType errorType) {

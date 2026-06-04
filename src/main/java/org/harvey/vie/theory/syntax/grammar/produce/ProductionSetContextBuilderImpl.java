@@ -23,12 +23,13 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
     private final List<GrammarProductionBuilder> list;
     private final Map<TerminalFactor, TerminalSymbol> terminalMap;
     private final TerminalFactory terminalFactory;
-/**
- * 函数功能：创建 ProductionSetContextBuilderImpl 对象。
- * 输入：
- * - terminalFactory：TerminalFactory 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 ProductionSetContextBuilderImpl 对象。
+     * 输入：
+     * - terminalFactory：TerminalFactory 类型参数。
+     * 输出：无。
+     */
 
     public ProductionSetContextBuilderImpl(TerminalFactory terminalFactory) {
         this.list = new ArrayList<>();
@@ -36,13 +37,14 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
         this.terminalMap = new HashMap<>();
         this.terminalFactory = terminalFactory;
     }
-/**
- * 函数功能：定义新的语法产生式。
- * 输入：
- * - name：String 类型参数。
- * - tags：SemanticTag... 类型参数。
- * 输出：GrammarProductionBuilder 类型返回值。
- */
+
+    /**
+     * 函数功能：定义新的语法产生式。
+     * 输入：
+     * - name：String 类型参数。
+     * - tags：SemanticTag... 类型参数。
+     * 输出：GrammarProductionBuilder 类型返回值。
+     */
 
     @Override
     public GrammarProductionBuilder define(String name, SemanticTag... tags) {
@@ -58,23 +60,25 @@ public class ProductionSetContextBuilderImpl implements ProductionSetContextBuil
         }
         return productionBuilder;
     }
-/**
- * 函数功能：创建终结符符号。
- * 输入：
- * - factor：TerminalFactor 类型参数。
- * 输出：TerminalSymbol 类型返回值。
- */
+
+    /**
+     * 函数功能：创建终结符符号。
+     * 输入：
+     * - factor：TerminalFactor 类型参数。
+     * 输出：TerminalSymbol 类型返回值。
+     */
 
     @Override
     public TerminalSymbol createTerminal(TerminalFactor factor) {
         return terminalMap.computeIfAbsent(factor, terminalFactory::create);
     }
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：ProductionSetContext 类型返回值。
- */
+
+    /**
+     * 函数功能：构建目标对象。
+     * 输入：
+     * - 无。
+     * 输出：ProductionSetContext 类型返回值。
+     */
 
     @Override
     public ProductionSetContext build() {

@@ -16,30 +16,16 @@ import java.util.List;
  */
 public class SemanticResultCallback implements ShiftReduceCallback {
     /**
-     * 函数功能：处理接受前事件。
+     * 函数功能：构建语义分析结果。
      * 输入：
      * - context：ShiftReduceSemanticContext 类型参数。
-     * - production：SimpleGrammarProduction 类型参数。
-     * 输出：无。
+     * - commandContext：CommandContext 类型参数。
+     * 输出：SemanticAnalysisResult 类型返回值。
      */
-    @Override
-    public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        CommandContext commandContext = context.getCommandContext();
-        if (commandContext.isEmpty()) {
-            throw new CompilerException("illegal statement before accept on production.");
-        }
-        context.setResult(buildResult(context, commandContext));
-        ShiftReduceCallback.super.beforeAccept(context, production);
-    }
-/**
- * 函数功能：构建语义分析结果。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - commandContext：CommandContext 类型参数。
- * 输出：SemanticAnalysisResult 类型返回值。
- */
 
-    private static SemanticAnalysisResult buildResult(ShiftReduceSemanticContext context, CommandContext commandContext) {
+    private static SemanticAnalysisResult buildResult(
+            ShiftReduceSemanticContext context,
+            CommandContext commandContext) {
         if (commandContext.isEmpty()) {
             throw new CompilerException("illegal statement before accept on production.");
         }
@@ -54,6 +40,23 @@ public class SemanticResultCallback implements ShiftReduceCallback {
                 context.structRecords(),
                 context.identifierRecords()
         );
+    }
+
+    /**
+     * 函数功能：处理接受前事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
+    @Override
+    public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
+        CommandContext commandContext = context.getCommandContext();
+        if (commandContext.isEmpty()) {
+            throw new CompilerException("illegal statement before accept on production.");
+        }
+        context.setResult(buildResult(context, commandContext));
+        ShiftReduceCallback.super.beforeAccept(context, production);
     }
 }
 

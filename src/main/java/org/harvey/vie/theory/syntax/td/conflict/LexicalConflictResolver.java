@@ -17,49 +17,53 @@ import org.harvey.vie.theory.syntax.td.GrammarSyntaxTreeNodeBuilder;
 public interface LexicalConflictResolver {
     LexicalConflictResolver PASSIVE = new LexicalConflictResolver() {
     };
-/**
- * 函数功能：创建被动词法冲突解析器。
- * 输入：
- * - 无。
- * 输出：LexicalConflictResolver 类型返回值。
- */
+
+    /**
+     * 函数功能：创建被动词法冲突解析器。
+     * 输入：
+     * - 无。
+     * 输出：LexicalConflictResolver 类型返回值。
+     */
 
     static LexicalConflictResolver passive() {
         return PASSIVE;
     }
-/**
- * 函数功能：解析词法冲突并返回词法单元迭代器。
- * 输入：
- * - terminal：TerminalSymbol 类型参数。
- * - old：SourceTokenIterator 类型参数。
- * 输出：SourceTokenIterator 类型返回值。
- */
+
+    /**
+     * 函数功能：解析词法冲突并返回词法单元迭代器。
+     * 输入：
+     * - terminal：TerminalSymbol 类型参数。
+     * - old：SourceTokenIterator 类型参数。
+     * 输出：SourceTokenIterator 类型返回值。
+     */
 
     @Deprecated
     default SourceTokenIterator resolve(TerminalSymbol terminal, SourceTokenIterator old) throws CompileException {
         throw new UnsupportedOperationException("Can not resolve");
     }
-/**
- * 函数功能：处理空产生式冲突。
- * 输入：
- * - token：SourceToken 类型参数。
- * - nodeBuilder：GrammarSyntaxTreeNodeBuilder 类型参数。
- * - ctx：PredictiveSemanticContext 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：处理空产生式冲突。
+     * 输入：
+     * - token：SourceToken 类型参数。
+     * - nodeBuilder：GrammarSyntaxTreeNodeBuilder 类型参数。
+     * - ctx：PredictiveSemanticContext 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     default boolean resolveEmptyProduction(
             SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, PredictiveSemanticContext ctx) {
         return false;
     }
-/**
- * 函数功能：处理终结符冲突。
- * 输入：
- * - token：SourceToken 类型参数。
- * - nodeBuilder：GrammarSyntaxTreeNodeBuilder 类型参数。
- * - ctx：PredictiveSemanticContext 类型参数。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：处理终结符冲突。
+     * 输入：
+     * - token：SourceToken 类型参数。
+     * - nodeBuilder：GrammarSyntaxTreeNodeBuilder 类型参数。
+     * - ctx：PredictiveSemanticContext 类型参数。
+     * 输出：判断结果布尔值。
+     */
 
     default boolean resolveTerminalConflict(
             SourceToken token, GrammarSyntaxTreeNodeBuilder nodeBuilder, PredictiveSemanticContext ctx) {

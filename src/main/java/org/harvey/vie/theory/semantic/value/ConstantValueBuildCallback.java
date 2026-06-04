@@ -4,32 +4,30 @@ import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenStringMapping;
-import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
-
-import java.nio.charset.StandardCharsets;
 
 /**
  * 在 LR 归约过程中构造编译期常量属性的语义回调。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * ConstantValueBuildCallback 负责常量折叠和一部分常量传播。
  * 每当语法分析器完成一次 reduce，它会根据产生式语义 tag 判断当前节点是否可以
  * 在编译期确定值。如果可以，就把 ConstantValue 绑定到当前 HeadNode 上。
- *
+ * <p>
  * 这与实验任务书中“语法制导翻译及中间代码生成”的目标相配合：
- *
+ * <p>
  * 1. 语义分析阶段识别常量表达式。
  * 2. 中间代码生成阶段可以直接装载常量。
  * 3. 避免为已经确定的表达式生成多余运行期求值指令。
- *
+ * <p>
  * 注意：
- *
+ * <p>
  * 该类不负责类型合法性检查。
  * 类型检查主要由 TypeBuildCallback 和其他语义 callback 完成。
  * 如果某个表达式不能安全折叠，规则会返回 null，让后续阶段走普通翻译流程。
@@ -37,17 +35,17 @@ import java.nio.charset.StandardCharsets;
 public class ConstantValueBuildCallback implements ShiftReduceCallback {
     /**
      * production tag 到常量构造规则的映射表。
-     *
+     * <p>
      * 输入：
-     *
+     * <p>
      * 当前归约产生式携带的 ProgramSemanticTag 组合。
-     *
+     * <p>
      * 输出：
-     *
+     * <p>
      * 解析出一个 ConstantRule，用于尝试构造当前节点的 ConstantValue。
-     *
+     * <p>
      * 注意：
-     *
+     * <p>
      * 大部分语句、声明、函数调用、新建对象等节点不产生编译期常量，
      * 因而映射到 ConstantRule.NONE。
      */
@@ -91,24 +89,12 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             .when(ConstantRule.RELATION, ProgramSemanticTag.LESS_EQUAL)
             .when(ConstantRule.RELATION, ProgramSemanticTag.GREATER)
             .when(ConstantRule.RELATION, ProgramSemanticTag.GREATER_EQUAL)
-            .when(ConstantRule.ARGUMENT_VALUE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE, ProgramSemanticTag.FORWARD);
-
-    /**
-     * 函数功能：处理规约事件。
-     * 输入：
-     * - context：ShiftReduceSemanticContext 类型参数。
-     * - production：SimpleGrammarProduction 类型参数。
-     * 输出：无。
-     */
-    @Override
-    public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        HeadNode head = currentReducedHead(context);
-        ConstantValue value = RULES.resolve(production).build(context, head);
-        if (value != null) {
-            context.bindConstantValue(head, value);
-        }
-        ShiftReduceCallback.super.onReduce(context, production);
-    }
+            .when(
+                    ConstantRule.ARGUMENT_VALUE,
+                    ProgramSemanticTag.ARGUMENT,
+                    ProgramSemanticTag.VALUE,
+                    ProgramSemanticTag.FORWARD
+            );
 
     /**
      * 函数功能：转发子节点属性。
@@ -238,7 +224,8 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         if (left == null || right == null || !left.getType().isBooleanScalar() || !right.getType().isBooleanScalar()) {
             return null;
         }
-        boolean result = head.containsTag(ProgramSemanticTag.OR) ? left.bool() || right.bool() : left.bool() && right.bool();
+        boolean result =
+                head.containsTag(ProgramSemanticTag.OR) ? left.bool() || right.bool() : left.bool() && right.bool();
         return new ConstantValue(SemanticType.scalar(SemanticType.Kind.BOOLEAN), result);
     }
 
@@ -258,7 +245,8 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         boolean result;
         if (left.getType().isNumericScalar() && right.getType().isNumericScalar()) {
             double leftValue = left.getType().getKind() == SemanticType.Kind.FLOAT64 ? left.float64() : left.int32();
-            double rightValue = right.getType().getKind() == SemanticType.Kind.FLOAT64 ? right.float64() : right.int32();
+            double rightValue =
+                    right.getType().getKind() == SemanticType.Kind.FLOAT64 ? right.float64() : right.int32();
             result = leftValue == rightValue;
         } else if (left.getType().equals(right.getType())) {
             result = left.getValue().equals(right.getValue());
@@ -354,10 +342,27 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
     }
 
     /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
+    @Override
+    public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
+        HeadNode head = currentReducedHead(context);
+        ConstantValue value = RULES.resolve(production).build(context, head);
+        if (value != null) {
+            context.bindConstantValue(head, value);
+        }
+        ShiftReduceCallback.super.onReduce(context, production);
+    }
+
+    /**
      * 单个产生式对应的常量构造规则。
-     *
+     * <p>
      * 作用：
-     *
+     * <p>
      * ConstantRule 是一个函数式接口。
      * RULES 表根据 production tag 选出具体 ConstantRule，
      * 再调用 build 方法尝试为当前归约节点构造 ConstantValue。

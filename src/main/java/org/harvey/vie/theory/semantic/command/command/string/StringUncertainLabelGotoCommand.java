@@ -14,27 +14,29 @@ import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
  */
 @Data
 public class StringUncertainLabelGotoCommand implements UncertainLabelGotoCommand {
-    private SemanticLabel label;
     private final SourceToken token;
-/**
- * 函数功能：创建 StringUncertainLabelGotoCommand 对象。
- * 输入：
- * - token：SourceToken 类型参数。
- * 输出：无。
- */
+    private SemanticLabel label;
+
+    /**
+     * 函数功能：创建 StringUncertainLabelGotoCommand 对象。
+     * 输入：
+     * - token：SourceToken 类型参数。
+     * 输出：无。
+     */
 
     public StringUncertainLabelGotoCommand(SourceToken token) {
         this.token = token;
     }
-/**
- * 函数功能：返回当前对象的字符串表示。
- * 输入：
- * - 无。
- * 输出：字符串结果。
- */
+
+    /**
+     * 函数功能：返回当前对象的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：字符串结果。
+     */
 
     @Override
     public String toString() {
-        return "goto " + (label==null?"unknown":label.getIndex()+"");
+        return "goto " + (label == null ? "unknown" : label.getIndex() + "");
     }
 }

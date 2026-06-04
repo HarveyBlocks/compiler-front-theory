@@ -14,22 +14,24 @@ import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 @Getter
 public class ProductionBodyTrieImpl implements ProductionBodyTrie {
     private final ProductionBodyTrieNode root;
-/**
- * 函数功能：创建 ProductionBodyTrieImpl 对象。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 ProductionBodyTrieImpl 对象。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
 
     public ProductionBodyTrieImpl() {
         this.root = new ProductionBodyTrieNodeImpl(null);
     }
-/**
- * 函数功能：添加指定元素。
- * 输入：
- * - concatenation：GrammarConcatenation 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：添加指定元素。
+     * 输入：
+     * - concatenation：GrammarConcatenation 类型参数。
+     * 输出：无。
+     */
 
     @Override
     public void add(GrammarConcatenation concatenation) {

@@ -1,7 +1,6 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
-import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;

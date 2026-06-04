@@ -20,20 +20,22 @@ public interface ProductionSetContextBuilder {
      * 输出：GrammarProductionBuilder 类型返回值。
      */
     GrammarProductionBuilder define(String name, SemanticTag... tags);
-/**
- * 函数功能：创建终结符符号。
- * 输入：
- * - factor：TerminalFactor 类型参数。
- * 输出：TerminalSymbol 类型返回值。
- */
+
+    /**
+     * 函数功能：创建终结符符号。
+     * 输入：
+     * - factor：TerminalFactor 类型参数。
+     * 输出：TerminalSymbol 类型返回值。
+     */
 
     TerminalSymbol createTerminal(TerminalFactor factor);
-/**
- * 函数功能：构建目标对象。
- * 输入：
- * - 无。
- * 输出：ProductionSetContext 类型返回值。
- */
+
+    /**
+     * 函数功能：构建目标对象。
+     * 输入：
+     * - 无。
+     * 输出：ProductionSetContext 类型返回值。
+     */
 
     ProductionSetContext build();
 }

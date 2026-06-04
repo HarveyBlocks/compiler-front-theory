@@ -4,8 +4,8 @@ import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.semantic.array.ArrayCreationDimensions;
-import org.harvey.vie.theory.semantic.command.LocationKind;
 import org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback;
+import org.harvey.vie.theory.semantic.command.LocationKind;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.tag.ProductionTagStrategy;
 import org.harvey.vie.theory.semantic.tree.node.HeadNode;
@@ -14,37 +14,37 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
  * 在 LR 归约过程中构造并校验类型属性的语义回调。
- *
+ * <p>
  * 作用：
- *
+ * <p>
  * TypeBuildCallback 是 semantic/type 包中最核心的规则执行器。
  * 每当语法分析器完成一次 reduce，它会：
- *
+ * <p>
  * 1. 取得当前刚归约出的 HeadNode。
  * 2. 根据 production 上的语义 tag 选择 TypeRule。
  * 3. 从子节点读取已有 TypeRegister。
  * 4. 计算当前节点的 TypeRegister。
  * 5. 将结果绑定回 TypeContext。
- *
+ * <p>
  * 注意：
- *
+ * <p>
  * 这个类只负责“类型属性的构造和一部分类型错误检查”。
  * 函数参数个数、函数返回值、结构体声明登记、符号表登记等检查由其他 callback 完成。
  */
 public class TypeBuildCallback implements ShiftReduceCallback {
     /**
      * production tag 到类型构造规则的映射表。
-     *
+     * <p>
      * 输入：
-     *
+     * <p>
      * 由语法产生式携带的 ProgramSemanticTag 组合。
-     *
+     * <p>
      * 输出：
-     *
+     * <p>
      * 解析出一个 TypeRule，用于当前 reduce 的类型构造。
-     *
+     * <p>
      * 注意：
-     *
+     * <p>
      * 没有显式匹配到的产生式会使用 TypeRule.UNHANDLED，
      * 从而尽早暴露遗漏的类型规则。
      */
@@ -73,10 +73,24 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.NAMED_STRUCT_TYPE, ProgramSemanticTag.TYPE, ProgramSemanticTag.STRUCT_TYPE)
             .when(TypeRule.ARRAY_CREATION_BASE, ProgramSemanticTag.ARRAY_CREATION_BASE, ProgramSemanticTag.STRUCT_TYPE)
             .when(TypeRule.ARRAY_CREATION_BASE, ProgramSemanticTag.ARRAY_CREATION_BASE)
-            .when(TypeRule.ARRAY_CREATION_DIMENSION_VALUE, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.VALUE)
+            .when(
+                    TypeRule.ARRAY_CREATION_DIMENSION_VALUE,
+                    ProgramSemanticTag.ARRAY_CREATION_DIM,
+                    ProgramSemanticTag.VALUE
+            )
             .when(TypeRule.NONE, ProgramSemanticTag.ARRAY_CREATION_DIM)
-            .when(TypeRule.FORWARD, ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.FORWARD)
-            .when(TypeRule.NONE, ProgramSemanticTag.LIST, ProgramSemanticTag.ARRAY_CREATION_DIM, ProgramSemanticTag.SEQUENCE)
+            .when(
+                    TypeRule.FORWARD,
+                    ProgramSemanticTag.LIST,
+                    ProgramSemanticTag.ARRAY_CREATION_DIM,
+                    ProgramSemanticTag.FORWARD
+            )
+            .when(
+                    TypeRule.NONE,
+                    ProgramSemanticTag.LIST,
+                    ProgramSemanticTag.ARRAY_CREATION_DIM,
+                    ProgramSemanticTag.SEQUENCE
+            )
             .when(TypeRule.TYPE_DECLARATION, ProgramSemanticTag.TYPE)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.DECLARATION, ProgramSemanticTag.IDENTIFIER)
             .when(TypeRule.DECLARED_IDENTIFIER, ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.IDENTIFIER)
@@ -109,25 +123,7 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.MULTIPLY)
             .when(TypeRule.NUMERIC_BINARY, ProgramSemanticTag.DIVIDE)
             .when(TypeRule.ASSIGNMENT, ProgramSemanticTag.ASSIGNMENT)
-            .when(TypeRule.VOID_FUNCTION_HEAD, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
-            ;
-
-    /**
-     * 函数功能：处理规约事件。
-     * 输入：
-     * - context：ShiftReduceSemanticContext 类型参数。
-     * - production：SimpleGrammarProduction 类型参数。
-     * 输出：无。
-     */
-    @Override
-    public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
-        HeadNode head = currentReducedHead(context);
-        TypeRegister result = RULES.resolve(production).build(context, head, production);
-        if (result != null) {
-            context.bindType(head, result);
-        }
-        ShiftReduceCallback.super.onReduce(context, production);
-    }
+            .when(TypeRule.VOID_FUNCTION_HEAD, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD);
 
     /**
      * 函数功能：转发子节点属性。
@@ -311,7 +307,12 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         if (!SemanticType.scalar(SemanticType.Kind.INT32).equals(indexType)) {
             throw new CompilerException("array index must be int32.");
         }
-        return TypeRegister.located(baseType.arrayElementType(), baseType.arrayElementType(), childAnchor(head, 0), LocationKind.REFERENCE);
+        return TypeRegister.located(
+                baseType.arrayElementType(),
+                baseType.arrayElementType(),
+                childAnchor(head, 0),
+                LocationKind.REFERENCE
+        );
     }
 
     /**
@@ -518,7 +519,10 @@ public class TypeBuildCallback implements ShiftReduceCallback {
      * - production：SimpleGrammarProduction 类型参数。
      * 输出：TypeRegister 类型返回值。
      */
-    private static TypeRegister voidFunctionHead(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production) {
+    private static TypeRegister voidFunctionHead(
+            ShiftReduceSemanticContext context,
+            HeadNode head,
+            SimpleGrammarProduction production) {
         ShiftReduceSyntaxTreeNode first = head.get(0);
         if (!first.isToken()) {
             return null;
@@ -595,10 +599,27 @@ public class TypeBuildCallback implements ShiftReduceCallback {
     }
 
     /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
+    @Override
+    public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
+        HeadNode head = currentReducedHead(context);
+        TypeRegister result = RULES.resolve(production).build(context, head, production);
+        if (result != null) {
+            context.bindType(head, result);
+        }
+        ShiftReduceCallback.super.onReduce(context, production);
+    }
+
+    /**
      * 单个产生式对应的类型构造规则。
-     *
+     * <p>
      * 作用：
-     *
+     * <p>
      * TypeRule 是一个函数式接口。
      * RULES 表根据 production tag 选出具体 TypeRule，
      * 再调用 build 方法完成当前 reduce 的类型构造。
@@ -614,7 +635,10 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         TypeRule ARRAY_TYPE = (context, head, production) -> arrayType(context, head);
         TypeRule NAMED_STRUCT_TYPE = (context, head, production) -> namedStructType(context, head);
         TypeRule ARRAY_CREATION_BASE = (context, head, production) -> arrayCreationBase(context, head);
-        TypeRule ARRAY_CREATION_DIMENSION_VALUE = (context, head, production) -> arrayCreationDimensionValue(context, head);
+        TypeRule ARRAY_CREATION_DIMENSION_VALUE = (context, head, production) -> arrayCreationDimensionValue(
+                context,
+                head
+        );
         TypeRule DECLARED_IDENTIFIER = (context, head, production) -> declaredIdentifier(context, head);
         TypeRule IDENTIFIER_REFERENCE = (context, head, production) -> identifierReference(context, head);
         TypeRule ARRAY_ACCESS = (context, head, production) -> arrayElement(context, head);

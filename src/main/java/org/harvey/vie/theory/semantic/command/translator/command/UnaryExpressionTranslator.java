@@ -2,14 +2,14 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
 import org.harvey.vie.theory.semantic.command.command.factory.CommandDataType;
-import org.harvey.vie.theory.semantic.type.SemanticType;
-import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
+import org.harvey.vie.theory.semantic.error.SemanticDiagnostics;
+import org.harvey.vie.theory.semantic.type.SemanticType;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
@@ -24,26 +24,28 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 public class UnaryExpressionTranslator implements CommandTranslator {
     private final OperatorFactor operatorFactor;
     private final ProgramTokenType operatorType;
-/**
- * 函数功能：创建 UnaryExpressionTranslator 对象。
- * 输入：
- * - operatorFactor：OperatorFactor 类型参数。
- * - operatorType：ProgramTokenType 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：创建 UnaryExpressionTranslator 对象。
+     * 输入：
+     * - operatorFactor：OperatorFactor 类型参数。
+     * - operatorType：ProgramTokenType 类型参数。
+     * 输出：无。
+     */
 
     public UnaryExpressionTranslator(OperatorFactor operatorFactor, ProgramTokenType operatorType) {
         this.operatorFactor = operatorFactor;
         this.operatorType = operatorType;
     }
-/**
- * 函数功能：翻译语法节点并返回命令节点注册器。
- * 输入：
- * - context：ShiftReduceSemanticContext 类型参数。
- * - production：SimpleGrammarProduction 类型参数。
- * - children：CommandNodeRegister[] 类型参数。
- * 输出：CommandNodeRegister 类型返回值。
- */
+
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
 
     @Override
     public CommandNodeRegister translate(

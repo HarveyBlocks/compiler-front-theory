@@ -41,7 +41,8 @@ import java.util.function.BiFunction;
 @Slf4j
 public class ProgramSyntaxDemo {
 
-    public static final Set<TokenType> SHOULD_BE_FILTERED = Set.of(ProgramTokenType.SPACE,
+    public static final Set<TokenType> SHOULD_BE_FILTERED = Set.of(
+            ProgramTokenType.SPACE,
             ProgramTokenType.COMMENT_LINE,
             ProgramTokenType.COMMENT_BLOCK
     );
@@ -56,7 +57,7 @@ public class ProgramSyntaxDemo {
         throw new IllegalStateException("Can not compare on different semantic tag system. ");
     };
     public static final TypeResolver TYPE_RESOLVER = new ProgramTypeResolver();
-    public  static final ConstantResolver CONSTANT_RESOLVER =  new ConstantResolver() {
+    public static final ConstantResolver CONSTANT_RESOLVER = new ConstantResolver() {
         /**
          * 函数功能：将整数字面量词法单元解析为整数值。
          * 输入：
@@ -140,13 +141,15 @@ public class ProgramSyntaxDemo {
         SemanticResult result = demo(text, (iter, errCtx) -> {
             ProductionSetContext context = buildGrammar0();
             System.out.println(context);
-            ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable("compilation_unit",
+            ShiftReduceParsingTable shiftReduceParsingTable = SyntaxDemo.buildShiftReduceParsingTable(
+                    "compilation_unit",
                     context,
                     "syntax_table.data",
                     PROGRAM_SEMANTIC_TAG_LOADER,
                     PROGRAM_SEMANTIC_TAG_COMPARATOR
             );
-            ShiftReducePhaser phaser = new ShiftReducePhaserImpl(shiftReduceParsingTable,
+            ShiftReducePhaser phaser = new ShiftReducePhaserImpl(
+                    shiftReduceParsingTable,
                     t -> !SHOULD_BE_FILTERED.contains(t.getType()),
                     SemanticDemo.buildShiftReduceRegister(),
                     SyntaxDemo.STRING_COMMAND_FACTORY,

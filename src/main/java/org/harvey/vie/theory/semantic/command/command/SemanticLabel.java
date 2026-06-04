@@ -9,18 +9,19 @@ package org.harvey.vie.theory.semantic.command.command;
  */
 public interface SemanticLabel {
     /**
+     * 函数功能：获取索引值。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
+
+    int getIndex();
+
+    /**
      * 函数功能：设置标签索引。
      * 输入：
      * - index：int 类型参数。
      * 输出：无。
      */
     void setIndex(int index);
-/**
- * 函数功能：获取索引值。
- * 输入：
- * - 无。
- * 输出：整数结果。
- */
-
-    int getIndex();
 }

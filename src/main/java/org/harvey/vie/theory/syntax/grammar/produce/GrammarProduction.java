@@ -18,12 +18,13 @@ public interface GrammarProduction {
      * 输出：HeadSymbol 类型返回值。
      */
     HeadSymbol getHead();
-/**
- * 函数功能：获取产生式体。
- * 输入：
- * - 无。
- * 输出：GrammarAlternation 类型返回值。
- */
+
+    /**
+     * 函数功能：获取产生式体。
+     * 输入：
+     * - 无。
+     * 输出：GrammarAlternation 类型返回值。
+     */
 
     GrammarAlternation getBody();
 }

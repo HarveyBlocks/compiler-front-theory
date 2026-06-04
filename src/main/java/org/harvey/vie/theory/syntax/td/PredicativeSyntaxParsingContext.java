@@ -27,6 +27,7 @@ public class PredicativeSyntaxParsingContext implements SyntaxParsingContext<Gra
     private final PanicSourceTokenIterator iterator;
     private final ErrorContext errorContext;
     private final GrammarUnitSymbol start;
+
     /**
      * 函数功能：创建 PredicativeSyntaxParsingContext 对象。
      * 输入：
@@ -49,12 +50,13 @@ public class PredicativeSyntaxParsingContext implements SyntaxParsingContext<Gra
         symbolStack.push(start);
         this.start = start;
     }
-/**
- * 函数功能：获取当前词法单元。
- * 输入：
- * - 无。
- * 输出：SourceToken 类型返回值。
- */
+
+    /**
+     * 函数功能：获取当前词法单元。
+     * 输入：
+     * - 无。
+     * 输出：SourceToken 类型返回值。
+     */
 
 
     @Override
@@ -62,78 +64,85 @@ public class PredicativeSyntaxParsingContext implements SyntaxParsingContext<Gra
         return iterator.currentToken();
 
     }
-/**
- * 函数功能：判断是否存在下一个元素。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断是否存在下一个元素。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean hasNext() {
         return iterator.hasNext();
     }
-/**
- * 函数功能：判断语法分析栈是否为空。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断语法分析栈是否为空。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean isStackEmpty() {
         return symbolStack.isEmpty();
     }
-/**
- * 函数功能：查看当前元素但不消费。
- * 输入：
- * - 无。
- * 输出：GrammarUnitSymbol 类型返回值。
- */
+
+    /**
+     * 函数功能：查看当前元素但不消费。
+     * 输入：
+     * - 无。
+     * 输出：GrammarUnitSymbol 类型返回值。
+     */
 
     @Override
     public GrammarUnitSymbol peek() {
         return symbolStack.peek();
     }
-/**
- * 函数功能：判断当前栈是否满足接受条件。
- * 输入：
- * - 无。
- * 输出：判断结果布尔值。
- */
+
+    /**
+     * 函数功能：判断当前栈是否满足接受条件。
+     * 输入：
+     * - 无。
+     * 输出：判断结果布尔值。
+     */
 
     @Override
     public boolean validAcceptStack() {
         return symbolStack.size() == 1 && symbolStack.peek() == END_MARK;
     }
-/**
- * 函数功能：弹出当前栈顶元素。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：弹出当前栈顶元素。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
 
     @Override
     public void pop() {
         symbolStack.pop();
     }
-/**
- * 函数功能：消费当前词法单元。
- * 输入：
- * - 无。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：消费当前词法单元。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
 
     @Override
     public void consumeCurrentToken() {
         iterator.consumeCurrentToken();
     }
-/**
- * 函数功能：压入一个元素。
- * 输入：
- * - next：GrammarUnitSymbol 类型参数。
- * 输出：无。
- */
+
+    /**
+     * 函数功能：压入一个元素。
+     * 输入：
+     * - next：GrammarUnitSymbol 类型参数。
+     * 输出：无。
+     */
 
 
     @Override
