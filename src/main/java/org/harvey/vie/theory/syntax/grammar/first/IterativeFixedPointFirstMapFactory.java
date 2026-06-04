@@ -1,11 +1,11 @@
-package org.harvey.vie.theory.syntax.grammar.first;
+﻿package org.harvey.vie.theory.syntax.grammar.first;
 
 import org.harvey.vie.theory.syntax.grammar.produce.GrammarDefineProduction;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
 import org.harvey.vie.theory.syntax.grammar.symbol.*;
 
 /**
- * TODO 采用不动点算法, 求 First 的算法, 不要求输入是消除了左递归的
+ * 采用不动点算法, 求 First 的算法, 不要求输入是消除了左递归的
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
