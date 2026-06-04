@@ -38,6 +38,12 @@ import java.util.Map;
  * @author Temper
  */
 public class SemanticDemo {
+    /**
+     * 函数功能：构建仅包含基础语义回调的移进归约回调注册器。
+     * 输入：
+     * - 无。
+     * 输出：配置完成的 ShiftReduceCallbackRegister 注册器。
+     */
     public static ShiftReduceCallbackRegister buildSimpleShiftReduceRegister() {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
         register.add(new TreeBuildCallback());
@@ -46,6 +52,12 @@ public class SemanticDemo {
         return register;
     }
 
+    /**
+     * 函数功能：构建完整语义分析使用的移进归约回调注册器。
+     * 输入：
+     * - 无。
+     * 输出：配置完成的 ShiftReduceCallbackRegister 注册器。
+     */
     public static ShiftReduceCallbackRegister buildShiftReduceRegister() {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
         register.add(new TreeBuildCallback());
@@ -63,6 +75,12 @@ public class SemanticDemo {
         return register;
     }
 
+    /**
+     * 函数功能：构建语义测试使用的移进归约回调注册器。
+     * 输入：
+     * - 无。
+     * 输出：配置完成的 ShiftReduceCallbackRegister 注册器。
+     */
     public static ShiftReduceCallbackRegister buildShiftReduceTestRegister() {
         ShiftReduceCallbackRegister register = new ShiftReduceCallbackRegisterImpl();
         register.add(new TreeBuildCallback());
@@ -82,10 +100,22 @@ public class SemanticDemo {
     static final TokenTranslator defaultTokenTranslator = new DoNothingTokenTranslator();
     static final CommandTranslator defaultCommandTranslator = new SimpleShrinkTranslator();
 
+    /**
+     * 函数功能：创建语法制导翻译回调。
+     * 输入：
+     * - 无。
+     * 输出：用于构建语义命令的 ShiftReduceCallback 回调。
+     */
     private static ShiftReduceCallback instanceSyntaxDirectedTranslationCallback() {
         return new CommandBuildCallback(shiftStrategies(), reduceStrategies0());
     }
 
+    /**
+     * 函数功能：创建移进阶段的词法单元翻译策略。
+     * 输入：
+     * - 无。
+     * 输出：按词法单元类型选择翻译器的 TokenTranslatorStrategy。
+     */
     private static TokenTranslatorStrategy shiftStrategies() {
         Map<TokenType, TokenTranslator> shiftStrategies = new HashMap<>();
         TokenTranslator loadIdentifierAddressTokenTranslator = new LoadIdentifierAddressTokenTranslator();
@@ -111,14 +141,32 @@ public class SemanticDemo {
         return t -> shiftStrategies.getOrDefault(t, defaultTokenTranslator);
     }
 
+    /**
+     * 函数功能：创建归约阶段的命令翻译策略。
+     * 输入：
+     * - 无。
+     * 输出：按语义标签选择命令翻译器的 CommandTranslatorStrategy。
+     */
     private static CommandTranslatorStrategy reduceStrategies0() {
         return TagStrategyCompose.preciseStringCommand();
     }
 
+    /**
+     * 函数功能：创建语义命令打印回调。
+     * 输入：
+     * - 无。
+     * 输出：用于打印语义命令的 ShiftReduceCallback 回调。
+     */
     private static ShiftReduceCallback instanceSemanticCommandPrintCallback() {
         return new SemanticCommandPrintCallback();
     }
 
+    /**
+     * 函数功能：创建标识符作用域维护回调。
+     * 输入：
+     * - 无。
+     * 输出：用于维护作用域的 ShiftReduceCallback 回调。
+     */
     private static ShiftReduceCallback instanceIdentifierScopeCallback() {
         ShiftPredicate scopeIntoPredicate = t -> t.getType() == ProgramTokenType.OPERATOR_BRACE_OPEN;
         ReducePredicate scopeExistPredicate = TagReducePredicateFactory.predicate(
@@ -128,6 +176,12 @@ public class SemanticDemo {
         return new IdentifierScopeCallback(scopeIntoPredicate, scopeExistPredicate);
     }
 
+    /**
+     * 函数功能：创建标识符表构建回调。
+     * 输入：
+     * - 无。
+     * 输出：用于构建标识符表的 ShiftReduceCallback 回调。
+     */
     private static ShiftReduceCallback instanceIdentifierTableBuildCallback() {
         ReducePredicate usingPredicate = TagReducePredicateFactory.predicate(
                 ProgramSemanticTag.IDENTIFIER,
@@ -140,21 +194,46 @@ public class SemanticDemo {
 
         IdentifierTableBuildCallback.DeclarationRecordSupplier declarationRecordSupplier =
                 new IdentifierTableBuildCallback.DeclarationRecordSupplier() {
+                    /**
+                     * 函数功能：从声明归约节点中取得被声明的标识符。
+                     * 输入：
+                     * - declarationReducedNode：声明产生式归约后的语法树头节点。
+                     * 输出：声明标识符对应的 SourceToken。
+                     */
                     @Override
                     public SourceToken identifier(HeadNode declarationReducedNode) {
                         return declarationReducedNode.get(1).toToken().getSource();
                     }
 
+                    /**
+                     * 函数功能：判断声明归约节点是否包含初始化信息。
+                     * 输入：
+                     * - declarationReducedNode：声明产生式归约后的语法树头节点。
+                     * 输出：是否已初始化的布尔值。
+                     */
                     @Override
                     public boolean initialized(HeadNode declarationReducedNode) {
                         return declarationReducedNode.containsTag(ProgramSemanticTag.INITIALIZED);
                     }
 
+                    /**
+                     * 函数功能：从声明归约节点中取得类型节点。
+                     * 输入：
+                     * - declarationReducedNode：声明产生式归约后的语法树头节点。
+                     * 输出：声明类型对应的 HeadNode。
+                     */
                     @Override
                     public HeadNode typeHeadNode(HeadNode declarationReducedNode) {
                         return declarationReducedNode.get(0).toHead();
                     }
 
+                    /**
+                     * 函数功能：从声明归约节点中取得初始化常量值。
+                     * 输入：
+                     * - context：当前移进归约语义上下文。
+                     * - declarationReducedNode：声明产生式归约后的语法树头节点。
+                     * 输出：初始化常量值；无初始化时返回 null。
+                     */
                     @Override
                     public org.harvey.vie.theory.semantic.value.ConstantValue initializerValue(
                             org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
@@ -173,6 +252,12 @@ public class SemanticDemo {
         );
     }
 
+    /**
+     * 函数功能：构建预测分析使用的回调注册器。
+     * 输入：
+     * - 无。
+     * 输出：配置完成的 PredictiveCallbackRegister 注册器。
+     */
     public static PredictiveCallbackRegister buildPredicativeRegister() {
         TreeBuilderPredictiveCallback callback = new TreeBuilderPredictiveCallback(LexicalConflictResolver.passive());
         PredictiveCallbackRegister register = new PredictiveCallbackRegisterImpl();

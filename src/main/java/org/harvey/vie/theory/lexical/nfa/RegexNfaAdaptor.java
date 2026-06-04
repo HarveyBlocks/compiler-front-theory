@@ -16,7 +16,19 @@ import java.util.List;
  * @date 2026-03-23 10:21
  */
 public interface RegexNfaAdaptor {
+    /**
+     * 函数功能：将多个正则与类型组合转换为 NFA 状态图。
+     * 输入：
+     * - pairs：正则表达式节点与词法类型的组合列表。
+     * 输出：转换得到的 NFA 状态图。
+     */
     NfaStatusGraph<AlphabetCharacter, TokenType> adapt(List<RegexTypePair> pairs);
 
+    /**
+     * 函数功能：将单个正则与类型组合转换为 NFA 状态图。
+     * 输入：
+     * - pair：正则表达式节点与词法类型的组合。
+     * 输出：转换得到的 NFA 状态图。
+     */
     NfaStatusGraph<AlphabetCharacter, TokenType> adapt(RegexTypePair pair);
 }

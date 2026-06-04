@@ -15,19 +15,22 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 左值定位支路：翻译结构体成员访问 {@code object.field}。
+ * 翻译成员访问表达式。
  * <p>
- * 左操作数命令执行后，栈顶会保存结构体对象的引用或地址；本类通过
- * {@link ShiftReduceSemanticContext#getStruct(SemanticType)} 找到结构体布局，再用
- * {@link StructRecord#field(org.harvey.vie.theory.lexical.analysis.token.SourceToken)} 找到字段和固定偏移。
- * 最后追加 {@code bias_from_st_top_to_ref_* offset}，把“结构体对象位置”偏移成“字段位置”。
- * <p>
- * 讲完本支路可回到数组偏移 {@link ArrayAtExpressionTranslator}，或继续看左值读写：
- * {@link PrimaryProduceLeftValueTranslator} 与 {@link AssignStatementTranslator}。
+ * 左操作数求值后，栈顶会保存结构体对象的引用或地址；
+ * 再结合字段在结构体布局中的固定偏移，生成字段定位指令。
  *
  * @author Temper
  */
 public class MemberAccessTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

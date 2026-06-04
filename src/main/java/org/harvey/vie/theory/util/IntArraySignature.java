@@ -14,10 +14,22 @@ import java.util.Arrays;
 public class IntArraySignature {
     private final int[] array;
 
+    /**
+     * 函数功能：创建整数数组签名对象。
+     * 输入：
+     * - array：用于计算签名的整数数组。
+     * 输出：无。
+     */
     public IntArraySignature(int[] array) {
         this.array = array;
     }
 
+    /**
+     * 函数功能：计算整数数组签名的哈希值。
+     * 输入：
+     * - 无。
+     * 输出：签名哈希值整数。
+     */
     public int hashCode() {
         int hashCode = 1;
         for (int e : array) {
@@ -26,6 +38,12 @@ public class IntArraySignature {
         return hashCode;
     }
 
+    /**
+     * 函数功能：判断对象是否与当前整数数组签名相等。
+     * 输入：
+     * - o：待比较的对象。
+     * 输出：是否相等的布尔值。
+     */
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof IntArraySignature && Arrays.equals(array, ((IntArraySignature) o).array);

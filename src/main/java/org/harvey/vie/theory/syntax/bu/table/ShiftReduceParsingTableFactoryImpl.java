@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.table;
+﻿package org.harvey.vie.theory.syntax.bu.table;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
@@ -34,12 +34,29 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
 
     private final TerminalMatcherFactory terminalMatcherFactory;
     private final SemanticTagComparator<? super SemanticTag> tagComparator;
+/**
+ * 函数功能：创建 ShiftReduceParsingTableFactoryImpl 对象。
+ * 输入：
+ * - terminalMatcherFactory：TerminalMatcherFactory 类型参数。
+ * - tagComparator：SemanticTagComparator<? super SemanticTag> 类型参数。
+ * 输出：无。
+ */
 
     public ShiftReduceParsingTableFactoryImpl(TerminalMatcherFactory terminalMatcherFactory,
             SemanticTagComparator<? super SemanticTag> tagComparator) {
         this.terminalMatcherFactory = terminalMatcherFactory;
         this.tagComparator = tagComparator;
     }
+/**
+ * 函数功能：根据输入数据创建目标对象。
+ * 输入：
+ * - startHead：String 类型参数。
+ * - context：ProductionSetContext 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * - family：ItemSetFamily 类型参数。
+ * - lookaheadMaps：LookaheadMap[] 类型参数。
+ * 输出：ShiftReduceParsingTable 类型返回值。
+ */
 
     @Override
     public ShiftReduceParsingTable produce(
@@ -53,6 +70,12 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         int[][] gotoTable = gotoTable(pc);
         return pc.build(activeTable.table, gotoTable, activeTable.accept, terminalMatcherFactory);
     }
+/**
+ * 函数功能：构建移进规约动作表。
+ * 输入：
+ * - pc：ParsingContext 类型参数。
+ * 输出：ActiveTable 类型返回值。
+ */
 
 
     private static ActiveTable active(ParsingContext pc) {
@@ -108,6 +131,17 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         private final ActiveTableElement[][] table;
         private final int accept;
     }
+/**
+ * 函数功能：设置无冲突的动作表元素。
+ * 输入：
+ * - raw：ActiveTableElement[] 类型参数。
+ * - col：int 类型参数。
+ * - element：ActiveTableElement 类型参数。
+ * - state：int 类型参数。
+ * - terminal：TerminalSymbol 类型参数。
+ * - pc：ParsingContext 类型参数。
+ * 输出：无。
+ */
 
     private static void setWithoutConflict(
             ActiveTableElement[] raw,
@@ -134,6 +168,12 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         }
 
     }
+/**
+ * 函数功能：构建 GOTO 状态转移表。
+ * 输入：
+ * - pc：ParsingContext 类型参数。
+ * 输出：int[][] 类型数组。
+ */
 
     private static int[][] gotoTable(ParsingContext pc) {
         // 1. 初始化分析表
@@ -162,6 +202,17 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
         private final HeadSymbol[] headSymbols;
         private final Map<SimpleGrammarProduction, Integer> productionDict;
         private final List<SimpleGrammarProduction> productionList;
+/**
+ * 函数功能：创建 ParsingContext 对象。
+ * 输入：
+ * - startHead：String 类型参数。
+ * - context：ProductionSetContext 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * - family：ItemSetFamily 类型参数。
+ * - lookaheadMaps：LookaheadMap[] 类型参数。
+ * - tagComparator：SemanticTagComparator<? super SemanticTag> 类型参数。
+ * 输出：无。
+ */
 
         public ParsingContext(
                 String startHead,
@@ -180,6 +231,12 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             this.productionList = new ArrayList<>();
             this.tagComparator = tagComparator;
         }
+/**
+ * 函数功能：获取包含结束标记的终结符数组。
+ * 输入：
+ * - 无。
+ * 输出：TerminalSymbol[] 类型数组。
+ */
 
         private TerminalSymbol[] terminalSymbolsWithEndMark() {
             Set<TerminalSymbol> terminalSet = firstMap.terminalSet();
@@ -191,10 +248,25 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             }
             return terminalSymbols;
         }
+/**
+ * 函数功能：获取过滤后的非终结符数组。
+ * 输入：
+ * - 无。
+ * 输出：HeadSymbol[] 类型数组。
+ */
 
         private HeadSymbol[] headSymbolsFilterHead() {
             return firstMap.headSet().stream().filter(Predicate.not(start::equals)).toArray(HeadSymbol[]::new);
         }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - activeTable：ActiveTableElement[][] 类型参数。
+ * - gotoTable：int[][] 类型参数。
+ * - accept：int 类型参数。
+ * - terminalMatcherFactory：TerminalMatcherFactory 类型参数。
+ * 输出：ShiftReduceParsingTable 类型返回值。
+ */
 
         public ShiftReduceParsingTable build(
                 ActiveTableElement[][] activeTable,
@@ -212,6 +284,12 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     terminalMatcherFactory
             );
         }
+/**
+ * 函数功能：获取语法产生式数组。
+ * 输入：
+ * - 无。
+ * 输出：SimpleGrammarProduction[] 类型数组。
+ */
 
         private SimpleGrammarProduction[] productionArray() {
             return productionDict.entrySet()
@@ -220,18 +298,42 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     .map(Map.Entry::getKey)
                     .toArray(SimpleGrammarProduction[]::new);
         }
+/**
+ * 函数功能：初始化移进规约动作表。
+ * 输入：
+ * - 无。
+ * 输出：ActiveTableElement[][] 类型数组。
+ */
 
         public ActiveTableElement[][] initActive() {
             return new ActiveTableElement[family.size()][terminalSymbols.length];
         }
+/**
+ * 函数功能：获取指定索引的项目集。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：ItemSet 类型返回值。
+ */
 
         public ItemSet itemSet(int i) {
             return family.get(i);
         }
+/**
+ * 函数功能：判断项目是否为起始项目。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
         public boolean equalsStart(HeadSymbol head) {
             return start.equals(head);
         }
+/**
+ * 函数功能：获取指定产生式。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * 输出：GrammarDefineProduction 类型返回值。
+ */
 
         public GrammarDefineProduction getProduction(HeadSymbol head) {
             if (!head.isDefine()) {
@@ -239,23 +341,56 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             }
             return context.get(context.indexOf(head.toDefine()));
         }
+/**
+ * 函数功能：获取项目的展望符集合。
+ * 输入：
+ * - setIndex：int 类型参数。
+ * - item：ProductionItem 类型参数。
+ * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+ */
 
         public Set<TerminalSymbol> lookahead(int setIndex, ProductionItem item) {
             return lookaheadMaps[setIndex].get(item);
         }
+/**
+ * 函数功能：设置移进动作。
+ * 输入：
+ * - i：int 类型参数。
+ * - terminal：TerminalSymbol 类型参数。
+ * 输出：ActiveTableElement 类型返回值。
+ */
 
         public ActiveTableElement shift(int i, TerminalSymbol terminal) {
             return new ShiftTableElementImpl(family.get(i).gotoUnit(terminal));
         }
+/**
+ * 函数功能：设置规约动作。
+ * 输入：
+ * - production：int 类型参数。
+ * 输出：ActiveTableElement 类型返回值。
+ */
 
 
         public ActiveTableElement reduce(int production) {
             return new ReduceTableElementImpl(production);
         }
+/**
+ * 函数功能：判断或获取接受状态。
+ * 输入：
+ * - production：int 类型参数。
+ * 输出：ActiveTableElement 类型返回值。
+ */
 
         public ActiveTableElement accept(int production) {
             return new AcceptTableElementImpl(production);
         }
+/**
+ * 函数功能：获取产生式编号。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * - body：AlterableSymbol 类型参数。
+ * 输出：整数结果。
+ */
 
         public int getProductionId(HeadSymbol head, AlterableSymbol body) {
             if (!head.isDefine()) {
@@ -276,10 +411,22 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
                     }
             );
         }
+/**
+ * 函数功能：获取指定产生式。
+ * 输入：
+ * - id：int 类型参数。
+ * 输出：SimpleGrammarProduction 类型返回值。
+ */
 
         public SimpleGrammarProduction getProduction(int id) {
             return productionList.get(id);
         }
+/**
+ * 函数功能：描述动作表冲突信息。
+ * 输入：
+ * - element：ActiveTableElement 类型参数。
+ * 输出：字符串结果。
+ */
 
         public String describe(ActiveTableElement element) {
             if (element instanceof ReduceTableElementImpl) {
@@ -296,14 +443,32 @@ public class ShiftReduceParsingTableFactoryImpl implements ShiftReduceParsingTab
             }
             return String.valueOf(element);
         }
+/**
+ * 函数功能：初始化 GOTO 状态转移表。
+ * 输入：
+ * - 无。
+ * 输出：int[][] 类型数组。
+ */
 
         public int[][] initGoto() {
             return new int[family.size()][headSymbols.length];
         }
+/**
+ * 函数功能：获取指定索引的非终结符。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：GrammarUnitSymbol 类型返回值。
+ */
 
         public GrammarUnitSymbol headSymbol(int i) {
             return headSymbols[i];
         }
+/**
+ * 函数功能：获取指定索引的终结符。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：TerminalSymbol 类型返回值。
+ */
 
         public TerminalSymbol terminalSymbol(int i) {
             return terminalSymbols[i];

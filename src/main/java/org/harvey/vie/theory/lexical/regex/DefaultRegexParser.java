@@ -19,6 +19,12 @@ import java.text.ParseException;
 public class DefaultRegexParser implements RegexParser {
     private final AlphabetCharacterFactory factory;
 
+    /**
+     * 函数功能：解析正则上下文并生成正则表达式节点。
+     * 输入：
+     * - ctx：待解析的正则上下文。
+     * 输出：解析得到的正则表达式节点。
+     */
     public static RegexNode parse(RegexContext ctx) throws ParseException {
         if (ctx.current() == RegexContext.DONE) {
             return RegexContext.OCCUPANCY;
@@ -32,10 +38,10 @@ public class DefaultRegexParser implements RegexParser {
     }
 
     /**
-     * <pre>{@code
-     *  expression -> term
-     *             | expression '|' term
-     * }</pre>
+     * 函数功能：解析正则表达式中的选择表达式。
+     * 输入：
+     * - ctx：待解析的正则上下文。
+     * 输出：解析得到的正则表达式节点。
      */
     private static RegexNode expression(RegexContext ctx) throws ParseException {
         RegexNode left = term(ctx);
@@ -47,10 +53,10 @@ public class DefaultRegexParser implements RegexParser {
     }
 
     /**
-     * <pre>{@code
-     * term -> factor
-     *      | term factor
-     * }</pre>
+     * 函数功能：解析正则表达式中的连接项。
+     * 输入：
+     * - ctx：待解析的正则上下文。
+     * 输出：解析得到的正则表达式节点。
      */
     private static RegexNode term(RegexContext ctx) throws ParseException {
         RegexNode left = factor(ctx);
@@ -62,12 +68,10 @@ public class DefaultRegexParser implements RegexParser {
     }
 
     /**
-     * <pre>{@code
-     * factor -> char
-     *         | \char
-     *         | '(' expression ')'
-     *         | '()' ε
-     * }</pre>
+     * 函数功能：解析正则表达式中的基本因子。
+     * 输入：
+     * - ctx：待解析的正则上下文。
+     * 输出：解析得到的正则表达式节点。
      */
     private static RegexNode factor(RegexContext ctx) throws ParseException {
         ctx.currentNotDone();
@@ -100,14 +104,22 @@ public class DefaultRegexParser implements RegexParser {
     }
 
     /**
-     * <pre>{@code
-     * closure -> factor '*'
-     * }</pre>
+     * 函数功能：解析正则表达式节点上的闭包标记。
+     * 输入：
+     * - ctx：待解析的正则上下文。
+     * - node：待处理的正则表达式节点。
+     * 输出：处理后的正则表达式节点。
      */
     private static RegexNode closure(RegexContext ctx, RegexNode node) {
         return ctx.skipIf('*') ? new ClosureRegexNode(node) : node;
     }
 
+    /**
+     * 函数功能：解析正则表达式字符串并生成正则表达式节点。
+     * 输入：
+     * - regex：待解析的正则表达式字符串。
+     * 输出：解析得到的正则表达式节点；输入为 null 时返回 null。
+     */
     @Override
     public RegexNode parse(String regex) throws ParseException {
         return regex == null ? null : parse(new RegexContext(factory, regex));

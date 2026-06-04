@@ -13,5 +13,11 @@ import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
  * @date 2026-03-23 15:24
  */
 public interface NfaDfaAdaptor {
+    /**
+     * 函数功能：将 NFA 状态图转换为 DFA 状态图。
+     * 输入：
+     * - nfaGraph：待转换的 NFA 状态图。
+     * 输出：转换得到的 DfaStatusGraph。
+     */
     <M, V extends StatusVertex> DfaStatusGraph<M, V> adapt(NfaStatusGraph<M, V> nfaGraph);
 }

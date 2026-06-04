@@ -18,19 +18,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 中间代码行为的回归测试总入口。
- * <p>
- * {@link ProgramSyntaxTestRunner#run()} 会为 {@code text1/text2/text3} 和后续控制流、类型、函数、数组、结构体用例
- * 生成 {@link SemanticAnalysisResult} 与 Markdown 报告；本类再读取
- * {@link SemanticAnalysisResult#getCommands()} 和函数段命令，断言命令数量、命令顺序、跳转目标和错误诊断。
- * <p>
- * 讲解主线最后一站可以从 {@link #testProgramSemanticCases()} 开始，重点看
- * {@link #assertDanglingElseControlFlow(ProgramSyntaxTestRunner.SemanticRunReport)}、
- * {@link #assertWhileContinueTargetsCondition(ProgramSyntaxTestRunner.SemanticRunReport)}、
- * {@link #assertDoWhileContinueTargetsCondition(ProgramSyntaxTestRunner.SemanticRunReport)}、
- * {@link #assertNestedLoopBinding(ProgramSyntaxTestRunner.SemanticRunReport)} 和
- * {@link #assertFunctionSegmentation(ProgramSyntaxTestRunner.SemanticRunReport)}。
- *
  * @author Temper
  */
 public class AppTest extends TestCase {

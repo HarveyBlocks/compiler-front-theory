@@ -18,11 +18,23 @@ import java.util.Optional;
 public class AsciiAlphabetCharacter extends AbstractAlphabetCharacter {
     private final byte ascii;
 
+    /**
+     * 函数功能：判断 ASCII 字符是否匹配指定码点。
+     * 输入：
+     * - codePoint：待匹配的字符码点。
+     * 输出：是否匹配的布尔值。
+     */
     @Override
     public boolean match(int codePoint) {
         return codePoint < 128 && codePoint >= 0 && ascii == (byte) codePoint;
     }
 
+    /**
+     * 函数功能：获取 ASCII 字符的唯一编码。
+     * 输入：
+     * - 无。
+     * 输出：ASCII 字符唯一编码整数。
+     */
     @Override
     public int uniqueCode() {
         return ascii;
@@ -36,6 +48,12 @@ public class AsciiAlphabetCharacter extends AbstractAlphabetCharacter {
             (byte) ' ', "` `"
     );
 
+    /**
+     * 函数功能：获取 ASCII 字符的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：ASCII 字符字符串。
+     */
     @Override
     public String toString() {
         return Optional.ofNullable(ESCAPE_MAP.get(ascii)).orElseGet(() -> Character.toString(ascii));

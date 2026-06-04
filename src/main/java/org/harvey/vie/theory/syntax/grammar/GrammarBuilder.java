@@ -12,9 +12,18 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSet;
  */
 public interface GrammarBuilder {
     /**
-     * 增加一个产生式
+     * 函数功能：添加语法产生式。
+     * 输入：
+     * - production：GrammarProduction 类型参数。
+     * 输出：GrammarBuilder 类型返回值。
      */
     GrammarBuilder addProduction(GrammarProduction production);
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：ProductionSet 类型返回值。
+ */
 
     ProductionSet build();
 }

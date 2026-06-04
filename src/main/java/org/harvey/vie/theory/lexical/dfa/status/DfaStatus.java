@@ -16,20 +16,35 @@ import java.util.Set;
  */
 public interface DfaStatus<M, V extends StatusVertex> {
     /**
-     * @return null if no motion in this status' follow-up
+     * 函数功能：按指定动作获取 DFA 后继状态。
+     * 输入：
+     * - motion：状态转移动作。
+     * 输出：后继 DfaStatus；不存在转移时返回 null。
      */
     DfaStatus<M, V> move(M motion);
 
+    /**
+     * 函数功能：获取当前状态支持的全部转移动作。
+     * 输入：
+     * - 无。
+     * 输出：转移动作集合。
+     */
     Set<M> motions();
 
     /**
-     * @return true if new motion
-     * @throws IllegalStateException throw if motion is exist and value is different
+     * 函数功能：设置指定动作对应的后继状态。
+     * 输入：
+     * - motion：状态转移动作。
+     * - next：目标后继状态。
+     * 输出：是否新增转移的布尔值。
      */
     boolean setNext(M motion, DfaStatus<M, V> next);
 
     /**
-     * @return null for not accept
+     * 函数功能：获取当前状态的接受标记。
+     * 输入：
+     * - 无。
+     * 输出：接受标记；非接受状态返回 null。
      */
     V accept();
 }

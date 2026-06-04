@@ -9,7 +9,10 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  */
 public interface TerminalMatcherFactory {
     /**
-     * @param terminalSymbolArray element nullable for end mark
+     * 函数功能：根据输入数据创建目标对象。
+     * 输入：
+     * - terminalSymbolArray：TerminalSymbol[] 类型参数。
+     * 输出：TerminalMatcher 类型返回值。
      */
     TerminalMatcher produce(TerminalSymbol[] terminalSymbolArray);
 }

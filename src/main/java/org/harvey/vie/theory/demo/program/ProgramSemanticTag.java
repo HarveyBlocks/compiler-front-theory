@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.demo.program;
+﻿package org.harvey.vie.theory.demo.program;
 
 import org.harvey.vie.theory.io.Loaders;
 import org.harvey.vie.theory.io.Storages;
@@ -89,12 +89,24 @@ public enum ProgramSemanticTag implements SemanticTag {
     LOGICAL_NOT,
     NEGATE;
 
+    /**
+     * 函数功能：将语义标签编号写入输出流。
+     * 输入：
+     * - os：接收序列化数据的输出流。
+     * 输出：写入的字节数。
+     */
     @Override
     public int store(OutputStream os) throws IOException {
         return Storages.storeInteger(os, this.ordinal());
     }
 
     public static class Loader implements SemanticTag.Loader<ProgramSemanticTag> {
+        /**
+         * 函数功能：从输入流读取编号并还原程序语义标签。
+         * 输入：
+         * - is：包含序列化编号的输入流。
+         * 输出：编号对应的 ProgramSemanticTag。
+         */
         @Override
         public ProgramSemanticTag load(InputStream is) throws IOException {
             return ProgramSemanticTag.values()[Loaders.loadInteger(is)];

@@ -9,6 +9,12 @@ package org.harvey.vie.theory.lexical.regex.node;
  * @date 2026-03-23 10:24
  */
 public class EpsilonRegexNode implements RegexNode {
+    /**
+     * 函数功能：返回空串正则节点的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：空串正则节点的字符串表示。
+     */
     @Override
     public String toString() {
         return "ε";

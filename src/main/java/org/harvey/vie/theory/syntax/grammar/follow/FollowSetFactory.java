@@ -12,7 +12,12 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
  */
 public interface FollowSetFactory {
     /**
-     * @param startHead 想要多个开始? 定义一个新的H, H->A|B|C|D....
+     * 函数功能：获取 FOLLOW 集合。
+     * 输入：
+     * - startHead：String 类型参数。
+     * - context：ProductionSetContext 类型参数。
+     * - firstMap：FirstMap 类型参数。
+     * 输出：FollowMap 类型返回值。
      */
     FollowMap follow(String startHead, ProductionSetContext context, FirstMap firstMap);
 }

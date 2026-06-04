@@ -9,13 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 普通非终结注册器：保存一次规约后形成的 {@link HeadNode}。
- * <p>
- * 翻译器把已经拼好的子 {@link CommandNode} 数组交给它；外层调用
- * {@link #register(CommandNodeBuilder)} 时，它会把这些子节点包装成一个 {@link HeadNode} 写入外层。
- * 同时它会从所有子 {@link CommandNodeRegister} 收集未绑定的 {@code break}/{@code continue}，
- * 继续向外层冒泡，直到被循环支路绑定或被 {@link org.harvey.vie.theory.semantic.command.translator.command.ProgramCommandTranslator}
- * 判定为非法。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -26,6 +20,15 @@ public class NormalCommandNodeRegister implements CommandNodeRegister {
     private final SimpleGrammarProduction production;
     private final List<UncertainLabelGotoCommand> uncertainBreaks;
     private final List<UncertainLabelGotoCommand> uncertainContinues;
+/**
+ * 函数功能：创建 NormalCommandNodeRegister 对象。
+ * 输入：
+ * - childrenNode：CommandNode[] 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - uncertainBreaks：List<UncertainLabelGotoCommand> 类型参数。
+ * - uncertainContinues：List<UncertainLabelGotoCommand> 类型参数。
+ * 输出：无。
+ */
 
     public NormalCommandNodeRegister(
             CommandNode[] childrenNode,
@@ -37,10 +40,25 @@ public class NormalCommandNodeRegister implements CommandNodeRegister {
         this.uncertainBreaks = uncertainBreaks;
         this.uncertainContinues = uncertainContinues;
     }
+/**
+ * 函数功能：创建 NormalCommandNodeRegister 对象。
+ * 输入：
+ * - childrenNode：CommandNode[] 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     public NormalCommandNodeRegister(CommandNode[] childrenNode, SimpleGrammarProduction production) {
         this(childrenNode, production, List.of(), List.of());
     }
+/**
+ * 函数功能：创建 NormalCommandNodeRegister 对象。
+ * 输入：
+ * - childrenNode：CommandNode[] 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - childrenRegisters：CommandNodeRegister[] 类型参数。
+ * 输出：无。
+ */
 
     public NormalCommandNodeRegister(
             CommandNode[] childrenNode,
@@ -53,21 +71,45 @@ public class NormalCommandNodeRegister implements CommandNodeRegister {
                 collectContinues(childrenRegisters)
         );
     }
+/**
+ * 函数功能：注册指定对象。
+ * 输入：
+ * - outer：CommandNodeBuilder 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void register(CommandNodeBuilder outer) {
         outer.add(new HeadNode(childrenNode, production));
     }
+/**
+ * 函数功能：获取未确定的 break 跳转列表。
+ * 输入：
+ * - 无。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     @Override
     public List<UncertainLabelGotoCommand> getUncertainBreaks() {
         return uncertainBreaks;
     }
+/**
+ * 函数功能：获取未确定的 continue 跳转列表。
+ * 输入：
+ * - 无。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     @Override
     public List<UncertainLabelGotoCommand> getUncertainContinues() {
         return uncertainContinues;
     }
+/**
+ * 函数功能：收集未解析的 break 跳转。
+ * 输入：
+ * - childrenRegisters：CommandNodeRegister[] 类型参数。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     private static List<UncertainLabelGotoCommand> collectBreaks(CommandNodeRegister[] childrenRegisters) {
         List<UncertainLabelGotoCommand> result = new ArrayList<>();
@@ -76,6 +118,12 @@ public class NormalCommandNodeRegister implements CommandNodeRegister {
         }
         return result;
     }
+/**
+ * 函数功能：收集未解析的 continue 跳转。
+ * 输入：
+ * - childrenRegisters：CommandNodeRegister[] 类型参数。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     private static List<UncertainLabelGotoCommand> collectContinues(CommandNodeRegister[] childrenRegisters) {
         List<UncertainLabelGotoCommand> result = new ArrayList<>();

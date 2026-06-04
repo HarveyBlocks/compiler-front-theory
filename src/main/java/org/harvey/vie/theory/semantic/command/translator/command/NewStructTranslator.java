@@ -12,18 +12,22 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 创建对象支路：翻译结构体实例化表达式 {@code new StructName()}。
+ * 翻译结构体实例化表达式。
  * <p>
- * 这里会根据语法树中的结构体名，通过 {@link ShiftReduceSemanticContext#getStruct(SourceToken)}
- * 查找结构体定义；找到后生成 {@code new_struct tableIndex}。结构体字段数量、字段顺序和偏移都记录在
- * {@link StructRecord} 中，命令本身只需要携带结构体表下标。
- * <p>
- * 讲完本支路可回到数组创建 {@link NewArrayTranslator}，或继续看成员访问
- * {@link MemberAccessTranslator}。
+ * 这里会根据语法树中的结构体名查找结构体定义，
+ * 并生成一条按记录布局分配对象的创建指令。
  *
  * @author Temper
  */
 public class NewStructTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

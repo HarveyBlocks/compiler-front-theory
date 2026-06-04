@@ -12,6 +12,12 @@ import org.harvey.vie.theory.util.SimpleCollection;
  * @date 2026-03-24 21:27
  */
 public interface ErrorContext extends SimpleCollection<CompileErrorMessage> {
+    /**
+     * 函数功能：向错误上下文中添加编译错误信息。
+     * 输入：
+     * - message：待添加的编译错误信息。
+     * 输出：无。
+     */
     void addError(CompileErrorMessage message);
 
 

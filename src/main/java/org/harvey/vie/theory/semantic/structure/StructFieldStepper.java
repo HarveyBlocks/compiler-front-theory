@@ -11,6 +11,12 @@ import org.harvey.vie.theory.semantic.tree.node.HeadNode;
  * @author Temper
  */
 public class StructFieldStepper implements Stepper<HeadNode> {
+    /**
+     * 函数功能：推进并返回当前序列步骤。
+     * 输入：
+     * - head：HeadNode 类型参数。
+     * 输出：SequnceStep<HeadNode> 类型返回值。
+     */
     @Override
     public SequnceStep<HeadNode> step(HeadNode head) {
         if (head.matchTags(ProgramSemanticTag.STRUCT_FIELD, ProgramSemanticTag.IDENTIFIER)) {

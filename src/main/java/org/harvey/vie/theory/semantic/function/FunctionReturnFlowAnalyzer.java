@@ -17,6 +17,12 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
  */
 public final class FunctionReturnFlowAnalyzer {
     private final ProductionTagStrategy<ReturnRule> rules;
+/**
+ * 函数功能：创建 FunctionReturnFlowAnalyzer 对象。
+ * 输入：
+ * - 无。
+ * 输出：无。
+ */
 
     public FunctionReturnFlowAnalyzer() {
         ReturnRule never = (context, head) -> false;
@@ -41,16 +47,23 @@ public final class FunctionReturnFlowAnalyzer {
 
     @FunctionalInterface
     private interface ReturnRule {
+        /**
+         * 函数功能：判断输入是否满足条件。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - head：HeadNode 类型参数。
+         * 输出：判断结果布尔值。
+         */
         boolean test(ShiftReduceSemanticContext context, HeadNode head);
     }
 
 
     /**
-     * 从当前节点开始判断该子树是否一定返回。
-     *
-     * @param context 语义上下文，用于查询常量折叠结果
-     * @param node 待分析的语法树节点
-     * @return 当所有可达执行路径都会命中 return 时返回 true
+     * 函数功能：判断语法节点是否保证返回。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * 输出：判断结果布尔值。
      */
     public boolean guaranteesReturn(ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         if (node == null || !node.isHead()) {
@@ -61,15 +74,22 @@ public final class FunctionReturnFlowAnalyzer {
     }
 
     /**
-     * 代码块是否保证返回，取决于其内部语句序列是否保证返回。
+     * 函数功能：判断代码块是否保证返回。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：判断结果布尔值。
      */
     public boolean blockGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
         return guaranteesReturn(context, head.get(1));
     }
 
     /**
-     * 顺序语句中只要前半段已经保证返回，后半段就不可达；
-     * 否则继续检查后续语句是否补足返回路径。
+     * 函数功能：判断代码块语句序列是否保证返回。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：判断结果布尔值。
      */
     public boolean blockItemsSequenceGuaranteesReturn(
             ShiftReduceSemanticContext context, HeadNode head) {
@@ -77,7 +97,11 @@ public final class FunctionReturnFlowAnalyzer {
     }
 
     /**
-     * 顺着 forward 产生式向下寻找第一个能够保证返回的子节点。
+     * 函数功能：判断顺序语句是否保证返回。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：判断结果布尔值。
      */
     public boolean forwardGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
         for (ShiftReduceSyntaxTreeNode child : head) {
@@ -89,10 +113,11 @@ public final class FunctionReturnFlowAnalyzer {
     }
 
     /**
-     * 对带 else 的条件分支做返回流分析。
-     * <p>
-     * 如果条件已经被常量传播折叠为 true/false，只检查可达分支；
-     * 否则要求 then 和 else 两个分支都保证返回。
+     * 函数功能：判断匹配的 if 语句是否保证返回。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：判断结果布尔值。
      */
     public boolean matchedIfGuaranteesReturn(ShiftReduceSemanticContext context, HeadNode head) {
         Boolean condition = constantBoolean(context, head.get(2));
@@ -106,7 +131,11 @@ public final class FunctionReturnFlowAnalyzer {
     }
 
     /**
-     * 读取表达式的布尔常量值；无法在编译期确定时返回 null。
+     * 函数功能：获取常量布尔值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - node：ShiftReduceSyntaxTreeNode 类型参数。
+     * 输出：判断结果布尔值。
      */
     public Boolean constantBoolean(ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         ConstantValue value = context.getConstantValue(node);

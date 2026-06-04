@@ -13,9 +13,41 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * @author Temper
+ * 在 LR 归约过程中构造并校验类型属性的语义回调。
+ *
+ * 作用：
+ *
+ * TypeBuildCallback 是 semantic/type 包中最核心的规则执行器。
+ * 每当语法分析器完成一次 reduce，它会：
+ *
+ * 1. 取得当前刚归约出的 HeadNode。
+ * 2. 根据 production 上的语义 tag 选择 TypeRule。
+ * 3. 从子节点读取已有 TypeRegister。
+ * 4. 计算当前节点的 TypeRegister。
+ * 5. 将结果绑定回 TypeContext。
+ *
+ * 注意：
+ *
+ * 这个类只负责“类型属性的构造和一部分类型错误检查”。
+ * 函数参数个数、函数返回值、结构体声明登记、符号表登记等检查由其他 callback 完成。
  */
 public class TypeBuildCallback implements ShiftReduceCallback {
+    /**
+     * production tag 到类型构造规则的映射表。
+     *
+     * 输入：
+     *
+     * 由语法产生式携带的 ProgramSemanticTag 组合。
+     *
+     * 输出：
+     *
+     * 解析出一个 TypeRule，用于当前 reduce 的类型构造。
+     *
+     * 注意：
+     *
+     * 没有显式匹配到的产生式会使用 TypeRule.UNHANDLED，
+     * 从而尽早暴露遗漏的类型规则。
+     */
     private static final ProductionTagStrategy<TypeRule> RULES = new ProductionTagStrategy<>(TypeRule.UNHANDLED)
             .when(TypeRule.NONE, ProgramSemanticTag.PROGRAM)
             .when(TypeRule.NONE, ProgramSemanticTag.NOOP)
@@ -80,6 +112,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
             .when(TypeRule.VOID_FUNCTION_HEAD, ProgramSemanticTag.FUNCTION, ProgramSemanticTag.HEAD)
             ;
 
+    /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
@@ -90,6 +129,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         ShiftReduceCallback.super.onReduce(context, production);
     }
 
+    /**
+     * 函数功能：转发子节点属性。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister forward(ShiftReduceSemanticContext context, HeadNode head) {
         for (ShiftReduceSyntaxTreeNode child : head) {
             TypeRegister register = context.getType(child);
@@ -100,28 +146,70 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return null;
     }
 
+    /**
+     * 函数功能：处理类型声明。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister typeDeclaration(ShiftReduceSemanticContext context, HeadNode head) {
         return declaredType(context, childAnchor(head, 0));
     }
 
+    /**
+     * 函数功能：获取已声明的标识符记录。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister declaredIdentifier(ShiftReduceSemanticContext context, HeadNode head) {
         return withAnchor(requireChild(context, head, 0), childAnchor(head, 1), LocationKind.ADDRESS);
     }
 
+    /**
+     * 函数功能：创建字面量常量值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister literal(ShiftReduceSemanticContext context, HeadNode head) {
         return literal(context, childAnchor(head, 0));
     }
 
+    /**
+     * 函数功能：创建字面量常量值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister literal(ShiftReduceSemanticContext context, SourceToken token) {
         SemanticType type = context.literalType(token);
         return TypeRegister.simple(type, token);
     }
 
+    /**
+     * 函数功能：解析声明语义类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister declaredType(ShiftReduceSemanticContext context, SourceToken token) {
         SemanticType type = context.typeToken(token);
         return TypeRegister.simple(type, token);
     }
 
+    /**
+     * 函数功能：解析数组类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister arrayType(ShiftReduceSemanticContext context, HeadNode head) {
         TypeRegister base = requireChild(context, head, 0);
         return TypeRegister.simple(
@@ -130,11 +218,25 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         );
     }
 
+    /**
+     * 函数功能：解析命名结构体类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister namedStructType(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = childAnchor(head, 0);
         return TypeRegister.simple(SemanticType.struct(token), token);
     }
 
+    /**
+     * 函数功能：绑定数组创建的基础类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister arrayCreationBase(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = childAnchor(head, 0);
         if (head.containsTag(ProgramSemanticTag.STRUCT_TYPE)) {
@@ -143,18 +245,46 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.simple(context.typeToken(token), token);
     }
 
+    /**
+     * 函数功能：校验数组创建维度值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister arrayCreationDimensionValue(ShiftReduceSemanticContext context, HeadNode head) {
         return requireChild(context, head, 1);
     }
 
+    /**
+     * 函数功能：处理赋值表达式类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister assignment(ShiftReduceSemanticContext context, HeadNode head) {
         return requireChild(context, head, 0);
     }
 
+    /**
+     * 函数功能：解析标识符引用类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister identifierReference(ShiftReduceSemanticContext context, HeadNode head) {
         return identifierReference(context, childAnchor(head, 0));
     }
 
+    /**
+     * 函数功能：解析标识符引用类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - token：SourceToken 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister identifierReference(ShiftReduceSemanticContext context, SourceToken token) {
         var record = context.getIdentifier(token);
         if (record == null) {
@@ -163,6 +293,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.located(record.getDeclaredType(), record.getDeclaredType(), token, LocationKind.ADDRESS);
     }
 
+    /**
+     * 函数功能：解析数组元素访问类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister arrayElement(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType baseType = requireChild(context, head, 0)
                 .requireType("array indexing requires the left operand to have a type.");
@@ -177,6 +314,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.located(baseType.arrayElementType(), baseType.arrayElementType(), childAnchor(head, 0), LocationKind.REFERENCE);
     }
 
+    /**
+     * 函数功能：解析成员访问类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister memberAccess(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType baseType = requireChild(context, head, 0)
                 .requireType("member access requires a typed left operand.");
@@ -195,6 +339,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.located(field.getType(), field.getType(), fieldToken, LocationKind.REFERENCE);
     }
 
+    /**
+     * 函数功能：解析函数调用类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister functionCall(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = childAnchor(head, 0);
         var function = context.getFunction(token);
@@ -204,6 +355,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.simple(function.getSignature().getReturnType(), token);
     }
 
+    /**
+     * 函数功能：生成新建结构体命令。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister newStruct(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = childAnchor(head, 1);
         SemanticType type = SemanticType.struct(token);
@@ -211,6 +369,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.simple(type, token);
     }
 
+    /**
+     * 函数功能：生成新建数组命令。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister newArray(ShiftReduceSemanticContext context, HeadNode head) {
         TypeRegister base = requireChild(context, head, 1);
         SemanticType type = base.requireType("array creation requires a declared base type.");
@@ -225,6 +390,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.located(resultType, resultType, base.getAnchorToken(), LocationKind.REFERENCE);
     }
 
+    /**
+     * 函数功能：处理布尔二元表达式类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister booleanBinary(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType left = requireChild(context, head, 0)
                 .requireType("boolean binary expression requires a typed left operand.");
@@ -236,6 +408,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("logical operator requires boolean operands.");
     }
 
+    /**
+     * 函数功能：处理相等性表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister equality(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType left = requireChild(context, head, 0)
                 .requireType("equality expression requires a typed left operand.");
@@ -254,6 +433,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("equality operator requires identical types or comparable numeric types.");
     }
 
+    /**
+     * 函数功能：处理关系表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister relation(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType left = requireChild(context, head, 0)
                 .requireType("relational expression requires a typed left operand.");
@@ -269,6 +455,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("relational operator requires numeric operands.");
     }
 
+    /**
+     * 函数功能：处理数值二元表达式类型。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister numericBinary(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType left = requireChild(context, head, 0)
                 .requireType("numeric binary expression requires a typed left operand.");
@@ -281,6 +474,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("arithmetic operator requires numeric operands.");
     }
 
+    /**
+     * 函数功能：处理布尔一元表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister unaryBoolean(ShiftReduceSemanticContext context, HeadNode head) {
         SemanticType operandType = requireChild(context, head, 1)
                 .requireType("operator '!' requires a typed operand.");
@@ -290,6 +490,13 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("operator '!' requires a boolean operand.");
     }
 
+    /**
+     * 函数功能：处理数值一元表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister unaryNumeric(ShiftReduceSemanticContext context, HeadNode head) {
         TypeRegister operand = requireChild(context, head, 1);
         SemanticType operandType = operand.requireType("operator '-' requires a typed operand.");
@@ -303,6 +510,14 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("operator '-' requires a numeric operand.");
     }
 
+    /**
+     * 函数功能：处理 void 函数头。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister voidFunctionHead(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production) {
         ShiftReduceSyntaxTreeNode first = head.get(0);
         if (!first.isToken()) {
@@ -315,6 +530,12 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return TypeRegister.simple(type, first.toToken().getSource());
     }
 
+    /**
+     * 函数功能：获取当前规约头节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：HeadNode 类型返回值。
+     */
     private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             throw new IllegalStateException("current reduced head is not available");
@@ -322,10 +543,26 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return context.getTreeContext().peek().toHead();
     }
 
+    /**
+     * 函数功能：获取指定子节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * - index：int 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister child(ShiftReduceSemanticContext context, HeadNode head, int index) {
         return context.getType(head.get(index));
     }
 
+    /**
+     * 函数功能：获取并校验指定子节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * - index：int 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister requireChild(ShiftReduceSemanticContext context, HeadNode head, int index) {
         TypeRegister register = child(context, head, index);
         if (register == null) {
@@ -334,14 +571,38 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         return register;
     }
 
+    /**
+     * 函数功能：获取子节点锚点。
+     * 输入：
+     * - head：HeadNode 类型参数。
+     * - index：int 类型参数。
+     * 输出：SourceToken 类型返回值。
+     */
     private static SourceToken childAnchor(HeadNode head, int index) {
         return ShiftReduceSyntaxTreeNode.anchor(head.get(index));
     }
 
+    /**
+     * 函数功能：创建带锚点的语义类型。
+     * 输入：
+     * - register：TypeRegister 类型参数。
+     * - anchor：SourceToken 类型参数。
+     * - locationKind：LocationKind 类型参数。
+     * 输出：TypeRegister 类型返回值。
+     */
     private static TypeRegister withAnchor(TypeRegister register, SourceToken anchor, LocationKind locationKind) {
         return new TypeRegister(register.getType(), register.getInstructionType(), anchor, locationKind);
     }
 
+    /**
+     * 单个产生式对应的类型构造规则。
+     *
+     * 作用：
+     *
+     * TypeRule 是一个函数式接口。
+     * RULES 表根据 production tag 选出具体 TypeRule，
+     * 再调用 build 方法完成当前 reduce 的类型构造。
+     */
     @FunctionalInterface
     private interface TypeRule {
         TypeRule UNHANDLED = (context, head, production) -> {
@@ -374,6 +635,14 @@ public class TypeBuildCallback implements ShiftReduceCallback {
         TypeRule ASSIGNMENT = (context, head, production) -> assignment(context, head);
         TypeRule VOID_FUNCTION_HEAD = TypeBuildCallback::voidFunctionHead;
 
+        /**
+         * 函数功能：构建目标对象。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - head：HeadNode 类型参数。
+         * - production：SimpleGrammarProduction 类型参数。
+         * 输出：TypeRegister 类型返回值。
+         */
         TypeRegister build(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production);
     }
 }

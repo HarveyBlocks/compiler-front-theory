@@ -18,8 +18,21 @@ import java.util.StringJoiner;
  * @author Temper
  */
 public final class SemanticDisplaySupport {
+    /**
+     * 函数功能：创建 SemanticDisplaySupport 对象。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     private SemanticDisplaySupport() {
     }
+/**
+ * 函数功能：格式化函数签名。
+ * 输入：
+ * - function：FunctionRecord 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     public static String formatFunctionSignature(FunctionRecord function, Iterable<StructRecord> structTable) {
         StringJoiner joiner = new StringJoiner(", ");
@@ -35,10 +48,23 @@ public final class SemanticDisplaySupport {
                joiner +
                ")";
     }
+/**
+ * 函数功能：格式化函数名称。
+ * 输入：
+ * - function：FunctionRecord 类型参数。
+ * 输出：字符串结果。
+ */
 
     public static String formatFunctionName(FunctionRecord function) {
         return SourceTokenStringMapping.utf8(function.getSignature().getNameToken());
     }
+/**
+ * 函数功能：格式化标识符记录。
+ * 输入：
+ * - record：IdentifierRecord 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     public static String formatIdentifierRecord(IdentifierRecord record, Iterable<StructRecord> structTable) {
         return "record=" +
@@ -54,10 +80,24 @@ public final class SemanticDisplaySupport {
                " constant=" +
                formatConstant(record.getConstantValue());
     }
+/**
+ * 函数功能：格式化结构体记录。
+ * 输入：
+ * - record：StructRecord 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     public static String formatStructRecord(StructRecord record, Iterable<StructRecord> structTable) {
         return "index=" + record.getTableIndex() + " name=" + record.displayName();
     }
+/**
+ * 函数功能：格式化结构体字段。
+ * 输入：
+ * - field：StructField 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     public static String formatStructField(StructField field, Iterable<StructRecord> structTable) {
         return "offset=" +
@@ -67,6 +107,13 @@ public final class SemanticDisplaySupport {
                " name=" +
                SourceTokenStringMapping.utf8(field.getNameToken());
     }
+/**
+ * 函数功能：格式化语义类型。
+ * 输入：
+ * - type：SemanticType 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     public static String formatType(SemanticType type, Iterable<StructRecord> structTable) {
         if (type == null) {
@@ -78,10 +125,23 @@ public final class SemanticDisplaySupport {
         }
         return builder.toString();
     }
+/**
+ * 函数功能：格式化常量值。
+ * 输入：
+ * - value：ConstantValue 类型参数。
+ * 输出：字符串结果。
+ */
 
     private static String formatConstant(ConstantValue value) {
         return value == null ? "<none>" : value.toString();
     }
+/**
+ * 函数功能：获取基础类型名称。
+ * 输入：
+ * - type：SemanticType 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     private static String baseTypeName(SemanticType type, Iterable<StructRecord> structTable) {
         switch (type.getKind()) {
@@ -105,6 +165,13 @@ public final class SemanticDisplaySupport {
                 throw new IllegalStateException("Unknown type of: " + type.getKind());
         }
     }
+/**
+ * 函数功能：解析结构体名称。
+ * 输入：
+ * - key：IdentifierKey 类型参数。
+ * - structTable：Iterable<StructRecord> 类型参数。
+ * 输出：字符串结果。
+ */
 
     private static String resolveStructName(IdentifierKey key, Iterable<StructRecord> structTable) {
         if (key == null) {

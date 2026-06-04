@@ -15,17 +15,8 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 赋值支路：处理 {@code loc = bool;} 这类普通赋值语句。
- * <p>
- * 本翻译器是讲“三地址码风格命令”的关键例子：左值子树先生成“目标位置”，右值子树再生成“栈顶值”，
- * 最后根据 {@link LocationKind} 选择写回命令。普通变量是 {@link LocationKind#ADDRESS}，写回走
- * {@code assign_from_st_top_to_addr_*}；数组元素、结构体字段等间接位置是 {@link LocationKind#REFERENCE}，
- * 写回走 {@code assign_from_st_top_to_ref_*}。
- * <p>
- * 如果右值类型可以隐式转成左值类型，先通过
- * {@link org.harvey.vie.theory.semantic.command.command.factory.CommandFactory#stTopCast(CommandDataType, CommandDataType)}
- * 插入栈顶类型转换。讲完赋值支路可继续看表达式支路 {@link InSuffixExpressionTranslator}，或回到
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * 翻译赋值语句，负责完成类型兼容性检查、必要的隐式类型转换，
+ * 以及按左值位置类型选择不同的写回指令。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -33,6 +24,14 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 @AllArgsConstructor
 public class AssignStatementTranslator implements CommandTranslator {
+/**
+ * 函数功能：翻译语法节点并返回命令节点注册器。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - children：CommandNodeRegister[] 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
     @Override
     public CommandNodeRegister translate(

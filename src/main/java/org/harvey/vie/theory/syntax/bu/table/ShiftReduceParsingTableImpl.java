@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.table;
+﻿package org.harvey.vie.theory.syntax.bu.table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -36,6 +36,19 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
     private final Map<SimpleGrammarProduction, Integer> productionDict;
     private final SimpleGrammarProduction[] productionPool;
     private final TerminalMatcher terminalMatcher;
+/**
+ * 函数功能：创建 ShiftReduceParsingTableImpl 对象。
+ * 输入：
+ * - start：int 类型参数。
+ * - accept：int 类型参数。
+ * - terminalSymbols：TerminalSymbol[] 类型参数。
+ * - headSymbols：HeadSymbol[] 类型参数。
+ * - activeTable：ActiveTableElement[][] 类型参数。
+ * - gotoTable：int[][] 类型参数。
+ * - productionPool：SimpleGrammarProduction[] 类型参数。
+ * - matcherFactory：TerminalMatcherFactory 类型参数。
+ * 输出：无。
+ */
 
     public ShiftReduceParsingTableImpl(
             int start,
@@ -56,37 +69,81 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         this.productionPool = productionPool;
         this.terminalMatcher = matcherFactory.produce(terminalSymbols);
     }
+/**
+ * 函数功能：获取规约后跳转的状态。
+ * 输入：
+ * - originStatus：int 类型参数。
+ * - head：HeadSymbol 类型参数。
+ * 输出：整数结果。
+ */
 
 
     @Override
     public int gotoNext(int originStatus, HeadSymbol head) {
         return gotoTable[originStatus][CollectionUtil.validIndex(headDict, head)];
     }
+/**
+ * 函数功能：查询动作表中的下一动作。
+ * 输入：
+ * - originStatus：int 类型参数。
+ * - terminal：int 类型参数。
+ * 输出：ActiveTableElement 类型返回值。
+ */
 
     @Override
     public ActiveTableElement activeNext(int originStatus, int terminal) {
         return activeTable[originStatus][terminal];
     }
+/**
+ * 函数功能：获取指定产生式。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：SimpleGrammarProduction 类型返回值。
+ */
 
     @Override
     public SimpleGrammarProduction getProduction(int i) {
         return productionPool[i];
     }
+/**
+ * 函数功能：判断词法单元是否匹配终结符。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * 输出：整数结果。
+ */
 
     @Override
     public int matchTerminal(SourceToken token) {
         return terminalMatcher.indexOf(token);
     }
+/**
+ * 函数功能：获取产生式编号。
+ * 输入：
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：整数结果。
+ */
 
     @Override
     public Integer getProductionId(SimpleGrammarProduction production) {
         return productionDict.get(production);
     }
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     @Override
     public String toString() {
         return ShiftReduceParsingTableImplToString.toString(this);
     }
+/**
+ * 函数功能：将对象写入输出流。
+ * 输入：
+ * - os：OutputStream 类型参数。
+ * 输出：整数结果。
+ */
 
     @Override
     public int store(OutputStream os) throws IOException {
@@ -137,6 +194,12 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
         private final HeadDefineSymbol.Loader<?> headSymbolLoader;
         private final SimpleGrammarProduction.Loader<?> productionLoader;
         private final TerminalMatcherFactory matcherFactory;
+/**
+ * 函数功能：从输入流加载对象。
+ * 输入：
+ * - is：InputStream 类型参数。
+ * 输出：ShiftReduceParsingTableImpl 类型返回值。
+ */
 
         @Override
         public ShiftReduceParsingTableImpl load(InputStream is) throws IOException {
@@ -160,6 +223,14 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
                     matcherFactory
             );
         }
+/**
+ * 函数功能：从输入流加载 GOTO 状态转移表。
+ * 输入：
+ * - is：InputStream 类型参数。
+ * - statusCnt：int 类型参数。
+ * - headCnt：int 类型参数。
+ * 输出：int[][] 类型数组。
+ */
 
         private static int[][] loadGotoTable(InputStream is, int statusCnt, int headCnt) throws IOException {
             int[][] gotoTable = new int[statusCnt][headCnt];
@@ -170,6 +241,15 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             }
             return gotoTable;
         }
+/**
+ * 函数功能：从输入流加载移进规约动作表。
+ * 输入：
+ * - is：InputStream 类型参数。
+ * - accept：int 类型参数。
+ * - statusCnt：int 类型参数。
+ * - terminalCnt：int 类型参数。
+ * 输出：ActiveTableElement[][] 类型数组。
+ */
 
         private static ActiveTableElement[][] loadActiveTable(
                 InputStream is, int accept, int statusCnt, int terminalCnt) throws IOException {
@@ -180,6 +260,13 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             );
             return activeTable;
         }
+/**
+ * 函数功能：从输入流加载产生式池。
+ * 输入：
+ * - is：InputStream 类型参数。
+ * - productionCnt：int 类型参数。
+ * 输出：SimpleGrammarProduction[] 类型数组。
+ */
 
         private SimpleGrammarProduction[] loadProductionPool(InputStream is, int productionCnt) throws IOException {
             SimpleGrammarProduction[] productionPool = new SimpleGrammarProduction[productionCnt];
@@ -188,6 +275,13 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             }
             return productionPool;
         }
+/**
+ * 函数功能：从输入流加载非终结符数组。
+ * 输入：
+ * - is：InputStream 类型参数。
+ * - headCnt：int 类型参数。
+ * 输出：HeadSymbol[] 类型数组。
+ */
 
         private HeadSymbol[] loadHeadSymbols(InputStream is, int headCnt) throws IOException {
             HeadSymbol[] headSymbols = new HeadSymbol[headCnt];
@@ -196,6 +290,13 @@ public class ShiftReduceParsingTableImpl implements ShiftReduceParsingTable {
             }
             return headSymbols;
         }
+/**
+ * 函数功能：从输入流加载终结符数组。
+ * 输入：
+ * - is：InputStream 类型参数。
+ * - terminalCnt：int 类型参数。
+ * 输出：TerminalSymbol[] 类型数组。
+ */
 
         private TerminalSymbol[] loadTerminalSymbols(InputStream is, int terminalCnt) throws IOException {
             TerminalSymbol[] terminalSymbols = new TerminalSymbol[terminalCnt];

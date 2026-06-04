@@ -10,7 +10,19 @@ package org.harvey.vie.theory.error;
  */
 public interface CompileErrorMessage {
 
+    /**
+     * 函数功能：获取错误在源内容中的偏移量。
+     * 输入：
+     * - 无。
+     * 输出：错误偏移量整数。
+     */
     int getOffset();
 
+    /**
+     * 函数功能：获取错误描述信息。
+     * 输入：
+     * - 无。
+     * 输出：错误描述字符串。
+     */
     String getMessage();
 }

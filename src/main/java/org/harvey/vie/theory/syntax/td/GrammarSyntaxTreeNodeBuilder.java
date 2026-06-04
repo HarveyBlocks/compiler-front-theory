@@ -26,8 +26,20 @@ public class GrammarSyntaxTreeNodeBuilder {
     private final List<GrammarSyntaxTreeNodeBuilder> children = new ArrayList<>();
 
     private SourceToken token;
+/**
+ * 函数功能：创建 GrammarSyntaxTreeNodeBuilder 对象。
+ * 输入：
+ * - symbol：GrammarUnitSymbol 类型参数。
+ * 输出：无。
+ */
 
     public GrammarSyntaxTreeNodeBuilder(GrammarUnitSymbol symbol) {this.symbol = symbol;}
+/**
+ * 函数功能：构建并添加子节点。
+ * 输入：
+ * - child：GrammarUnitSymbol 类型参数。
+ * 输出：GrammarSyntaxTreeNodeBuilder 类型返回值。
+ */
 
 
     public GrammarSyntaxTreeNodeBuilder buildChild(GrammarUnitSymbol child) {
@@ -36,14 +48,32 @@ public class GrammarSyntaxTreeNodeBuilder {
         children.add(childBuilder);
         return childBuilder;
     }
+/**
+ * 函数功能：转换为终结符。
+ * 输入：
+ * - 无。
+ * 输出：TerminalSymbol 类型返回值。
+ */
 
     public TerminalSymbol toTerminal() {
         return symbol.toTerminal();
     }
+/**
+ * 函数功能：转换为非终结符。
+ * 输入：
+ * - 无。
+ * 输出：HeadSymbol 类型返回值。
+ */
 
     public HeadSymbol toHead() {
         return symbol.toHead();
     }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：GrammarSyntaxTreeNode 类型返回值。
+ */
 
     public GrammarSyntaxTreeNode build() {
         // 可能会导致递归构建这棵树
@@ -62,6 +92,12 @@ public class GrammarSyntaxTreeNodeBuilder {
         // 3. 只有一个孩子的, 孩子顶替父亲的位置
         return simplify();
     }
+/**
+ * 函数功能：构建简化后的语法树节点。
+ * 输入：
+ * - 无。
+ * 输出：GrammarSyntaxTreeNode 类型返回值。
+ */
 
     private GrammarSyntaxTreeNode simplify() {
         List<GrammarSyntaxTreeNode> validChildren = new ArrayList<>();
@@ -90,6 +126,12 @@ public class GrammarSyntaxTreeNodeBuilder {
         GrammarSyntaxTreeNode[] array = validChildren.toArray(GrammarSyntaxTreeNode[]::new);
         return buildHead(array);
     }
+/**
+ * 函数功能：构建终结符语法树节点。
+ * 输入：
+ * - 无。
+ * 输出：GrammarSyntaxTreeNode 类型返回值。
+ */
 
     private GrammarSyntaxTreeNode buildTerminal() {
         if (!symbol.isTerminal() || token == null) {
@@ -97,6 +139,12 @@ public class GrammarSyntaxTreeNodeBuilder {
         }
         return new TerminalNodeImpl(symbol.toTerminal(), token);
     }
+/**
+ * 函数功能：构建非终结符语法树节点。
+ * 输入：
+ * - children：GrammarSyntaxTreeNode[] 类型参数。
+ * 输出：GrammarSyntaxTreeNode 类型返回值。
+ */
 
     private GrammarSyntaxTreeNode buildHead(GrammarSyntaxTreeNode[] children) {
         if (symbol.isTerminal() || token != null) {
@@ -104,14 +152,32 @@ public class GrammarSyntaxTreeNodeBuilder {
         }
         return new HeadNodeImpl(children);
     }
+/**
+ * 函数功能：设置子节点为空串节点。
+ * 输入：
+ * - 无。
+ * 输出：无。
+ */
 
     public void setChildEpsilon() {
         children.add(null); // null for epsilon
     }
+/**
+ * 函数功能：设置当前节点的词法单元。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * 输出：无。
+ */
 
     public void setToken(SourceToken token) {
         this.token = token;
     }
+/**
+ * 函数功能：获取当前语法符号。
+ * 输入：
+ * - 无。
+ * 输出：GrammarUnitSymbol 类型返回值。
+ */
 
 
     public GrammarUnitSymbol getGrammarSymbol() {

@@ -1,6 +1,7 @@
 package org.harvey.vie.theory.semantic.command.translator.command;
 
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeBuilder;
 import org.harvey.vie.theory.semantic.command.node.CommandNodeListBuilder;
 import org.harvey.vie.theory.semantic.command.node.TerminalNode;
@@ -12,18 +13,22 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 函数支路：翻译 {@code return} 语句。
+ * 翻译 return 语句。
  * <p>
- * 有返回值时，返回表达式先把值放到栈顶；如果表达式已被常量传播为编译期常量，
- * 直接生成 {@code load_st_*_static}，避免额外求值代码。最后统一追加
- * {@link org.harvey.vie.theory.semantic.command.command.factory.CommandFactory#returnCommand()}，
- * 对应文本命令 {@code return}。
- * <p>
- * 讲完本支路可回到 {@link FunctionDefinitionTranslator} 看函数段如何保存。
+ * 当返回表达式已被常量传播为编译期常量时，直接生成常量装载指令；
+ * 否则先计算表达式，再统一追加返回指令。
  *
  * @author Temper
  */
 public class FunctionReturnTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
@@ -49,3 +54,4 @@ public class FunctionReturnTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(builder.build(), production, children);
     }
 }
+

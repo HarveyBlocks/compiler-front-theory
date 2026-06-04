@@ -12,5 +12,11 @@ import org.harvey.vie.theory.source.reader.SourceReader;
  * @date 2026-03-24 20:32
  */
 public interface Resource {
+    /**
+     * 函数功能：将资源转换为源读取器。
+     * 输入：
+     * - errorContext：用于收集读取错误的错误上下文。
+     * 输出：可读取资源内容的 SourceReader。
+     */
     SourceReader toReader(ErrorContext errorContext);
 }

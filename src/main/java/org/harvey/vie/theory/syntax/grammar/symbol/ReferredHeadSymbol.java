@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.grammar.symbol;
+﻿package org.harvey.vie.theory.syntax.grammar.symbol;
 
 /**
  * TODO 左部/Non-terminal, 但是被引用(index in array)
@@ -8,5 +8,11 @@ package org.harvey.vie.theory.syntax.grammar.symbol;
  * @date 2026-03-28 00:39
  */
 public interface ReferredHeadSymbol extends HeadSymbol {
+    /**
+     * 函数功能：获取编号。
+     * 输入：
+     * - 无。
+     * 输出：整数结果。
+     */
     int getId();
 }

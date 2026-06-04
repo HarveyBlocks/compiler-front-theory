@@ -10,6 +10,12 @@ import lombok.Getter;
 @Getter
 public class FunctionBodyState {
     private final FunctionRecord function;
+    /**
+     * 函数功能：创建 FunctionBodyState 对象。
+     * 输入：
+     * - function：FunctionRecord 类型参数。
+     * 输出：无。
+     */
     public FunctionBodyState(FunctionRecord function) {
         this.function = function;
     }

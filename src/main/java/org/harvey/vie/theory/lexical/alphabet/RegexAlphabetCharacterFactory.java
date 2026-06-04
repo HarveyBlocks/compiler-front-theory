@@ -17,10 +17,22 @@ import org.harvey.vie.theory.lexical.regex.RegexOperator;
 public class RegexAlphabetCharacterFactory implements AlphabetCharacterFactory {
     private static final AlphabetCharacter[] POOL = new AlphabetCharacter[128];
 
+    /**
+     * 函数功能：获取指定 ASCII 字节对应的字母表字符。
+     * 输入：
+     * - ch：ASCII 字节值。
+     * 输出：对应的 AlphabetCharacter。
+     */
     private static AlphabetCharacter getAscii(byte ch) {
         return POOL[ch] != null ? POOL[ch] : (POOL[ch] = new AsciiAlphabetCharacter(ch));
     }
 
+    /**
+     * 函数功能：根据原始字符码点创建正则字母表字符。
+     * 输入：
+     * - ch：原始字符码点。
+     * 输出：创建得到的 AlphabetCharacter。
+     */
     @Override
     public AlphabetCharacter createRaw(int ch) {
         if (ch < 128) {
@@ -30,6 +42,12 @@ public class RegexAlphabetCharacterFactory implements AlphabetCharacterFactory {
         return new CodePointAlphabetCharacter(ch);
     }
 
+    /**
+     * 函数功能：根据转义字符码点创建正则字母表字符。
+     * 输入：
+     * - ch：转义字符码点。
+     * 输出：创建得到的 AlphabetCharacter。
+     */
     @Override
     public AlphabetCharacter createEscape(int ch) {
         if (ch < 128) {
@@ -42,6 +60,12 @@ public class RegexAlphabetCharacterFactory implements AlphabetCharacterFactory {
         return createRaw(ch);
     }
 
+    /**
+     * 函数功能：根据唯一编码还原正则字母表字符。
+     * 输入：
+     * - uniqueCode：字母表字符唯一编码。
+     * 输出：还原得到的 AlphabetCharacter。
+     */
     @Override
     public AlphabetCharacter byUniqueCode(int uniqueCode) {
         if (uniqueCode == AlphabetCharacter.UNSUPPORTED.uniqueCode()) {

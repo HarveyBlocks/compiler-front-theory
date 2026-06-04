@@ -18,16 +18,34 @@ import java.io.IOException;
 public interface SourceReader extends Closeable {
 
     /**
-     * read and move 1 char
+     * 函数功能：读取一个源字符并移动读取位置。
+     * 输入：
+     * - 无。
+     * 输出：读取到的源字符。
      */
     SourceCharacter read() throws IOException, CompileException;
 
     /**
-     * read 1 char, but not move
+     * 函数功能：读取一个源字符但不移动读取位置。
+     * 输入：
+     * - 无。
+     * 输出：预览到的源字符。
      */
     SourceCharacter peek() throws IOException, CompileException;
 
+    /**
+     * 函数功能：关闭源读取器。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     void close();
 
+    /**
+     * 函数功能：获取当前读取偏移量。
+     * 输入：
+     * - 无。
+     * 输出：当前读取偏移量。
+     */
     int getOffset();
 }

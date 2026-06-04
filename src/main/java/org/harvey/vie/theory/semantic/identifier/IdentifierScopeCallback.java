@@ -32,6 +32,14 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
             ProgramSemanticTag.BLOCK,
             ProgramSemanticTag.COMMAND
     );
+/**
+ * 函数功能：处理移进事件。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - nextStatus：int 类型参数。
+ * - token：SourceToken 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void onShift(ShiftReduceSemanticContext context, int nextStatus, SourceToken token) {
@@ -48,6 +56,13 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
         }
         ShiftReduceCallback.super.onShift(context, nextStatus, token);
     }
+/**
+ * 函数功能：处理规约事件。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -59,6 +74,13 @@ public class IdentifierScopeCallback implements ShiftReduceCallback {
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
+/**
+ * 函数功能：执行规约事件的内部处理。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     private void onReduce0(ShiftReduceSemanticContext context, SimpleGrammarProduction production)
             throws CompileException {

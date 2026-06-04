@@ -127,6 +127,12 @@ public class ProgramLexicalDemo {
                                "*", ProgramTokenType.IDENTIFIER)
     );
 
+    /**
+     * 函数功能：运行程序词法分析演示入口。
+     * 输入：
+     * - args：命令行参数数组。
+     * 输出：无。
+     */
     public static void main(String[] args) {
         // 编写正则会比较考验技巧
         // 由于总是饿汉模式去匹配, 因此, 必须特别设计正则
@@ -136,6 +142,12 @@ public class ProgramLexicalDemo {
         extracted();
     }
 
+    /**
+     * 函数功能：执行程序词法分析的演示测试流程。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     private static void extracted() {
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         RegexDfaStatusTable table = buildTable(alphabetCharacterFactory);
@@ -153,6 +165,12 @@ public class ProgramLexicalDemo {
         LexicalDemo.testLexical(text, alphabetCharacterFactory, table);
     }
 
+    /**
+     * 函数功能：构建程序词法状态表并写入序列化文件。
+     * 输入：
+     * - alphabetCharacterFactory：用于创建正则字母表字符的工厂。
+     * 输出：构建完成的 RegexDfaStatusTable。
+     */
     private static RegexDfaStatusTable buildStatusTable(AlphabetCharacterFactory alphabetCharacterFactory)
             throws IOException {
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
@@ -172,6 +190,12 @@ public class ProgramLexicalDemo {
         }
     }
 
+    /**
+     * 函数功能：获取程序语言使用的词法分析器。
+     * 输入：
+     * - 无。
+     * 输出：配置完成的 LexicalAnalyzer。
+     */
     public static LexicalAnalyzer lexicalAnalyzer() {
         LexicalAnalyzer analyzer = cachedAnalyzer;
         if (analyzer != null) {
@@ -190,11 +214,23 @@ public class ProgramLexicalDemo {
         }
     }
 
+    /**
+     * 函数功能：获取程序语言使用的词法 DFA 状态表。
+     * 输入：
+     * - 无。
+     * 输出：程序词法 RegexDfaStatusTable。
+     */
     public static RegexDfaStatusTable lexicalTable() {
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         return buildTable(alphabetCharacterFactory);
     }
 
+    /**
+     * 函数功能：构建或加载程序词法 DFA 状态表。
+     * 输入：
+     * - alphabetCharacterFactory：用于创建正则字母表字符的工厂。
+     * 输出：可用于词法分析的 RegexDfaStatusTable。
+     */
     private static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
         if (FLUSH_TABLE) {
             try {

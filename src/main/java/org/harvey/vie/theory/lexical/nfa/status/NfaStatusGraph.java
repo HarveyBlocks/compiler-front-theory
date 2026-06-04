@@ -10,8 +10,20 @@ package org.harvey.vie.theory.lexical.nfa.status;
  */
 public interface NfaStatusGraph<M, V> {
 
+    /**
+     * 函数功能：获取 NFA 状态图的起始状态。
+     * 输入：
+     * - 无。
+     * 输出：起始 NFA 状态。
+     */
     NfaStatus<M> getStart();
 
 
+    /**
+     * 函数功能：获取指定 NFA 状态对应的接受值。
+     * 输入：
+     * - status：待匹配的 NFA 状态。
+     * 输出：状态对应的接受值；不存在则返回 null。
+     */
     V matchAccept(NfaStatus<M> status);
 }

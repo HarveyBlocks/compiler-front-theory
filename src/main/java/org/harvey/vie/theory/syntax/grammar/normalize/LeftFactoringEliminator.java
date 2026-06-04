@@ -10,6 +10,12 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
  * @date 2026-03-28 18:38
  */
 public interface LeftFactoringEliminator {
+    /**
+     * 函数功能：消除语法中的指定结构。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * 输出：ProductionSetContext 类型返回值。
+     */
     ProductionSetContext eliminate(ProductionSetContext context);
 
     /**
@@ -18,6 +24,13 @@ public interface LeftFactoringEliminator {
      */
     @FunctionalInterface
     interface DefineNameFactory {
+        /**
+         * 函数功能：创建目标对象。
+         * 输入：
+         * - origin：String 类型参数。
+         * - count：int 类型参数。
+         * 输出：字符串结果。
+         */
         String create(String origin, int count);
     }
 }

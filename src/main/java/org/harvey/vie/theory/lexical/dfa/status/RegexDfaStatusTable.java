@@ -44,6 +44,15 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
     private final TokenType[] accepts;
     private volatile String s;
 
+    /**
+     * 函数功能：创建正则 DFA 状态表。
+     * 输入：
+     * - table：状态转移矩阵。
+     * - alphabet：有序字母表数组。
+     * - start：起始状态编号。
+     * - accepts：状态接受类型数组。
+     * 输出：无。
+     */
     public RegexDfaStatusTable(int[][] table, AlphabetCharacter[] alphabet, int start, TokenType[] accepts) {
         this.table = table;
         this.alphabet = alphabet;
@@ -52,7 +61,11 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
     }
 
     /**
-     * @return status next. {@link #UNKNOWN_CHAR_STATUS} for unknown char status
+     * 函数功能：根据当前状态和字母表字符计算下一状态编号。
+     * 输入：
+     * - statusNow：当前状态编号。
+     * - ch：输入字母表字符。
+     * 输出：下一状态编号；未知字符返回 UNKNOWN_CHAR_STATUS。
      */
     @Override
     public int move(int statusNow, AlphabetCharacter ch) {
@@ -67,11 +80,23 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         return table[statusNow][chIndex];
     }
 
+    /**
+     * 函数功能：获取指定状态的接受词法单元类型。
+     * 输入：
+     * - i：状态编号。
+     * 输出：接受 TokenType；非接受状态返回 null。
+     */
     @Override
     public TokenType accept(int i) {
         return accepts[i];
     }
 
+    /**
+     * 函数功能：获取正则 DFA 状态表的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：状态表字符串。
+     */
     @Override
     public String toString() {
         if (s != null) {
@@ -85,6 +110,12 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         return s;
     }
 
+    /**
+     * 函数功能：构建正则 DFA 状态表的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：状态表字符串。
+     */
     private String buildString() {
         if (table == null || alphabet == null) {
             return "null";
@@ -166,6 +197,13 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         return sb.toString();
     }
 
+    /**
+     * 函数功能：将字符串按指定宽度居中填充。
+     * 输入：
+     * - s：待居中的字符串。
+     * - width：目标宽度。
+     * 输出：居中填充后的字符串。
+     */
     private String center(String s, int width) {
         if (s.length() >= width) {
             return s;
@@ -176,6 +214,12 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         return " ".repeat(leftPad) + s + " ".repeat(rightPad);
     }
 
+    /**
+     * 函数功能：将正则 DFA 状态表写入输出流。
+     * 输入：
+     * - os：接收序列化数据的输出流。
+     * 输出：写入的字节数。
+     */
     @Override
     public int store(OutputStream os) throws IOException {
         byte[] alphabetData = alphabetToBytes();
@@ -194,6 +238,12 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         return len;
     }
 
+    /**
+     * 函数功能：将字母表数组转换为字节数组。
+     * 输入：
+     * - 无。
+     * 输出：字母表唯一编码组成的 byte 数组。
+     */
     private byte[] alphabetToBytes() {
         ByteOutStream alphabetBos = new ByteOutStream();
         Arrays.stream(alphabet)
@@ -203,6 +253,12 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         return alphabetBos.toByteArray();
     }
 
+    /**
+     * 函数功能：将状态转移矩阵转换为字节数组。
+     * 输入：
+     * - 无。
+     * 输出：状态转移矩阵组成的 byte 数组。
+     */
     private byte[] tableToBytes() {
         ByteOutStream tableBos = new ByteOutStream();
         Arrays.stream(table)
@@ -216,11 +272,26 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
         private final TokenType.Loader<?> acceptLoader;
         private final AlphabetCharacterFactory alphabetFactory;
 
+        /**
+         * 函数功能：创建正则 DFA 状态表加载器。
+         * 输入：
+         * - acceptLoader：接受词法单元类型加载器。
+         * - alphabetFactory：字母表字符工厂。
+         * 输出：无。
+         */
         public Loader(TokenType.Loader<? extends TokenType> acceptLoader, AlphabetCharacterFactory alphabetFactory) {
             this.acceptLoader = acceptLoader;
             this.alphabetFactory = alphabetFactory;
         }
 
+        /**
+         * 函数功能：从输入流加载状态转移矩阵。
+         * 输入：
+         * - is：提供序列化数据的输入流。
+         * - row：状态转移矩阵行数。
+         * - col：状态转移矩阵列数。
+         * 输出：加载得到的状态转移矩阵。
+         */
         private static int[][] loadTable(InputStream is, int row, int col) throws IOException {
             IntStream stream = FromBytes.toIntArray(Loaders.loadBytes(is, row * col * 4));
             int[][] result = new int[row][col];
@@ -233,6 +304,12 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
             return result;
         }
 
+        /**
+         * 函数功能：从输入流加载正则 DFA 状态表。
+         * 输入：
+         * - is：提供序列化数据的输入流。
+         * 输出：加载得到的 RegexDfaStatusTable。
+         */
         @Override
         public RegexDfaStatusTable load(InputStream is) throws IOException {
             int start = Loaders.loadInteger(is);
@@ -244,12 +321,26 @@ public class RegexDfaStatusTable implements DfaStatusTable<AlphabetCharacter, To
             return new RegexDfaStatusTable(table, alphabet, start, accepts);
         }
 
+        /**
+         * 函数功能：从输入流加载字母表数组。
+         * 输入：
+         * - is：提供序列化数据的输入流。
+         * - len：字母表数组长度。
+         * 输出：加载得到的 AlphabetCharacter 数组。
+         */
         private AlphabetCharacter[] loadAlphabet(InputStream is, int len) throws IOException {
             return FromBytes.toIntArray(Loaders.loadBytes(is, len << 2))
                     .mapToObj(alphabetFactory::byUniqueCode)
                     .toArray(AlphabetCharacter[]::new);
         }
 
+        /**
+         * 函数功能：从输入流加载接受词法单元类型数组。
+         * 输入：
+         * - is：提供序列化数据的输入流。
+         * - row：接受类型数组长度。
+         * 输出：加载得到的 TokenType 数组。
+         */
         private TokenType[] loadAccepts(InputStream is, int row) throws IOException {
             TokenType[] accepts = new TokenType[row];
             for (int i = 0; i < row; i++) {

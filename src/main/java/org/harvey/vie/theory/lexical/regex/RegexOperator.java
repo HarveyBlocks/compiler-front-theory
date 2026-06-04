@@ -29,14 +29,32 @@ public enum RegexOperator {
             RegexOperator::getC
     );
 
+    /**
+     * 函数功能：创建指定字符编码的正则操作符枚举项。
+     * 输入：
+     * - c：正则操作符的字符编码。
+     * 输出：无。
+     */
     RegexOperator(byte c) {
         this.c = c;
     }
 
+    /**
+     * 函数功能：根据字符编码获取对应的正则操作符。
+     * 输入：
+     * - c：待匹配的字符编码。
+     * 输出：对应的正则操作符；不存在则返回 null。
+     */
     public static RegexOperator regexOperator(byte c) {
         return ENUM_DICT.get(c);
     }
 
+    /**
+     * 函数功能：判断指定字符编码是否为正则操作符。
+     * 输入：
+     * - c：待判断的字符编码。
+     * 输出：若为正则操作符则返回 true，否则返回 false。
+     */
     public static boolean isRegexOperator(byte c) {
         return regexOperator(c) != null;
     }

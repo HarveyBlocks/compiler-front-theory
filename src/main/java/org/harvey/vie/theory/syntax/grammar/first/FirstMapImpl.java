@@ -21,26 +21,56 @@ import java.util.Set;
 public class FirstMapImpl implements FirstMap {
     private final Map<HeadSymbol, FirstSet> headMap;
     private final Set<TerminalSymbol> terminalSet;
+/**
+ * 函数功能：获取指定位置或键对应的元素。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * 输出：FirstSet 类型返回值。
+ */
 
     @Override
     public FirstSet get(HeadSymbol head) {
         return headMap.get(head);
     }
+/**
+ * 函数功能：获取指定位置或键对应的元素。
+ * 输入：
+ * - terminal：TerminalSymbol 类型参数。
+ * 输出：FirstSet 类型返回值。
+ */
 
     @Override
     public FirstSet get(TerminalSymbol terminal) {
         return terminalSet.contains(terminal) ? new TerminalFirstSet(terminal) : null;
     }
+/**
+ * 函数功能：获取终结符集合。
+ * 输入：
+ * - 无。
+ * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+ */
 
     @Override
     public Set<TerminalSymbol> terminalSet() {
         return terminalSet;
     }
+/**
+ * 函数功能：获取非终结符集合。
+ * 输入：
+ * - 无。
+ * 输出：Set<HeadSymbol> 类型集合或迭代结果。
+ */
 
     @Override
     public Set<HeadSymbol> headSet() {
         return headMap.keySet();
     }
+/**
+ * 函数功能：获取 FIRST 集合。
+ * 输入：
+ * - iterable：Iterable<GrammarUnitSymbol> 类型参数。
+ * 输出：FirstSet 类型返回值。
+ */
 
     @Override
     public FirstSet first(Iterable<GrammarUnitSymbol> iterable) {
@@ -56,6 +86,12 @@ public class FirstMapImpl implements FirstMap {
         }
         return new FirstSetImpl(allFirstSet, containsEpsilon);
     }
+/**
+ * 函数功能：判断指定符号是否可推出空串。
+ * 输入：
+ * - iterable：Iterable<GrammarUnitSymbol> 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
     @Override
     public boolean nullable(Iterable<GrammarUnitSymbol> iterable) {
@@ -69,11 +105,23 @@ public class FirstMapImpl implements FirstMap {
         }
         return nullable;
     }
+/**
+ * 函数功能：获取当前对象的迭代器。
+ * 输入：
+ * - 无。
+ * 输出：FirstSet>> 类型返回值。
+ */
 
     @Override
     public Iterator<Map.Entry<GrammarUnitSymbol, FirstSet>> iterator() {
         return new EntryIterator();
     }
+/**
+ * 函数功能：获取元素数量。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
     @Override
     public int size() {
@@ -83,11 +131,23 @@ public class FirstMapImpl implements FirstMap {
     private class EntryIterator implements Iterator<Map.Entry<GrammarUnitSymbol, FirstSet>> {
         private final Iterator<Map.Entry<HeadSymbol, FirstSet>> headIter = headMap.entrySet().iterator();
         private final Iterator<TerminalSymbol> terminalIter = terminalSet.iterator();
+/**
+ * 函数功能：判断是否存在下一个元素。
+ * 输入：
+ * - 无。
+ * 输出：判断结果布尔值。
+ */
 
         @Override
         public boolean hasNext() {
             return headIter.hasNext() || terminalIter.hasNext();
         }
+/**
+ * 函数功能：获取下一个元素。
+ * 输入：
+ * - 无。
+ * 输出：FirstSet> 类型返回值。
+ */
 
         @Override
         public Map.Entry<GrammarUnitSymbol, FirstSet> next() {

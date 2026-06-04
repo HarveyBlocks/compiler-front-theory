@@ -26,6 +26,13 @@ public class StructSemanticCallback implements ShiftReduceCallback {
             .when(ReduceAction.REGISTER_STRUCT, ProgramSemanticTag.STRUCT_DECL);
 
     private final StructFieldStepper fieldStepper = new StructFieldStepper();
+/**
+ * 函数功能：处理规约事件。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -35,6 +42,14 @@ public class StructSemanticCallback implements ShiftReduceCallback {
         }
         ShiftReduceCallback.super.onReduce(context, production);
     }
+/**
+ * 函数功能：注册结构体记录。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - head：HeadNode 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     private void registerStruct(ShiftReduceSemanticContext context, HeadNode head, SimpleGrammarProduction production) {
         SourceToken nameToken = head.get(1).toToken().getSource();
@@ -48,6 +63,13 @@ public class StructSemanticCallback implements ShiftReduceCallback {
             context.requireDeclaredType(field.getType(), field.getNameToken(), "struct field type is not declared.");
         }
     }
+/**
+ * 函数功能：收集结构体字段。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - listHead：HeadNode 类型参数。
+ * 输出：List<StructField> 类型集合或迭代结果。
+ */
 
     private List<StructField> collectFields(ShiftReduceSemanticContext context, HeadNode listHead) {
         List<StructField> fields = new ArrayList<>();
@@ -74,6 +96,15 @@ public class StructSemanticCallback implements ShiftReduceCallback {
 
     private enum ReduceAction {
         NOOP {
+            /**
+             * 函数功能：处理或判断接受结果。
+             * 输入：
+             * - callback：StructSemanticCallback 类型参数。
+             * - context：ShiftReduceSemanticContext 类型参数。
+             * - head：HeadNode 类型参数。
+             * - production：SimpleGrammarProduction 类型参数。
+             * 输出：无。
+             */
             @Override
             void accept(
                     StructSemanticCallback callback,
@@ -83,6 +114,15 @@ public class StructSemanticCallback implements ShiftReduceCallback {
             }
         },
         REGISTER_STRUCT {
+            /**
+             * 函数功能：处理或判断接受结果。
+             * 输入：
+             * - callback：StructSemanticCallback 类型参数。
+             * - context：ShiftReduceSemanticContext 类型参数。
+             * - head：HeadNode 类型参数。
+             * - production：SimpleGrammarProduction 类型参数。
+             * 输出：无。
+             */
             @Override
             void accept(
                     StructSemanticCallback callback,
@@ -92,6 +132,15 @@ public class StructSemanticCallback implements ShiftReduceCallback {
                 callback.registerStruct(context, head, production);
             }
         };
+/**
+ * 函数功能：处理或判断接受结果。
+ * 输入：
+ * - callback：StructSemanticCallback 类型参数。
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - head：HeadNode 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
         abstract void accept(
                 StructSemanticCallback callback,

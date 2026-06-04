@@ -36,6 +36,15 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
     private int offset;
     private SourceToken current;
 
+    /**
+     * 函数功能：创建基于状态表的源词法单元迭代器。
+     * 输入：
+     * - errorContext：用于收集词法错误的错误上下文。
+     * - reader：用于读取源字符的读取器。
+     * - saca：源字符到字母表字符的适配器。
+     * - table：词法 DFA 状态表。
+     * 输出：无。
+     */
     public StatusTableTokenIterator(
             ErrorContext errorContext,
             SourceReader reader,
@@ -50,6 +59,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         this.current = null;
     }
 
+    /**
+     * 函数功能：判断是否还有可读取的源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：是否存在下一个词法单元的布尔值。
+     */
     @Override
     public boolean hasNext() {
         try {
@@ -68,6 +83,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         return !lexeme.isEmpty();
     }
 
+    /**
+     * 函数功能：获取当前源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：当前 SourceToken。
+     */
     @Override
     public SourceToken current() throws CompileException {
         if (current == null) {
@@ -76,6 +97,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         return current;
     }
 
+    /**
+     * 函数功能：读取下一个源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：下一个 SourceToken。
+     */
     @Override
     public SourceToken next() throws CompileException {
         if (current == null) {
@@ -87,6 +114,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         return next;
     }
 
+    /**
+     * 函数功能：执行一次词法扫描并生成下一个源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：扫描得到的 SourceToken。
+     */
     private SourceToken next0() throws CompileException {
         if (!hasNext()) {
             return NO_MORE_TOKEN;
@@ -122,12 +155,24 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         }
     }
 
+    /**
+     * 函数功能：处理不支持字符并尝试分割当前词法单元。
+     * 输入：
+     * - 无。
+     * 输出：分割得到的 SourceToken。
+     */
     private SourceToken unsupportedCharacter() throws CompileException {
         offset = reader.getOffset();
         errorContext.addError(new LexicalErrorMessage(offset, "Unsupported character in source"));
         return trySplitToken();
     }
 
+    /**
+     * 函数功能：从源读取器读取一个源字符。
+     * 输入：
+     * - 无。
+     * 输出：读取到的 SourceCharacter；读取编译异常时返回 null。
+     */
     private SourceCharacter read() {
         try {
             return reader.read();
@@ -139,6 +184,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         }
     }
 
+    /**
+     * 函数功能：尝试按当前状态分割出源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：分割得到的 SourceToken。
+     */
     private SourceToken trySplitToken() throws CompileException {
         try {
             // 当前token是否正常
@@ -156,6 +207,12 @@ public class StatusTableTokenIterator implements SourceTokenIterator {
         }
     }
 
+    /**
+     * 函数功能：关闭源字符读取器。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     @Override
     public void close() {
         reader.close();

@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.grammar;
+﻿package org.harvey.vie.theory.syntax.grammar;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -17,10 +17,22 @@ import org.harvey.vie.theory.syntax.grammar.symbol.ReferredHeadSymbol;
  * @date 2026-03-28 00:50
  */
 public class IndexReferGrammarBuilderImpl implements GrammarBuilder {
+    /**
+     * 函数功能：添加语法产生式。
+     * 输入：
+     * - grammarProduction：GrammarProduction 类型参数。
+     * 输出：GrammarBuilder 类型返回值。
+     */
     @Override
     public GrammarBuilder addProduction(GrammarProduction grammarProduction) {
         return null;
     }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：ProductionSet 类型返回值。
+ */
 
     @Override
     public ProductionSet build() {

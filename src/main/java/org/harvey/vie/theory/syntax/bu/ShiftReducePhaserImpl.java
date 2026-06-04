@@ -33,6 +33,18 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
     private final TypeResolver typeResolver;
     private final ConstantResolver constantResolver;
     private final FunctionManager functionManager;
+/**
+ * 函数功能：创建 ShiftReducePhaserImpl 对象。
+ * 输入：
+ * - table：ShiftReduceParsingTable 类型参数。
+ * - tokenFilterPredict：TokenFilterPredict 类型参数。
+ * - register：ShiftReduceCallbackRegister 类型参数。
+ * - commandFactory：CommandFactory 类型参数。
+ * - typeResolver：TypeResolver 类型参数。
+ * - constantResolver：ConstantResolver 类型参数。
+ * - functionManager：FunctionManager 类型参数。
+ * 输出：无。
+ */
 
     public ShiftReducePhaserImpl(
             ShiftReduceParsingTable table,
@@ -48,31 +60,14 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         this.functionManager = functionManager;
         this.typeResolver = typeResolver;
     }
+/**
+ * 函数功能：执行语法分析并返回语义结果。
+ * 输入：
+ * - iterator：SourceTokenIterator 类型参数。
+ * - errorContext：ErrorContext 类型参数。
+ * 输出：SemanticResult 类型返回值。
+ */
 
-    /**
-     * 初始化
-     * 将初始状态压入栈。
-     * 输入指针 ip 指向第一个符号 a。
-     * 循环执行
-     * 设 s = 栈顶状态，a = 当前输入符号。
-     * 查 ACTION[s, a]：
-     * shift s'：
-     * 将 a（可选）和 s' 压栈；
-     * 输入指针后移一位。
-     * reduce A → β（设 |β| = k）：
-     * 从栈顶弹出 k 个状态（每个状态对应一个符号，如果栈中同时保存了符号则也弹出符号）；
-     * 弹出后，栈顶状态变为 s_t；
-     * 查 GOTO[s_t, A] 得到 s_new；
-     * 将 A（可选）和 s_new 压栈；
-     * 注意：输入指针不动（归约不消耗输入符号）。
-     * accept：
-     * 结束，输入串合法。
-     * error：
-     * 调用错误恢复（或直接报错）。
-     * 结束条件：
-     * 遇到 accept 时成功
-     * 若在无 accept 的情况下栈空且输入未结束则失败。
-     */
     @Override
     public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
         ShiftReducePhaseContext ctx = new ShiftReducePhaseContext(table, iterator, tokenFilterPredict, errorContext);
@@ -109,6 +104,13 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
         }
         return context.getResult();
     }
+/**
+ * 函数功能：处理规约动作。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - element：ActiveTableElement 类型参数。
+ * 输出：无。
+ */
 
     private void onReduce(ShiftReduceSemanticContext context, ActiveTableElement element) {
         SimpleGrammarProduction production = table.getProduction(element.getProduction());
@@ -119,6 +121,13 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
             context.onReduce(production);
         }
     }
+/**
+ * 函数功能：处理接受动作。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     private void onAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         SyntaxParsingContext<Integer> syntaxContext = context.getSyntaxContext();
@@ -132,6 +141,14 @@ public class ShiftReducePhaserImpl implements ShiftReducePhaser {
             context.onError(ShiftReduceErrorType.TRAILING_INPUT_AFTER_ACCEPT);
         }
     }
+/**
+ * 函数功能：处理移进动作。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - element：ActiveTableElement 类型参数。
+ * - token：SourceToken 类型参数。
+ * 输出：无。
+ */
 
     private void onShift(ShiftReduceSemanticContext context, ActiveTableElement element, SourceToken token) {
         context.onShift(element.nextStatus(), token);

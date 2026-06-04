@@ -10,7 +10,19 @@ import java.util.stream.IntStream;
  * @date 2026-03-31 21:33
  */
 public interface PredictiveParsingTableElement {
+    /**
+     * 函数功能：获取右部编号流。
+     * 输入：
+     * - 无。
+     * 输出：IntStream 类型集合或迭代结果。
+     */
     IntStream rightIdStream();
+/**
+ * 函数功能：获取右部编号。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
     Integer rightId();
 }

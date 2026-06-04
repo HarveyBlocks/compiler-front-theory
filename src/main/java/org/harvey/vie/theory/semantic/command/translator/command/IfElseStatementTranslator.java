@@ -15,22 +15,24 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 控制流支路：把 {@code if-else} 翻译为三地址码风格的条件跳转与顺序标签。
+ * 把 if-else 语句翻译为三地址形式的条件跳转与顺序标签。
  * <p>
- * 典型命令结构是：条件求值、{@code ifn_goto elseStart}、then 分支、{@code goto elseEnd}、
- * else 标签、else 分支、结束标签。这里的两个标签都是 {@link SemanticLabel}，
- * 最终由 {@link org.harvey.vie.theory.semantic.command.node.LabelNode#flat(java.util.List)}
- * 在命令展开时写入具体下标。
- * <p>
- * 当条件已经在编译期折叠为常量时，会直接裁剪掉不可达分支，从而避免生成多余的跳转指令。
- * 讲完本支路可继续看循环支路 {@link WhileStatementTranslator}，或回到
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * 当条件已经在编译期折叠为常量时，会直接裁剪掉不可达分支，
+ * 从而避免生成多余的跳转指令。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-21 00:35
  */
 public class IfElseStatementTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

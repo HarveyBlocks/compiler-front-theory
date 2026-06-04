@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.la;
+﻿package org.harvey.vie.theory.syntax.bu.la;
 
 import lombok.Getter;
 import org.harvey.vie.theory.syntax.bu.item.ItemSet;
@@ -24,6 +24,14 @@ import java.util.stream.Collectors;
  * @date 2026-04-06 15:17
  */
 public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
+    /**
+     * 函数功能：初始化展望符映射。
+     * 输入：
+     * - itemSetIndex：int 类型参数。
+     * - item：ProductionItem 类型参数。
+     * - lsc：LookaheadSetContext 类型参数。
+     * 输出：无。
+     */
     private static void initLookahead(
             int itemSetIndex, ProductionItem item, LookaheadSetContext lsc) {
         if (item.currentDot() == 0) {
@@ -37,6 +45,15 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
             lsc.addAll(lsc.getLookaheadSet(itemSetIndex, item), terminalSet);
         }
     }
+/**
+ * 函数功能：设置内部展望符传播关系。
+ * 输入：
+ * - itemSetIndex：int 类型参数。
+ * - nextSymbol：GrammarUnitSymbol 类型参数。
+ * - p：ProductionItem 类型参数。
+ * - lsc：LookaheadSetContext 类型参数。
+ * 输出：无。
+ */
 
     private static void setInnerPropagation(
             int itemSetIndex, GrammarUnitSymbol nextSymbol, ProductionItem p, LookaheadSetContext lsc) {
@@ -61,6 +78,15 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
                     lsc.propagation(lookaheadFrom, lookaheadTo);
                 });
     }
+/**
+ * 函数功能：设置外部展望符传播关系。
+ * 输入：
+ * - itemSetIndex：int 类型参数。
+ * - nextSymbol：GrammarUnitSymbol 类型参数。
+ * - p：ProductionItem 类型参数。
+ * - lsc：LookaheadSetContext 类型参数。
+ * 输出：无。
+ */
 
     private static void setOuterPropagation(
             int itemSetIndex, GrammarUnitSymbol nextSymbol, ProductionItem p, LookaheadSetContext lsc) {
@@ -85,38 +111,16 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
                     lsc.propagation(lookaheadFrom, lookaheadTo);
                 });
     }
+/**
+ * 函数功能：根据输入数据创建目标对象。
+ * 输入：
+ * - startHead：String 类型参数。
+ * - psc：ProductionSetContext 类型参数。
+ * - family：ItemSetFamily 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * 输出：LookaheadMap[] 类型数组。
+ */
 
-    /**
-     * <ol>
-     *     <li>每个item的LA = {}</li>
-     *     <li>
-     *         初始化规则
-     *         <ul>
-     *             <li>形如 S'->·S 的 Item, 加入 $</li>
-     *             <li>对于每个 ItemSet 中的每个 Item, 形如 B -> ·γ(包括ε). LA += DR[ItemSet,B]</li>
-     *             <li>上述两条规则可以同时生效</li>
-     *         </ul>
-     *     </li>
-     *     <li>
-     *         对于每个 ItemSet 中的每个 Item, 形如 A -> α·Bβ (p) 的
-     *         <ul>
-     *             <li>
-     *                 B是non-terminal. 若 β =>* ε <br>
-     *                 则对于 Item 从属的 ItemSet 的每一个形如 B->·γ (q), 添加传播边 p->q
-     *             </li>
-     *             <li>
-     *                 B是任意符号(不包括ε). 若 GOTO[I,B]=J 存在 <br>
-     *                 则对于 J 的每一个形如 A-> αB·β (q), 添加传播边 p->q
-     *             </li>
-     *             <li>上述两条的α和β可以是ε</li>
-     *             <li>上述两条规则可以同时生效</li>
-     *         </ul>
-     *     </li>
-     *     <li>建立了 o->p->q, 就是 p.la.addAll(o.la), 然后向下传播, q.la.addAll(p.la)</li>
-     *     <li>循环直到不动点</li>
-     *     <li>最终只保留形如 A->γ·的产生式的LA集合, 因为LA[I, A->γ·]才会被后续使用</li>
-     * </ol>
-     */
     @Override
     public LookaheadMap[] produce(
             String startHead, ProductionSetContext psc, ItemSetFamily family, FirstMap firstMap) {
@@ -147,18 +151,43 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
     private static class LookaheadNode {
         private final LookaheadSet lookahead;
         private final Map<LookaheadSet, LookaheadNode> next = new HashMap<>();
+/**
+ * 函数功能：创建 LookaheadNode 对象。
+ * 输入：
+ * - lookahead：LookaheadSet 类型参数。
+ * 输出：无。
+ */
 
         private LookaheadNode(LookaheadSet lookahead) {
             this.lookahead = lookahead;
         }
+/**
+ * 函数功能：添加全部元素。
+ * 输入：
+ * - set：Collection<TerminalSymbol> 类型参数。
+ * 输出：Collection<TerminalSymbol> 类型集合或迭代结果。
+ */
 
         public Collection<TerminalSymbol> addAll(Collection<TerminalSymbol> set) {
             return lookahead.addAll(set);
         }
+/**
+ * 函数功能：写入或合并指定集合。
+ * 输入：
+ * - lookahead：LookaheadSet 类型参数。
+ * - node：LookaheadNode 类型参数。
+ * 输出：无。
+ */
 
         public void put(LookaheadSet lookahead, LookaheadNode node) {
             next.put(lookahead, node);
         }
+/**
+ * 函数功能：计算项目集的后继集合。
+ * 输入：
+ * - 无。
+ * 输出：Iterable<LookaheadSet> 类型集合或迭代结果。
+ */
 
         public Iterable<LookaheadSet> nextSets() {
             return getNext().keySet();
@@ -167,17 +196,42 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
 
     private static class LookaheadMapBuilder {
         private final Map<ProductionItem, LookaheadSet> map = new HashMap<>();
+/**
+ * 函数功能：创建 LookaheadMapBuilder 对象。
+ * 输入：
+ * - 无。
+ * 输出：无。
+ */
 
         private LookaheadMapBuilder() {}
+/**
+ * 函数功能：获取指定键对应集合，缺失时创建。
+ * 输入：
+ * - item：ProductionItem 类型参数。
+ * - mappingFunction：Function<? super ProductionItem, ? extends LookaheadSet> 类型参数。
+ * 输出：LookaheadSet 类型返回值。
+ */
 
         public LookaheadSet computeIfAbsent(
                 ProductionItem item, Function<? super ProductionItem, ? extends LookaheadSet> mappingFunction) {
             return map.computeIfAbsent(item, mappingFunction);
         }
+/**
+ * 函数功能：判断当前对象是否为空。
+ * 输入：
+ * - 无。
+ * 输出：判断结果布尔值。
+ */
 
         public boolean isEmpty() {
             return map.isEmpty();
         }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：Set<TerminalSymbol>> 类型集合或迭代结果。
+ */
 
         public Map<ProductionItem, Set<TerminalSymbol>> build() {
             return Optional.of(map)
@@ -197,6 +251,15 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
         private final FirstMap firstMap;
         private final String startHead;
         private final ProductionSetContext psc;
+/**
+ * 函数功能：创建 LookaheadSetContext 对象。
+ * 输入：
+ * - startHead：String 类型参数。
+ * - psc：ProductionSetContext 类型参数。
+ * - family：ItemSetFamily 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * 输出：无。
+ */
 
         private LookaheadSetContext(
                 String startHead, ProductionSetContext psc, ItemSetFamily family, FirstMap firstMap) {
@@ -206,6 +269,12 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
             this.mapArray = new LookaheadMapBuilder[family.size()];
             this.firstMap = firstMap;
         }
+/**
+ * 函数功能：获取项目的展望符集合。
+ * 输入：
+ * - setIndex：int 类型参数。
+ * 输出：LookaheadMapBuilder 类型返回值。
+ */
 
         private LookaheadMapBuilder getLookaheadSet(int setIndex) {
             LookaheadMapBuilder map = mapArray[setIndex];
@@ -214,10 +283,24 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
             }
             return map;
         }
+/**
+ * 函数功能：获取项目的展望符集合。
+ * 输入：
+ * - setIndex：int 类型参数。
+ * - item：ProductionItem 类型参数。
+ * 输出：LookaheadSet 类型返回值。
+ */
 
         private LookaheadSet getLookaheadSet(int setIndex, ProductionItem item) {
             return getLookaheadSet(setIndex).computeIfAbsent(item, k -> new LookaheadSet(k, setIndex));
         }
+/**
+ * 函数功能：添加全部元素。
+ * 输入：
+ * - lookahead：LookaheadSet 类型参数。
+ * - terminalSet：Collection<TerminalSymbol> 类型参数。
+ * 输出：无。
+ */
 
         public void addAll(LookaheadSet lookahead, Collection<TerminalSymbol> terminalSet) {
             if (terminalSet.isEmpty()) { // 即使形成了环, 也会使terminalSet逐渐变少, 最终停止递归
@@ -232,45 +315,109 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
                 addAll(next, trueAdded);
             }
         }
+/**
+ * 函数功能：构建展望符传播边。
+ * 输入：
+ * - from：LookaheadSet 类型参数。
+ * - to：LookaheadSet 类型参数。
+ * 输出：无。
+ */
 
         public void buildEdge(LookaheadSet from, LookaheadSet to) {
             LookaheadNode fromNode = getNode(from);
             LookaheadNode toNode = getNode(to);
             fromNode.put(to, toNode);
         }
+/**
+ * 函数功能：传播展望符集合。
+ * 输入：
+ * - from：LookaheadSet 类型参数。
+ * - to：LookaheadSet 类型参数。
+ * 输出：无。
+ */
 
         public void propagation(LookaheadSet from, LookaheadSet to) {
             addAll(to, from.getLookahead());
         }
+/**
+ * 函数功能：获取指定项目的传播节点。
+ * 输入：
+ * - lookahead：LookaheadSet 类型参数。
+ * 输出：LookaheadNode 类型返回值。
+ */
 
         private LookaheadNode getNode(LookaheadSet lookahead) {
             return nodeMap.computeIfAbsent(lookahead, LookaheadNode::new);
         }
+/**
+ * 函数功能：获取起始定义符号。
+ * 输入：
+ * - 无。
+ * 输出：HeadDefineSymbol 类型返回值。
+ */
 
 
         public HeadDefineSymbol startDefinition() {
             return psc.getDefinition(startHead);
         }
+/**
+ * 函数功能：获取指定项目集。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：ItemSet 类型返回值。
+ */
 
         public ItemSet getItemSet(int i) {
             return family.get(i);
         }
+/**
+ * 函数功能：获取项目集族大小。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
         public int familySize() {
             return family.size();
         }
+/**
+ * 函数功能：获取指定非终结符的决策规则。
+ * 输入：
+ * - i：int 类型参数。
+ * - head：HeadSymbol 类型参数。
+ * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+ */
 
         public Set<TerminalSymbol> decisionRule(int i, HeadSymbol head) {
             return family.get(i).decisionRule(head);
         }
+/**
+ * 函数功能：获取指定语法符号的转移目标。
+ * 输入：
+ * - i：int 类型参数。
+ * - nextSymbol：GrammarUnitSymbol 类型参数。
+ * 输出：整数结果。
+ */
 
         public int gotoUnit(int i, GrammarUnitSymbol nextSymbol) {
             return family.get(i).gotoUnit(nextSymbol);
         }
+/**
+ * 函数功能：判断指定符号是否可推出空串。
+ * 输入：
+ * - iterable：Iterable<GrammarUnitSymbol> 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
         public boolean nullable(Iterable<GrammarUnitSymbol> iterable) {
             return firstMap.nullable(iterable);
         }
+/**
+ * 函数功能：筛选满足条件的项目。
+ * 输入：
+ * - 无。
+ * 输出：LookaheadMap[] 类型数组。
+ */
 
         public LookaheadMap[] filter() {
             return Arrays.stream(mapArray)
@@ -287,11 +434,24 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
         private final int setIndex;
         @Getter
         private final Set<TerminalSymbol> lookahead = new HashSet<>();
+/**
+ * 函数功能：创建 LookaheadSet 对象。
+ * 输入：
+ * - item：ProductionItem 类型参数。
+ * - setIndex：int 类型参数。
+ * 输出：无。
+ */
 
         private LookaheadSet(ProductionItem item, int setIndex) {
             this.item = item;
             this.setIndex = setIndex;
         }
+/**
+ * 函数功能：添加全部元素。
+ * 输入：
+ * - add：Collection<TerminalSymbol> 类型参数。
+ * 输出：Collection<TerminalSymbol> 类型集合或迭代结果。
+ */
 
         public Collection<TerminalSymbol> addAll(Collection<TerminalSymbol> add) {
             Set<TerminalSymbol> trueAdded = new HashSet<>();
@@ -304,6 +464,12 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
             }
             return trueAdded;
         }
+/**
+ * 函数功能：判断当前对象是否与指定对象相等。
+ * 输入：
+ * - o：Object 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
         @Override
         public boolean equals(Object o) {
@@ -316,15 +482,33 @@ public class LookaheadMapFactoryImpl implements LookaheadMapFactory {
             LookaheadSet that = (LookaheadSet) o;
             return setIndex == that.setIndex && Objects.equals(item, that.item);
         }
+/**
+ * 函数功能：返回当前对象的哈希值。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
         @Override
         public int hashCode() {
             return Objects.hash(item, setIndex);
         }
+/**
+ * 函数功能：判断项目是否可用于传播。
+ * 输入：
+ * - 无。
+ * 输出：判断结果布尔值。
+ */
 
         public boolean usable() {
             return !item.hasNextSymbol(); // 没有下一个了才是usable
         }
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
         @Override
         public String toString() {

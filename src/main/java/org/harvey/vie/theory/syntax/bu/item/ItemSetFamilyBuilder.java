@@ -20,10 +20,22 @@ public class ItemSetFamilyBuilder {
     private final FirstMap firstMap;
     private IdGenerator idGenerator;
     private ItemSetBuilder[] sorted;
+/**
+ * 函数功能：创建 ItemSetFamilyBuilder 对象。
+ * 输入：
+ * - firstMap：FirstMap 类型参数。
+ * 输出：无。
+ */
 
     ItemSetFamilyBuilder(FirstMap firstMap) {
         this.firstMap = firstMap;
     }
+/**
+ * 函数功能：设置起始项目集。
+ * 输入：
+ * - 无。
+ * 输出：ItemSetBuilder 类型返回值。
+ */
 
     public ItemSetBuilder start() {
         idGenerator = new IdGenerator(0);
@@ -33,6 +45,12 @@ public class ItemSetFamilyBuilder {
         family.put(itemSetBuilder, itemSetBuilder.getIndex());
         return itemSetBuilder;
     }
+/**
+ * 函数功能：添加指定元素。
+ * 输入：
+ * - value：ItemSetBuilder 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
     public boolean add(ItemSetBuilder value) {
         Integer id = family.get(value);
@@ -47,10 +65,22 @@ public class ItemSetFamilyBuilder {
         family.put(value, value.getIndex());
         return true;
     }
+/**
+ * 函数功能：获取 FIRST 集合。
+ * 输入：
+ * - afterIterable：Iterable<GrammarUnitSymbol> 类型参数。
+ * 输出：FirstSet 类型返回值。
+ */
 
     public FirstSet first(Iterable<GrammarUnitSymbol> afterIterable) {
         return firstMap.first(afterIterable);
     }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：ItemSetFamily 类型返回值。
+ */
 
     public ItemSetFamily build() {
         this.sorted = family.keySet()
@@ -60,6 +90,12 @@ public class ItemSetFamilyBuilder {
         ItemSet[] array = Arrays.stream(sorted).map(ItemSetBuilder::build).toArray(ItemSet[]::new);
         return new ItemSetFamilyImpl(0, array);
     }
+/**
+ * 函数功能：获取项目集构建器。
+ * 输入：
+ * - setId：int 类型参数。
+ * 输出：ItemSetBuilder 类型返回值。
+ */
 
     public ItemSetBuilder getItemSetBuilder(int setId) {
         if (sorted == null) {
@@ -68,6 +104,12 @@ public class ItemSetFamilyBuilder {
         }
         return sorted[setId];
     }
+/**
+ * 函数功能：判断指定符号是否可推出空串。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
     public boolean nullable(HeadSymbol head) {
         return firstMap.nullable(List.of(head));

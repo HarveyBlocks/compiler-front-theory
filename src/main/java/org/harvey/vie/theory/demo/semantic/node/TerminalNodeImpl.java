@@ -16,16 +16,34 @@ public class TerminalNodeImpl implements TerminalNode {
     private final TerminalSymbol symbol;
     private final SourceToken token;
 
+    /**
+     * 函数功能：获取终结节点对应的文法终结符号。
+     * 输入：
+     * - 无。
+     * 输出：TerminalSymbol 终结符号。
+     */
     @Override
     public TerminalSymbol getSymbol() {
         return symbol;
     }
 
+    /**
+     * 函数功能：获取终结节点对应的源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：SourceToken 源词法单元。
+     */
     @Override
     public SourceToken getToken() {
         return token;
     }
 
+    /**
+     * 函数功能：获取终结节点的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：源词法单元提示字符串。
+     */
     @Override
     public String toString() {
         return token.hintString();

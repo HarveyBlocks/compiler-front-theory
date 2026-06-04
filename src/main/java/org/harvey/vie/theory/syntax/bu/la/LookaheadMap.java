@@ -14,8 +14,21 @@ import java.util.Set;
  * @date 2026-04-06 15:07
  */
 public interface LookaheadMap {
+/**
+ * 函数功能：判断是否包含指定元素。
+ * 输入：
+ * - item：ProductionItem 类型参数。
+ * - terminalSymbol：TerminalSymbol 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
     boolean contains(ProductionItem item, TerminalSymbol terminalSymbol);
+/**
+ * 函数功能：获取指定位置或键对应的元素。
+ * 输入：
+ * - item：ProductionItem 类型参数。
+ * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+ */
 
     Set<TerminalSymbol> get(ProductionItem item);
 }

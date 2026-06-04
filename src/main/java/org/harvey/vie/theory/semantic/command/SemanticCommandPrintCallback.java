@@ -18,20 +18,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 交互 demo 使用的打印回调：在 accept 前直接把命令段、符号表和结构体表打印到控制台。
- * <p>
- * 测试环境更常用 {@link SemanticResultCallback}，它把结果封装成
- * {@link org.harvey.vie.theory.semantic.context.SemanticAnalysisResult}；本类主要帮助课堂现场展示。
- * 它同样通过 {@link CommandSegmentSupport#flatten(CommandNodeRegister)} 展开入口段，并使用
- * {@link ThreeAddressCodePrinter} 给出可读的中间代码视图。
- * <p>
- * 讲完本类回到主线 {@link SemanticResultCallback}。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-20 22:43
  */
 public class SemanticCommandPrintCallback implements ShiftReduceCallback {
+/**
+ * 函数功能：处理接受前事件。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void beforeAccept(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
@@ -39,6 +39,12 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         ShiftReduceCallback.super.beforeAccept(context, production);
         printResult(context, top);
     }
+/**
+ * 函数功能：获取栈顶命令节点注册器。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
     private static CommandNodeRegister topCommandNodeRegister(ShiftReduceSemanticContext context) {
         CommandContext commandContext = context.getCommandContext();
@@ -48,6 +54,13 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         }
         return commandContext.peek();
     }
+/**
+ * 函数功能：打印语义结果。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - top：CommandNodeRegister 类型参数。
+ * 输出：无。
+ */
 
     private static void printResult(ShiftReduceSemanticContext context, CommandNodeRegister top) {
         List<SemanticCommand> entryCommands = CommandSegmentSupport.flatten(top);
@@ -58,6 +71,13 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
             printFunctionSection(segment, functionLocals(context.identifierRecords(), segment.getFunction()), structTable);
         }
     }
+/**
+ * 函数功能：打印命令片段。
+ * 输入：
+ * - title：String 类型参数。
+ * - result：List<SemanticCommand> 类型参数。
+ * 输出：无。
+ */
 
     private static void printSegment(String title, List<SemanticCommand> result) {
         System.out.println(title + ":");
@@ -76,6 +96,12 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
             System.out.println(line);
         }
     }
+/**
+ * 函数功能：打印结构体表。
+ * 输入：
+ * - structTable：List<StructRecord> 类型参数。
+ * 输出：无。
+ */
 
     private static void printStructTable(List<StructRecord> structTable) {
         System.out.println("struct table:");
@@ -90,12 +116,28 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
             }
         }
     }
+/**
+ * 函数功能：打印全局命令片段。
+ * 输入：
+ * - commands：List<SemanticCommand> 类型参数。
+ * - locals：IdentifierRecord[] 类型参数。
+ * - structTable：List<StructRecord> 类型参数。
+ * 输出：无。
+ */
 
     private static void printGlobalSection(List<SemanticCommand> commands, IdentifierRecord[] locals, List<StructRecord> structTable) {
         System.out.println("global segment:");
         printSegment("commands", commands);
         printIdentifierTable("local variables", locals, structTable);
     }
+/**
+ * 函数功能：打印函数命令片段。
+ * 输入：
+ * - segment：FunctionCommandSegment 类型参数。
+ * - locals：IdentifierRecord[] 类型参数。
+ * - structTable：List<StructRecord> 类型参数。
+ * 输出：无。
+ */
 
     private static void printFunctionSection(
             FunctionCommandSegment segment,
@@ -108,6 +150,14 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         printSegment("commands", segment.getCommands());
         printIdentifierTable("local variables", locals, structTable);
     }
+/**
+ * 函数功能：打印标识符表。
+ * 输入：
+ * - title：String 类型参数。
+ * - records：IdentifierRecord[] 类型参数。
+ * - structTable：List<StructRecord> 类型参数。
+ * 输出：无。
+ */
 
     private static void printIdentifierTable(String title, IdentifierRecord[] records, List<StructRecord> structTable) {
         System.out.println(title + ":");
@@ -119,6 +169,12 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
             System.out.println(SemanticDisplaySupport.formatIdentifierRecord(record, structTable));
         }
     }
+/**
+ * 函数功能：获取入口局部变量列表。
+ * 输入：
+ * - records：IdentifierRecord[] 类型参数。
+ * 输出：IdentifierRecord[] 类型数组。
+ */
 
     private static IdentifierRecord[] entryLocals(IdentifierRecord[] records) {
         List<IdentifierRecord> result = new ArrayList<>();
@@ -129,6 +185,13 @@ public class SemanticCommandPrintCallback implements ShiftReduceCallback {
         }
         return result.toArray(IdentifierRecord[]::new);
     }
+/**
+ * 函数功能：获取函数局部变量列表。
+ * 输入：
+ * - records：IdentifierRecord[] 类型参数。
+ * - function：FunctionRecord 类型参数。
+ * 输出：IdentifierRecord[] 类型数组。
+ */
 
     private static IdentifierRecord[] functionLocals(IdentifierRecord[] records, FunctionRecord function) {
         List<IdentifierRecord> result = new ArrayList<>();

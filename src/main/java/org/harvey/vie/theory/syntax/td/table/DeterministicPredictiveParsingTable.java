@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.td.table;
+﻿package org.harvey.vie.theory.syntax.td.table;
 
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 import org.harvey.vie.theory.lexical.analysis.token.SourceTokenIterator;
@@ -26,6 +26,18 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
     private final FirstMap firstMap;
     private final FollowMap followMap;
     private final TerminalMatcher terminalMatcher;
+/**
+ * 函数功能：创建 DeterministicPredictiveParsingTable 对象。
+ * 输入：
+ * - heads：HeadSymbol[] 类型参数。
+ * - terminals：TerminalSymbol[] 类型参数。
+ * - concatenations：GrammarConcatenation[] 类型参数。
+ * - table：PredictiveParsingTableElement[][] 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * - followMap：FollowMap 类型参数。
+ * - terminalMatcher：TerminalMatcher 类型参数。
+ * 输出：无。
+ */
 
     public DeterministicPredictiveParsingTable(
             HeadSymbol[] heads,
@@ -43,6 +55,13 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         this.followMap = followMap;
         this.terminalMatcher = terminalMatcher;
     }
+/**
+ * 函数功能：获取指定位置或键对应的元素。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * - token：SourceToken 类型参数。
+ * 输出：AlterableSymbol 类型返回值。
+ */
 
     @Override
     public AlterableSymbol get(HeadSymbol head, SourceToken token) {
@@ -50,6 +69,12 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         PredictiveParsingTableElement element = table[headIndexOf(head)][terminalIndex];
         return toConcatenation(element);
     }
+/**
+ * 函数功能：获取终结符对应的起始语法符号。
+ * 输入：
+ * - factor：TerminalFactor 类型参数。
+ * 输出：GrammarUnitSymbol 类型返回值。
+ */
 
     @Override
     public GrammarUnitSymbol terminalStart(TerminalFactor factor) {
@@ -60,6 +85,12 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         }
         throw new IllegalArgumentException("Not find terminal which factor is:" + factor);
     }
+/**
+ * 函数功能：获取非终结符定义对应的起始语法符号。
+ * 输入：
+ * - definition：String 类型参数。
+ * 输出：GrammarUnitSymbol 类型返回值。
+ */
 
     @Override
     public GrammarUnitSymbol headStart(String definition) {
@@ -70,6 +101,12 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         }
         throw new IllegalArgumentException("Not find head definition which definition is:" + definition);
     }
+/**
+ * 函数功能：获取非终结符头部的索引。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * 输出：整数结果。
+ */
 
     private int headIndexOf(HeadSymbol head) {
         for (int i = 0; i < heads.length; i++) {
@@ -79,6 +116,12 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         }
         throw new IllegalStateException("Unknown head symbol");
     }
+/**
+ * 函数功能：转换为语法符号连接体。
+ * 输入：
+ * - element：PredictiveParsingTableElement 类型参数。
+ * 输出：AlterableSymbol 类型返回值。
+ */
 
     private AlterableSymbol toConcatenation(PredictiveParsingTableElement element) {
         if (element.rightId() == null) {
@@ -86,6 +129,12 @@ public class DeterministicPredictiveParsingTable implements PredictiveParsingTab
         }
         return element.rightId() == EPSILON_REFERENCE ? GrammarSymbol.epsilon() : concatenations[element.rightId()];
     }
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     @Override
     public String toString() {

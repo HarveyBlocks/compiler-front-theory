@@ -1,12 +1,12 @@
-program          -> stmt_list
+program          ::= stmt_list
 
-stmt_list        -> ε
+stmt_list        ::= ε
                    | stmt stmt_list
 
-stmt             -> matched_stmt
+stmt             ::= matched_stmt
                    | unmatched_stmt
 
-matched_stmt     -> declaration_stmt
+matched_stmt     ::= declaration_stmt
                    | assignment_stmt
                    | matched_while_stmt
                    | do_while_stmt
@@ -17,51 +17,51 @@ matched_stmt     -> declaration_stmt
                    | continue_stmt
                    | matched_if_stmt
 
-unmatched_stmt   -> unmatched_if_stmt
+unmatched_stmt   ::= unmatched_if_stmt
                    | unmatched_while_stmt
 
-matched_if_stmt  -> if ( expr ) matched_stmt else matched_stmt
+matched_if_stmt  ::= if ( expr ) matched_stmt else matched_stmt
 
-unmatched_if_stmt -> if ( expr ) stmt
+unmatched_if_stmt ::= if ( expr ) stmt
                     | if ( expr ) matched_stmt else unmatched_stmt
 
-matched_while_stmt   -> while ( expr ) matched_stmt
+matched_while_stmt   ::= while ( expr ) matched_stmt
 
-unmatched_while_stmt -> while ( expr ) unmatched_stmt
+unmatched_while_stmt ::= while ( expr ) unmatched_stmt
 
-do_while_stmt    -> do stmt while ( expr ) ;
+do_while_stmt    ::= do stmt while ( expr ) ;
 
-declaration_stmt -> type id = expr ;
+declaration_stmt ::= type id = expr ;
                    | type id ;
 
-assignment_stmt  -> lvalue = expr ;
+assignment_stmt  ::= lvalue = expr ;
 
 # -------------------不对-------------------
-lvalue           -> id lvalue_suffix
-lvalue_suffix    -> ε
+lvalue           ::= id lvalue_suffix
+lvalue_suffix    ::= ε
                    | [ expr ] lvalue_suffix
 # -------------------修正-------------------
-lvalue           -> id
+lvalue           ::= id
                    | lvalue [ expr ]
 # -------------------完毕-------------------
 
-expr_stmt        -> expr ;
+expr_stmt        ::= expr ;
 
 
-block            -> { stmt_list }
+block            ::= { stmt_list }
 
-empty_stmt       -> ;
-break_stmt       -> break ;
-continue_stmt    -> continue ;
-expr             -> expr + term
+empty_stmt       ::= ;
+break_stmt       ::= break ;
+continue_stmt    ::= continue ;
+expr             ::= expr + term
                    | term
 
-term             -> term * factor
+term             ::= term * factor
                    | factor
 
-factor           -> primary
+factor           ::= primary
 
-primary          -> lvalue
+primary          ::= lvalue
                    | const_int
                    | const_float
                    | const_char
@@ -70,7 +70,7 @@ primary          -> lvalue
                    | false
                    | ( expr )
 
-type             -> boolean
+type             ::= boolean
                    | char
                    | int32
                    | float64

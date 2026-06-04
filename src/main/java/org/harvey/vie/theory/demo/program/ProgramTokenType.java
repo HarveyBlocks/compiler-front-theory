@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.demo.program;
+﻿package org.harvey.vie.theory.demo.program;
 
 import lombok.NonNull;
 import org.harvey.vie.theory.io.Loaders;
@@ -71,8 +71,20 @@ public enum ProgramTokenType implements TokenType {
 
     private final int priority;
 
+    /**
+     * 函数功能：创建带词法优先级的程序词法单元类型。
+     * 输入：
+     * - priority：词法单元匹配优先级。
+     * 输出：无。
+     */
     ProgramTokenType(int priority) {this.priority = priority;}
 
+    /**
+     * 函数功能：将程序词法单元类型编号写入输出流。
+     * 输入：
+     * - os：接收序列化数据的输出流。
+     * 输出：写入的字节数。
+     */
     @Override
     public int store(OutputStream os) throws IOException {
         return Storages.storeInteger(os, ordinal());
@@ -81,7 +93,10 @@ public enum ProgramTokenType implements TokenType {
     public static class Loader implements TokenType.Loader<ProgramTokenType> {
 
         /**
-         * @throws IOException null for unknown token
+         * 函数功能：从输入流读取编号并还原程序词法单元类型。
+         * 输入：
+         * - is：包含序列化编号的输入流。
+         * 输出：编号对应的 ProgramTokenType；负数编号返回 null。
          */
         @Override
         public ProgramTokenType load(InputStream is) throws IOException {
@@ -90,11 +105,23 @@ public enum ProgramTokenType implements TokenType {
         }
     }
 
+    /**
+     * 函数功能：获取程序词法单元类型的匹配优先级。
+     * 输入：
+     * - 无。
+     * 输出：词法单元优先级整数。
+     */
     @Override
     public int getPriority() {
         return priority;
     }
 
+    /**
+     * 函数功能：获取程序词法单元类型的提示名称。
+     * 输入：
+     * - 无。
+     * 输出：词法单元类型名称字符串。
+     */
     @Override
     public @NonNull String hint() {
         return name();

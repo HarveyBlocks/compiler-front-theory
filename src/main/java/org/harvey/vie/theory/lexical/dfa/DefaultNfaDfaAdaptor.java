@@ -24,6 +24,13 @@ import java.util.stream.Collectors;
  * @date 2026-03-23 15:27
  */
 public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
+    /**
+     * 函数功能：计算 NFA 状态集合的 epsilon 闭包及其 DFA 状态。
+     * 输入：
+     * - ctx：NFA 转 DFA 上下文。
+     * - statusSet：待计算闭包的 NFA 状态集合。
+     * 输出：闭包对应的 StatusCombination。
+     */
     @NonNull
     private static <M, V extends StatusVertex> StatusCombination<M, V> epsilonClosure(
             NfaDfaContext<M, V> ctx,
@@ -61,6 +68,13 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
         return new StatusCombination<>(visited, motions, dfaStatus);
     }
 
+    /**
+     * 函数功能：在存在接受类型歧义时抛出错误。
+     * 输入：
+     * - accept：已有接受词法单元类型。
+     * - tryAccept：尝试合并的接受词法单元类型。
+     * 输出：无。
+     */
     @Deprecated
     private static void errorOnAmbiguity(TokenType accept, TokenType tryAccept) {
         throw new IllegalStateException(
@@ -70,6 +84,12 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
                 tryAccept.hint());
     }
 
+    /**
+     * 函数功能：将 NFA 状态图转换为 DFA 状态图。
+     * 输入：
+     * - nfaGraph：待转换的 NFA 状态图。
+     * 输出：转换得到的 DfaStatusGraph。
+     */
     @Override
     public <M, V extends StatusVertex> DfaStatusGraph<M, V> adapt(NfaStatusGraph<M, V> nfaGraph) {
         NfaDfaContext<M, V> ctx = new NfaDfaContext<>(nfaGraph);
@@ -91,6 +111,13 @@ public class DefaultNfaDfaAdaptor implements NfaDfaAdaptor {
         private final Set<M> motions;
         private final DfaStatus<M, V> status;
 
+        /**
+         * 函数功能：对当前闭包的所有动作执行闭包转移。
+         * 输入：
+         * - ctx：NFA 转 DFA 上下文。
+         * - stack：待继续处理的状态组合栈。
+         * 输出：无。
+         */
         private void closureMove(NfaDfaContext<M, V> ctx, Stack<StatusCombination<M, V>> stack) {
             for (M motion : motions) {
                 Set<NfaStatus<M>> nfaStatuseSet = nfaStatuses.stream()

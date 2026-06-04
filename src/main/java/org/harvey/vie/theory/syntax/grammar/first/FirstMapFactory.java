@@ -10,5 +10,11 @@ import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
  * @date 2026-03-31 00:36
  */
 public interface FirstMapFactory {
+    /**
+     * 函数功能：获取 FIRST 集合。
+     * 输入：
+     * - context：ProductionSetContext 类型参数。
+     * 输出：FirstMap 类型返回值。
+     */
     FirstMap first(ProductionSetContext context);
 }

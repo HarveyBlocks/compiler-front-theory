@@ -3,26 +3,30 @@ package org.harvey.vie.theory.semantic.command.translator.command;
 import org.harvey.vie.theory.exception.CompilerException;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
-import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.tag.TagStrategyCompose;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 讲解主线第 3 站：程序顶层翻译器。
+ * 程序顶层命令翻译器。
  * <p>
- * {@link TagStrategyCompose} 遇到 {@code PROGRAM} 标签时会进入这里。program 是整份源程序的根非终结符，
- * 所以它本身通常不新增计算命令，而是复用 {@link SimpleShrinkTranslator} 把所有顶层子项顺序拼接成一个
- * {@link NormalCommandNodeRegister}。这对应编译原理里的“自底向上规约后，父节点综合子节点属性”。
- * <p>
- * 本类额外做一次顶层语义检查：如果还有未绑定目标的 {@code break}/{@code continue}，
- * 说明这些控制流语句不在任何循环里。此时通过
- * {@link ShiftReduceSemanticContext#addError(int, String)} 把错误放入错误上下文，并抛出异常阻止生成合法结果。
- * <p>
- * 主线下一站：{@link CommandNodeRegister}。下一站会讲每个翻译器返回的“命令片段注册器”如何继续组合命令树。
+ * 它复用普通的顺序收缩逻辑来拼接子节点命令，
+ * 但会在最外层额外兜底检查未绑定的 break/continue，
+ * 防止非法跳转从语句块中泄漏到程序级别。
+ *
+ * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
+ * @version 1.0
+ * @date 2026-04-21 15:29
  */
 public class ProgramCommandTranslator implements CommandTranslator {
     private final CommandTranslator delegate = new SimpleShrinkTranslator();
+/**
+ * 函数功能：翻译语法节点并返回命令节点注册器。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - children：CommandNodeRegister[] 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
     @Override
     public CommandNodeRegister translate(
@@ -35,13 +39,11 @@ public class ProgramCommandTranslator implements CommandTranslator {
     }
 
     /**
-     * 顶层语句不允许残留未解析的 break/continue。
-     * <p>
-     * 这些命令由 {@link org.harvey.vie.theory.semantic.command.translator.token.BreakTokenTranslator}
-     * 和 {@link org.harvey.vie.theory.semantic.command.translator.token.ContinueTokenTranslator} 先创建，
-     * 正常情况下会由 {@link WhileStatementTranslator#bindLoopLabels(CommandNodeRegister,
-     * org.harvey.vie.theory.semantic.command.command.SemanticLabel,
-     * org.harvey.vie.theory.semantic.command.command.SemanticLabel)} 绑定。到程序顶层还没有绑定，就说明写在循环外。
+     * 函数功能：拒绝未解析的跳转命令。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - result：CommandNodeRegister 类型参数。
+     * 输出：无。
      */
     private void rejectUnresolved(ShiftReduceSemanticContext context, CommandNodeRegister result) {
         boolean failed = false;

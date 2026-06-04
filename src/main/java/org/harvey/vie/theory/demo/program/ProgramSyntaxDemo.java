@@ -1,4 +1,4 @@
-﻿package org.harvey.vie.theory.demo.program;
+package org.harvey.vie.theory.demo.program;
 
 import lombok.extern.slf4j.Slf4j;
 import org.harvey.vie.theory.demo.SemanticDemo;
@@ -57,6 +57,12 @@ public class ProgramSyntaxDemo {
     };
     public static final TypeResolver TYPE_RESOLVER = new ProgramTypeResolver();
     public  static final ConstantResolver CONSTANT_RESOLVER =  new ConstantResolver() {
+        /**
+         * 函数功能：将整数字面量词法单元解析为整数值。
+         * 输入：
+         * - token：整数字面量对应的源词法单元。
+         * 输出：解析得到的整数值。
+         */
         @Override
         public int integerLiteral(SourceToken token) {
             return Integer.parseInt(SourceTokenStringMapping.utf8(token));
@@ -66,7 +72,23 @@ public class ProgramSyntaxDemo {
             new FunctionReturnFlowAnalyzer()
     );
 
+    /**
+     * 函数功能：运行程序语法与语义分析演示入口。
+     * 输入：
+     * - args：命令行参数数组。
+     * 输出：无。
+     */
     public static void main(String[] args) {
+        // 由于ProductionPool的实现是依赖与hash的底层实现的, 而这个值是随着JVM变化的
+        // 比如调试和运行的结果不一样
+        //  解决方法, 要不是持久化, 要不就是在一开始引入id
+        //  持久化的坏处是文法改变id也随之改变
+        //  一开始引入ID的坏处是难以处理 Epsilon
+        //      一个不直观的解决方法是, 在 head 处存储id, 如果 body 是 epsilon, 则使用 head 的 id
+        //      否则使用 body 的 id
+        //      这样需要考虑到消除左递归等操作, 会创建新的产生式
+        //      说实话, 很烦, 因为只有这里需要id, 而引入id主要的困难会发生在predicate
+        //      所以持久化才是比较好的方案?
         String text1 = "{ " +
                        "int32 i; " +
                        "int32[] arr; " +
@@ -136,6 +158,13 @@ public class ProgramSyntaxDemo {
         });
     }
 
+    /**
+     * 函数功能：对程序源文本执行词法分析并交给指定语法分析流程处理。
+     * 输入：
+     * - text：待分析的程序源文本。
+     * - syntaxPhaserMapper：将词法单元迭代器和错误上下文映射为语义结果的函数。
+     * 输出：语法分析得到的 SemanticResult。
+     */
     public static SemanticResult demo(
             String text, BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
         LexicalAnalyzer analyzer = ProgramLexicalDemo.lexicalAnalyzer();
@@ -155,6 +184,12 @@ public class ProgramSyntaxDemo {
     }
 
 
+    /**
+     * 函数功能：构建基础程序语法文法产生式上下文。
+     * 输入：
+     * - 无。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     private static ProductionSetContext build() {
         TerminalFactory terminalFactory = terminal -> new TokenTypeTerminalSymbol((TokenType) terminal);
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
@@ -330,6 +365,12 @@ public class ProgramSyntaxDemo {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建完整程序语言语法与语义标签的产生式上下文。
+     * 输入：
+     * - 无。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildGrammar0() {
         TerminalFactory terminalFactory = terminal -> new TokenTypeTerminalSymbol((TokenType) terminal);
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);

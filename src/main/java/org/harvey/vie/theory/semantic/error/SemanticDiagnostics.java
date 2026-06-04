@@ -11,8 +11,23 @@ import org.harvey.vie.theory.semantic.type.SemanticType;
  * @author Temper
  */
 public final class SemanticDiagnostics {
+    /**
+     * 函数功能：创建 SemanticDiagnostics 对象。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     private SemanticDiagnostics() {
     }
+/**
+ * 函数功能：校验表达式类型是否为布尔类型。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - type：SemanticType 类型参数。
+ * - token：SourceToken 类型参数。
+ * - message：String 类型参数。
+ * 输出：无。
+ */
 
     public static void requireBoolean(
             ShiftReduceSemanticContext context,
@@ -23,6 +38,15 @@ public final class SemanticDiagnostics {
             reject(context, token, message);
         }
     }
+/**
+ * 函数功能：校验表达式类型是否为数值类型。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - type：SemanticType 类型参数。
+ * - token：SourceToken 类型参数。
+ * - message：String 类型参数。
+ * 输出：无。
+ */
 
     public static void requireNumeric(
             ShiftReduceSemanticContext context,
@@ -33,6 +57,16 @@ public final class SemanticDiagnostics {
             reject(context, token, message);
         }
     }
+/**
+ * 函数功能：校验表达式是否可赋值。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - sourceType：SemanticType 类型参数。
+ * - targetType：SemanticType 类型参数。
+ * - token：SourceToken 类型参数。
+ * - message：String 类型参数。
+ * 输出：无。
+ */
 
     public static void requireAssignable(
             ShiftReduceSemanticContext context,
@@ -44,6 +78,15 @@ public final class SemanticDiagnostics {
             reject(context, token, message);
         }
     }
+/**
+ * 函数功能：校验表达式类型不是 void。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - type：SemanticType 类型参数。
+ * - token：SourceToken 类型参数。
+ * - message：String 类型参数。
+ * 输出：无。
+ */
 
     public static void requireNotVoid(
             ShiftReduceSemanticContext context,
@@ -54,6 +97,14 @@ public final class SemanticDiagnostics {
             reject(context, token, message);
         }
     }
+/**
+ * 函数功能：报告语义错误并中断。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - token：SourceToken 类型参数。
+ * - message：String 类型参数。
+ * 输出：无。
+ */
 
     public static void reject(
             ShiftReduceSemanticContext context,

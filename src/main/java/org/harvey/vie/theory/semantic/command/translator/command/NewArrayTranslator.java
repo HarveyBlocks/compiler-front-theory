@@ -15,17 +15,20 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 创建对象支路：翻译数组创建表达式 {@code new T[d1][d2]...}。
+ * 翻译数组创建表达式。
  * <p>
- * 该翻译器先校验元素类型，再通过 {@link ArrayCreationDimensions#summarizeAndValidate} 汇总总维度数、
- * 显式给出长度的维度数。命令顺序是：先注册各维度长度表达式，再追加
- * {@code new_array_<elementType> total specified}。
- * <p>
- * 例如三维 int32 数组、只给前两维长度，会输出 {@code new_array_int32 3 2}。
- * 讲完本支路可看 {@link NewStructTranslator}，或回到
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * 该翻译器会先校验元素类型是否合法，再汇总维度声明信息，
+ * 最终把各维度长度求值结果与数组元数据一并交给命令工厂。
  */
 public class NewArrayTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

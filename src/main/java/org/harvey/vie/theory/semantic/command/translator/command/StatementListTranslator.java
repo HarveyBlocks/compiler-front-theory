@@ -9,20 +9,24 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 语句列表支路：把一串语句或实参按源程序顺序拼成线性命令。
+ * 把语句列表节点翻译为线性的命令序列。
  * <p>
- * 它和 {@link SimpleShrinkTranslator} 很像，但对列表场景更明确：空列表返回
- * {@link PlaceholderNodeRegister}，单元素列表直接透传，多元素列表才新建
- * {@link NormalCommandNodeRegister}。这保证块内语句、函数实参等命令顺序和源码顺序一致。
- * <p>
- * 讲完本支路回到 {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}；最终继续看
- * {@link CommandNodeRegister} 如何注册到命令节点树。
+ * 空列表返回占位节点，单元素列表直接透传，
+ * 多元素列表则按原有顺序把各子节点命令依次拼接起来。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-21 00:22
  */
 public class StatementListTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

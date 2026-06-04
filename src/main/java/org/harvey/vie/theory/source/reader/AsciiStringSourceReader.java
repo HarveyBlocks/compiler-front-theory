@@ -25,12 +25,25 @@ public class AsciiStringSourceReader implements SourceReader {
     @Getter
     private int offset;
 
+    /**
+     * 函数功能：创建基于字符串读取器的 ASCII 源读取器。
+     * 输入：
+     * - reader：提供源字符的字符串读取器。
+     * - errorContext：用于记录读取错误的错误上下文。
+     * 输出：无。
+     */
     public AsciiStringSourceReader(StringReader reader, ErrorContext errorContext) {
         this.reader = reader;
         this.errorContext = errorContext;
         this.offset = 0;
     }
 
+    /**
+     * 函数功能：读取一个 ASCII 源字符并移动读取位置。
+     * 输入：
+     * - 无。
+     * 输出：读取到的源字符；结束时返回 EOF。
+     */
     @Override
     public SourceCharacter read() throws IOException, CompileException {
         offset++;
@@ -46,6 +59,12 @@ public class AsciiStringSourceReader implements SourceReader {
         return new AsciiCharacter((byte) ch);
     }
 
+    /**
+     * 函数功能：预览一个 ASCII 源字符但不移动读取位置。
+     * 输入：
+     * - 无。
+     * 输出：预览到的源字符；结束时返回 EOF。
+     */
     @Override
     public SourceCharacter peek() throws IOException, CompileException {
         reader.mark(1);
@@ -55,6 +74,12 @@ public class AsciiStringSourceReader implements SourceReader {
         return ch;
     }
 
+    /**
+     * 函数功能：关闭底层字符串读取器。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     @Override
     public void close() {
         reader.close();

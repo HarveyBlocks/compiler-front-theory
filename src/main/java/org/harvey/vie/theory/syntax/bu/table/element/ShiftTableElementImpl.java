@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.table.element;
+﻿package org.harvey.vie.theory.syntax.bu.table.element;
 
 import lombok.AllArgsConstructor;
 
@@ -12,11 +12,23 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class ShiftTableElementImpl implements ShiftTableElement {
     private final int nextStatus;
+/**
+ * 函数功能：获取移进目标状态。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
     @Override
     public int nextStatus() {
         return nextStatus;
     }
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     @Override
     public String toString() {

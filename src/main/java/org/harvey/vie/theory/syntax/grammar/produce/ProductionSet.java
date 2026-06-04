@@ -12,9 +12,27 @@ import org.harvey.vie.theory.util.SimpleCollection;
  * @date 2026-03-28 00:48
  */
 public interface ProductionSet extends SimpleCollection<GrammarProduction> {
+    /**
+     * 函数功能：获取产生式头部符号。
+     * 输入：
+     * - i：int 类型参数。
+     * 输出：ReferredHeadSymbol 类型返回值。
+     */
     ReferredHeadSymbol getHead(int i);
+/**
+ * 函数功能：获取产生式体。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：AlterableSymbol 类型返回值。
+ */
 
     AlterableSymbol getBody(int i);
+/**
+ * 函数功能：获取指定位置或键对应的元素。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：GrammarProduction 类型返回值。
+ */
 
     GrammarProduction get(int i);
 

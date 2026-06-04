@@ -2,25 +2,17 @@ package org.harvey.vie.theory.semantic.command.translator.token;
 
 import lombok.AllArgsConstructor;
 import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
+import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
+import org.harvey.vie.theory.semantic.command.command.factory.DefaultCommandFactory;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.TokenCommandRegister;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.command.translator.command.WhileStatementTranslator;
 
 import java.util.List;
 
 /**
- * 控制流 token 支路：移进 {@code break} 时先生成“目标未知”的 goto 命令。
- * <p>
- * 当前 token 阶段还不知道它属于哪一层循环，所以这里只把
- * {@link UncertainLabelGotoCommand} 放进 {@link TokenCommandRegister#getUncertainBreaks()}。
- * 外层 {@link WhileStatementTranslator#bindLoopLabels} 或
- * {@link org.harvey.vie.theory.semantic.command.translator.command.DoWhileStatementTranslator}
- * 之后会把它绑定到当前循环的出口标签；如果一直没人绑定，顶层
- * {@link org.harvey.vie.theory.semantic.command.translator.command.ProgramCommandTranslator} 会报错。
- * <p>
- * 讲完本支路回到 {@link WhileStatementTranslator}。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -28,6 +20,13 @@ import java.util.List;
  */
 @AllArgsConstructor
 public class BreakTokenTranslator implements TokenTranslator {
+/**
+ * 函数功能：翻译语法节点并返回命令节点注册器。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - token：SourceToken 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
     @Override
     public CommandNodeRegister translate(ShiftReduceSemanticContext context, SourceToken token) {

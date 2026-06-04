@@ -26,6 +26,15 @@ public class PredictivePhaserImpl implements PredictivePhaser {
     private final GrammarUnitSymbol start;
     private final PredictiveCallbackRegister register;
     private final TokenFilterPredict tokenFilterPredict;
+/**
+ * 函数功能：创建 PredictivePhaserImpl 对象。
+ * 输入：
+ * - start：GrammarUnitSymbol 类型参数。
+ * - predictiveParsingTable：PredictiveParsingTable 类型参数。
+ * - register：PredictiveCallbackRegister 类型参数。
+ * - tokenFilterPredict：TokenFilterPredict 类型参数。
+ * 输出：无。
+ */
 
     public PredictivePhaserImpl(
             GrammarUnitSymbol start,
@@ -38,6 +47,13 @@ public class PredictivePhaserImpl implements PredictivePhaser {
 
         this.tokenFilterPredict = tokenFilterPredict;
     }
+/**
+ * 函数功能：执行语法分析并返回语义结果。
+ * 输入：
+ * - iterator：SourceTokenIterator 类型参数。
+ * - errorContext：ErrorContext 类型参数。
+ * 输出：SemanticResult 类型返回值。
+ */
 
     @Override
     public SemanticResult phase(SourceTokenIterator iterator, ErrorContext errorContext) {
@@ -82,6 +98,14 @@ public class PredictivePhaserImpl implements PredictivePhaser {
         }
         return ctx.getResult();
     }
+/**
+ * 函数功能：处理终结符匹配。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * - terminal：TerminalSymbol 类型参数。
+ * - ctx：PredictiveSemanticContext 类型参数。
+ * 输出：无。
+ */
 
     private void terminal(SourceToken token, TerminalSymbol terminal, PredictiveSemanticContext ctx) {
         // 2. 当 X is terminal 且 X = a != $, 弹出 X, 前进输入, goto 1
@@ -92,6 +116,14 @@ public class PredictivePhaserImpl implements PredictivePhaser {
             ctx.onError(PredicativeErrorType.TERMINAL_CONFLICT);
         }
     }
+/**
+ * 函数功能：处理非终结符展开。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * - head：HeadSymbol 类型参数。
+ * - ctx：PredictiveSemanticContext 类型参数。
+ * 输出：无。
+ */
 
     private void head(SourceToken token, HeadSymbol head, PredictiveSemanticContext ctx) {
         // 不是 terminal

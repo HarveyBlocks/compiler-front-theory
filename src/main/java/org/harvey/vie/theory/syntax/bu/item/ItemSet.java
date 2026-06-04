@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.item;
+﻿package org.harvey.vie.theory.syntax.bu.item;
 
 import org.harvey.vie.theory.syntax.grammar.symbol.GrammarUnitSymbol;
 import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
@@ -17,14 +17,29 @@ import java.util.Set;
  */
 public interface ItemSet extends SimpleCollection<ProductionItem> {
     int NONE = -1;
+/**
+ * 函数功能：判断是否包含指定元素。
+ * 输入：
+ * - item：ProductionItem 类型参数。
+ * 输出：判断结果布尔值。
+ */
 
     boolean contains(ProductionItem item);
+/**
+ * 函数功能：获取指定语法符号的转移目标。
+ * 输入：
+ * - unit：GrammarUnitSymbol 类型参数。
+ * 输出：整数结果。
+ */
 
 
-    /**
-     * @return {@link #NONE} for none, else >= 0
-     */
     int gotoUnit(GrammarUnitSymbol unit);
+/**
+ * 函数功能：获取指定非终结符的决策规则。
+ * 输入：
+ * - head：HeadSymbol 类型参数。
+ * 输出：Set<TerminalSymbol> 类型集合或迭代结果。
+ */
 
     Set<TerminalSymbol> decisionRule(HeadSymbol head);
 

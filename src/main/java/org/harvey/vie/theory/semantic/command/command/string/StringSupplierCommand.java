@@ -6,12 +6,7 @@ import org.harvey.vie.theory.semantic.command.command.SemanticCommand;
 import java.util.function.Supplier;
 
 /**
- * 延迟求值文本命令。
- * <p>
- * 控制流跳转命令需要等 {@link org.harvey.vie.theory.semantic.command.node.LabelNode} 展开后才能知道目标下标，
- * 所以不能在创建命令时就固定字符串。本类保存一个 {@link Supplier}，
- * {@link #toString()} 被 {@link org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter} 调用时，
- * 再读取最新标签下标并生成文本。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -20,6 +15,12 @@ import java.util.function.Supplier;
 @AllArgsConstructor
 public class StringSupplierCommand implements SemanticCommand {
     private final Supplier<String> stringSupplier;
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     @Override
     public String toString() {

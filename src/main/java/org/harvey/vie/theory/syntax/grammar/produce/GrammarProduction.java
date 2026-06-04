@@ -11,7 +11,19 @@ import org.harvey.vie.theory.syntax.grammar.symbol.HeadSymbol;
  * @date 2026-03-28 00:48
  */
 public interface GrammarProduction {
+    /**
+     * 函数功能：获取产生式头部符号。
+     * 输入：
+     * - 无。
+     * 输出：HeadSymbol 类型返回值。
+     */
     HeadSymbol getHead();
+/**
+ * 函数功能：获取产生式体。
+ * 输入：
+ * - 无。
+ * 输出：GrammarAlternation 类型返回值。
+ */
 
     GrammarAlternation getBody();
 }

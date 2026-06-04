@@ -16,6 +16,12 @@ import lombok.Getter;
 public class ClosureRegexNode implements RegexNode {
     private final RegexNode child;
 
+    /**
+     * 函数功能：返回闭包正则节点的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：闭包正则节点的字符串表示。
+     */
     @Override
     public String toString() {
         return "(" + child + ")*";

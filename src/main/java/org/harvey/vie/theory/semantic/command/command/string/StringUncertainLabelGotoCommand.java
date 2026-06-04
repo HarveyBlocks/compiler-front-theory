@@ -6,12 +6,7 @@ import org.harvey.vie.theory.semantic.command.command.SemanticLabel;
 import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 
 /**
- * {@code break}/{@code continue} 使用的延迟绑定 goto 文本命令。
- * <p>
- * 创建时只保存源 token，标签为空时打印为 {@code goto unknown}；循环翻译器绑定
- * {@link SemanticLabel} 后，{@link #toString()} 会输出 {@code goto <index>}。
- * 如果程序顶层仍然看到未知标签，
- * {@link org.harvey.vie.theory.semantic.command.translator.command.ProgramCommandTranslator} 会据此报错。
+ * TODO 仅用作测试和demo
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -21,10 +16,22 @@ import org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand;
 public class StringUncertainLabelGotoCommand implements UncertainLabelGotoCommand {
     private SemanticLabel label;
     private final SourceToken token;
+/**
+ * 函数功能：创建 StringUncertainLabelGotoCommand 对象。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * 输出：无。
+ */
 
     public StringUncertainLabelGotoCommand(SourceToken token) {
         this.token = token;
     }
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     @Override
     public String toString() {

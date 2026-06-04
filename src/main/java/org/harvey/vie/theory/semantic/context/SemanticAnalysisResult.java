@@ -11,18 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 讲解主线第 9 站：语义分析最终结果，同时保存入口命令段、函数命令段、结构体表和符号表。
- * <p>
- * 中间代码主线从 {@link org.harvey.vie.theory.semantic.command.SemanticResultCallback} 进入这里：
- * {@code entryCommands} 是程序入口段线性命令；
- * {@code functionSegments} 是 {@link FunctionCommandSegment} 列表，每个函数定义单独保存自己的命令。
- * <p>
- * {@link #getCommands()} 是测试和报告最常用的入口，它调用
- * {@link ThreeAddressCodePrinter#print(List)} 把入口段命令对象转成文本。函数段命令则通过
- * {@link #getFunctionSegments()} 取出后再用同一个 printer 打印。
- * <p>
- * 主线下一站：{@link ThreeAddressCodePrinter}。下一站会讲命令对象如何真正变成报告里的 Commands 文本。
- *
  * @author Temper
  */
 public class SemanticAnalysisResult implements SemanticResult {
@@ -30,6 +18,15 @@ public class SemanticAnalysisResult implements SemanticResult {
     private final List<SemanticCommand> entryCommands;
     private final List<FunctionCommandSegment> functionSegments;
     private final List<StructRecord> structTable;
+/**
+ * 函数功能：创建 SemanticAnalysisResult 对象。
+ * 输入：
+ * - entryCommands：List<SemanticCommand> 类型参数。
+ * - functionSegments：List<FunctionCommandSegment> 类型参数。
+ * - structTable：List<StructRecord> 类型参数。
+ * - identifierRecords：IdentifierRecord[] 类型参数。
+ * 输出：无。
+ */
 
     public SemanticAnalysisResult(
             List<SemanticCommand> entryCommands,
@@ -41,26 +38,62 @@ public class SemanticAnalysisResult implements SemanticResult {
         this.structTable = List.copyOf(structTable);
         this.identifierRecords = identifierRecords.clone();
     }
+/**
+ * 函数功能：获取标识符记录列表。
+ * 输入：
+ * - 无。
+ * 输出：IdentifierRecord[] 类型数组。
+ */
 
     public IdentifierRecord[] getIdentifierRecords() {
         return identifierRecords.clone();
     }
+/**
+ * 函数功能：获取入口命令列表。
+ * 输入：
+ * - 无。
+ * 输出：List<SemanticCommand> 类型集合或迭代结果。
+ */
 
     public List<SemanticCommand> getEntryCommands() {
         return List.copyOf(entryCommands);
     }
+/**
+ * 函数功能：获取命令列表。
+ * 输入：
+ * - 无。
+ * 输出：List<String> 类型集合或迭代结果。
+ */
 
     public List<String> getCommands() {
         return new ThreeAddressCodePrinter().print(entryCommands);
     }
+/**
+ * 函数功能：获取函数命令片段列表。
+ * 输入：
+ * - 无。
+ * 输出：List<FunctionCommandSegment> 类型集合或迭代结果。
+ */
 
     public List<FunctionCommandSegment> getFunctionSegments() {
         return List.copyOf(functionSegments);
     }
+/**
+ * 函数功能：获取结构体表。
+ * 输入：
+ * - 无。
+ * 输出：List<StructRecord> 类型集合或迭代结果。
+ */
 
     public List<StructRecord> getStructTable() {
         return List.copyOf(structTable);
     }
+/**
+ * 函数功能：获取函数表。
+ * 输入：
+ * - 无。
+ * 输出：List<FunctionRecord> 类型集合或迭代结果。
+ */
 
     public List<FunctionRecord> getFunctionTable() {
         List<FunctionRecord> table = new ArrayList<>(functionSegments.size());
@@ -69,6 +102,12 @@ public class SemanticAnalysisResult implements SemanticResult {
         }
         return List.copyOf(table);
     }
+/**
+ * 函数功能：获取入口局部变量列表。
+ * 输入：
+ * - 无。
+ * 输出：IdentifierRecord[] 类型数组。
+ */
 
     public IdentifierRecord[] getEntryLocalVariables() {
         List<IdentifierRecord> result = new ArrayList<>();
@@ -79,6 +118,12 @@ public class SemanticAnalysisResult implements SemanticResult {
         }
         return result.toArray(IdentifierRecord[]::new);
     }
+/**
+ * 函数功能：获取函数局部变量映射。
+ * 输入：
+ * - function：FunctionRecord 类型参数。
+ * 输出：IdentifierRecord[] 类型数组。
+ */
 
     public IdentifierRecord[] getFunctionLocalVariables(FunctionRecord function) {
         List<IdentifierRecord> result = new ArrayList<>();
@@ -89,6 +134,12 @@ public class SemanticAnalysisResult implements SemanticResult {
         }
         return result.toArray(IdentifierRecord[]::new);
     }
+/**
+ * 函数功能：获取命令总数。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
     public int commandCount() {
         int total = entryCommands.size();

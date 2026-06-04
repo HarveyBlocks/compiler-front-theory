@@ -2,28 +2,13 @@ package org.harvey.vie.theory.semantic.tag;
 
 import org.harvey.vie.theory.demo.program.ProgramSemanticTag;
 import org.harvey.vie.theory.demo.program.ProgramTokenType;
-import org.harvey.vie.theory.semantic.command.CommandBuildCallback;
-import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.translator.CommandTranslatorStrategy;
 import org.harvey.vie.theory.semantic.command.translator.command.*;
 import org.harvey.vie.theory.semantic.command.translator.command.OperatorCategory;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 讲解主线第 2 站：语义动作分发表，也就是“产生式标签 -> 命令翻译器”的映射表。
- * <p>
- * {@link CommandBuildCallback} 在规约时拿到的是 {@link SimpleGrammarProduction}。在编译原理术语里，
- * 这个产生式代表“刚刚规约出了某个非终结符”，而产生式上的 {@link ProgramSemanticTag}
- * 就相当于给语义动作做分类。本类根据这些标签选择具体的 {@link CommandTranslator}。
- * <p>
- * 可以把本类理解成一张语法制导翻译规则表：声明进入 {@link DeclarationWithInitializationTranslator}
- * 或 {@link DeclarationWithoutInitializationTranslator}，赋值进入 {@link AssignStatementTranslator}，
- * 表达式进入 {@link InSuffixExpressionTranslator}/{@link UnaryExpressionTranslator}，
- * 控制流进入 {@link IfStatementTranslator}/{@link IfElseStatementTranslator}/
- * {@link WhileStatementTranslator}/{@link DoWhileStatementTranslator}。
- * <p>
- * 主线下一站：{@link ProgramCommandTranslator}。下一站会讲最外层 program 规约后如何兜底检查
- * {@code break}/{@code continue}，并把支路最终带回 {@link CommandNodeRegister}。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -31,11 +16,10 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 public class TagStrategyCompose {
     /**
-     * 构造“语义标签 -> 命令翻译器”的完整映射表。
-     * <p>
-     * 默认值是 {@link SimpleShrinkTranslator}，表示没有特殊规则的产生式只把子节点命令顺序拼起来；
-     * 带有关键语义的产生式会被替换成更专门的翻译器。例如 {@link ProgramSemanticTag#ASSIGNMENT}
-     * 进入 {@link AssignStatementTranslator}，{@link ProgramSemanticTag#LOOP} 进入循环翻译器。
+     * 函数功能：创建字符串命令标签策略。
+     * 输入：
+     * - 无。
+     * 输出：ProductionTagStrategy<CommandTranslator> 类型返回值。
      */
     public static ProductionTagStrategy<CommandTranslator> stringCommand() {
         CommandTranslator doNothing = new DoNotingTranslator();
@@ -135,24 +119,43 @@ public class TagStrategyCompose {
                 .when(doWhileStatementTranslator, ProgramSemanticTag.LOOP, ProgramSemanticTag.DO_LOOP)
                 .when(whileStatementTranslator, ProgramSemanticTag.LOOP);
     }
+/**
+ * 函数功能：创建精确字符串命令标签策略。
+ * 输入：
+ * - 无。
+ * 输出：CommandTranslatorStrategy 类型返回值。
+ */
 
-    /**
-     * 提供给 {@link CommandBuildCallback} 的规约策略入口。
-     * <p>
-     * {@link ProductionTagStrategy#resolve(Object)} 会按当前产生式携带的标签精确匹配上面的规则；
-     * 找不到专用规则时回退到 {@link SimpleShrinkTranslator}。
-     */
     public static CommandTranslatorStrategy preciseStringCommand() {
         ProductionTagStrategy<CommandTranslator> strategy = stringCommand();
         return production -> strategy.resolve(production);
     }
+/**
+ * 函数功能：创建运算符标签策略。
+ * 输入：
+ * - mnemonic：String 类型参数。
+ * - category：OperatorCategory 类型参数。
+ * 输出：OperatorFactor 类型返回值。
+ */
 
     private static OperatorFactor operator(String mnemonic, OperatorCategory category) {
         return new OperatorFactor() {
+            /**
+             * 函数功能：获取操作符助记符。
+             * 输入：
+             * - 无。
+             * 输出：字符串结果。
+             */
             @Override
             public String mnemonic() {
                 return mnemonic;
             }
+/**
+ * 函数功能：获取操作符类别。
+ * 输入：
+ * - 无。
+ * 输出：OperatorCategory 类型返回值。
+ */
 
             @Override
             public OperatorCategory category() {

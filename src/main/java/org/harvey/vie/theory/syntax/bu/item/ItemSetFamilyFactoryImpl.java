@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.item;
+﻿package org.harvey.vie.theory.syntax.bu.item;
 
 import org.harvey.vie.theory.syntax.grammar.first.FirstMap;
 import org.harvey.vie.theory.syntax.grammar.produce.ProductionSetContext;
@@ -16,6 +16,14 @@ import java.util.*;
  * @date 2026-04-03 23:40
  */
 public class ItemSetFamilyFactoryImpl implements ItemSetFamilyFactory {
+/**
+ * 函数功能：根据输入数据创建目标对象。
+ * 输入：
+ * - startHead：String 类型参数。
+ * - context：ProductionSetContext 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * 输出：ItemSetFamily 类型返回值。
+ */
 
 
     @Override
@@ -38,6 +46,14 @@ public class ItemSetFamilyFactoryImpl implements ItemSetFamilyFactory {
         }
         return familyBuilder.build();
     }
+/**
+ * 函数功能：计算项目集闭包。
+ * 输入：
+ * - setBuilder：ItemSetBuilder 类型参数。
+ * - nextHeadSet：Set<HeadDefineSymbol> 类型参数。
+ * - context：ProductionSetContext 类型参数。
+ * 输出：无。
+ */
 
     private void closure(ItemSetBuilder setBuilder, Set<HeadDefineSymbol> nextHeadSet, ProductionSetContext context) {
         // 只对next进行增加
@@ -63,10 +79,24 @@ public class ItemSetFamilyFactoryImpl implements ItemSetFamilyFactory {
         }
 
     }
+/**
+ * 函数功能：补全项目集闭包。
+ * 输入：
+ * - map：Map<GrammarUnitSymbol, ItemSetBuilder> 类型参数。
+ * - context：ProductionSetContext 类型参数。
+ * 输出：无。
+ */
 
     private void closureAll(Map<GrammarUnitSymbol, ItemSetBuilder> map, ProductionSetContext context) {
         map.values().forEach(e -> closure(e, e.nextHeadSet(), context));
     }
+/**
+ * 函数功能：计算项目集的单个转移。
+ * 输入：
+ * - origin：ItemSetBuilder 类型参数。
+ * - familyBuilder：ItemSetFamilyBuilder 类型参数。
+ * 输出：ItemSetBuilder> 类型返回值。
+ */
 
     private Map<GrammarUnitSymbol, ItemSetBuilder> gotoEach(ItemSetBuilder origin, ItemSetFamilyBuilder familyBuilder) {
         Map<GrammarUnitSymbol, ItemSetBuilder> map = new HashMap<>();
@@ -80,6 +110,15 @@ public class ItemSetFamilyFactoryImpl implements ItemSetFamilyFactory {
 
         return map;
     }
+/**
+ * 函数功能：筛选满足条件的项目。
+ * 输入：
+ * - fromSet：ItemSetBuilder 类型参数。
+ * - toMap：Map<GrammarUnitSymbol, ItemSetBuilder> 类型参数。
+ * - familyBuilder：ItemSetFamilyBuilder 类型参数。
+ * - queue：LinkedList<ItemSetBuilder> 类型参数。
+ * 输出：无。
+ */
 
     private void filter(
             ItemSetBuilder fromSet,

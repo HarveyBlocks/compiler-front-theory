@@ -33,11 +33,23 @@ public class TempType extends AbstractTokenType {
     private final int priority;
     private final String s;
 
+    /**
+     * 函数功能：获取临时词法单元类型的显示名称。
+     * 输入：
+     * - 无。
+     * 输出：词法单元类型提示字符串。
+     */
     @Override
     public @NonNull String hint() {
         return s;
     }
 
+    /**
+     * 函数功能：将临时词法单元类型编号写入输出流。
+     * 输入：
+     * - os：接收序列化数据的输出流。
+     * 输出：写入的字节数。
+     */
     @Override
     public int store(OutputStream os) throws IOException {
         return Storages.storeInteger(os, id);
@@ -46,12 +58,21 @@ public class TempType extends AbstractTokenType {
     public static class Loader implements TokenType.Loader<TempType> {
         private final Map<Integer, TempType> map;
 
+        /**
+         * 函数功能：创建临时词法单元类型加载器。
+         * 输入：
+         * - types：用于建立编号映射的临时词法单元类型数组。
+         * 输出：无。
+         */
         public Loader(TempType... types) {
             this.map = Arrays.stream(types).collect(Collectors.toMap(t -> t.id, t -> t));
         }
 
         /**
-         * @throws IOException null for unknown token
+         * 函数功能：从输入流读取编号并还原临时词法单元类型。
+         * 输入：
+         * - is：包含序列化编号的输入流。
+         * 输出：编号对应的 TempType；未知编号返回 null。
          */
         @Override
         public TempType load(InputStream is) throws IOException {

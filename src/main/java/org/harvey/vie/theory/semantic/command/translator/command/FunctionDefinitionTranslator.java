@@ -15,19 +15,22 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import java.util.List;
 
 /**
- * 函数支路：收集函数体翻译后的命令序列，并把它登记成独立函数段。
+ * 收集函数体翻译后的命令序列，并把它登记到函数记录中。
  * <p>
- * 函数定义本身不会直接向当前入口命令流输出指令，否则全局入口执行时会顺序落进函数体。
- * 因此这里用 {@link CommandSegmentSupport#flatten(CommandNodeRegister)} 先把函数体命令展开成线性列表，
- * 再通过 {@link ShiftReduceSemanticContext#registerFunctionCommandSegment(FunctionCommandSegment)}
- * 登记到函数段上下文中，最后返回 {@link PlaceholderNodeRegister}。
- * <p>
- * 讲完本支路可看函数调用 {@link FunctionCallTranslator}，或继续沿主线去
- * {@link org.harvey.vie.theory.semantic.command.SemanticResultCallback} 查看入口段和函数段如何汇总。
+ * 函数定义本身不会直接向当前线性命令流输出指令，
+ * 因而这里返回的是占位节点注册器。
  *
  * @author Temper
  */
 public class FunctionDefinitionTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
@@ -45,7 +48,10 @@ public class FunctionDefinitionTranslator implements CommandTranslator {
     }
 
     /**
-     * 从当前归约出的函数定义节点中反查对应的函数符号记录。
+     * 函数功能：获取函数记录。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：FunctionRecord 类型返回值。
      */
     private static FunctionRecord function(ShiftReduceSemanticContext context) {
         HeadNode head = currentReducedHead(context);
@@ -66,7 +72,10 @@ public class FunctionDefinitionTranslator implements CommandTranslator {
     }
 
     /**
-     * 取得当前正在归约的头节点，用于恢复函数定义的语法上下文。
+     * 函数功能：获取当前规约头节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：HeadNode 类型返回值。
      */
     private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {

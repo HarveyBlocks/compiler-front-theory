@@ -11,5 +11,11 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
  */
 @FunctionalInterface
 public interface ShiftPredicate {
+    /**
+     * 函数功能：判断输入是否满足条件。
+     * 输入：
+     * - token：SourceToken 类型参数。
+     * 输出：判断结果布尔值。
+     */
     boolean test(SourceToken token);
 }

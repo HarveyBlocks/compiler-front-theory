@@ -14,8 +14,20 @@ import org.harvey.vie.theory.semantic.type.TypeRegister;
 import java.util.ArrayDeque;
 
 public final class ArrayCreationDimensions {
+    /**
+     * 函数功能：创建 ArrayCreationDimensions 对象。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     private ArrayCreationDimensions() {
     }
+/**
+ * 函数功能：汇总数组创建维度信息。
+ * 输入：
+ * - node：ShiftReduceSyntaxTreeNode 类型参数。
+ * 输出：Summary 类型返回值。
+ */
 
     public static Summary summarize(ShiftReduceSyntaxTreeNode node) {
         Summary summary = new Summary();
@@ -35,6 +47,13 @@ public final class ArrayCreationDimensions {
         }
         return summary;
     }
+/**
+ * 函数功能：汇总并校验数组创建维度信息。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - node：ShiftReduceSyntaxTreeNode 类型参数。
+ * 输出：Summary 类型返回值。
+ */
 
     public static Summary summarizeAndValidate(ShiftReduceSemanticContext context, ShiftReduceSyntaxTreeNode node) {
         Summary summary = new Summary();
@@ -72,6 +91,13 @@ public final class ArrayCreationDimensions {
         }
         return summary;
     }
+/**
+ * 函数功能：遍历数组创建维度节点。
+ * 输入：
+ * - node：ShiftReduceSyntaxTreeNode 类型参数。
+ * - consumer：java.util.function.Consumer<HeadNode> 类型参数。
+ * 输出：无。
+ */
 
     private static void visitDimensions(ShiftReduceSyntaxTreeNode node, java.util.function.Consumer<HeadNode> consumer) {
         if (node == null || !node.isHead()) {

@@ -9,34 +9,56 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 函数命令段登记表。
- * <p>
- * 编译一个文件时可能有多个函数定义，{@link org.harvey.vie.theory.semantic.command.translator.command.FunctionDefinitionTranslator}
- * 每遇到一个函数体就调用 {@link #register(FunctionCommandSegment)}。使用 {@link LinkedHashMap}
- * 是为了保留函数出现顺序，报告和测试中的函数表下标也更稳定。
- * <p>
- * 讲完本类回到 {@link SemanticResultCallback}，看函数段如何进入最终结果。
- *
  * @author Temper
  */
 public class FunctionCommandSegmentContext {
     private final Map<IdentifierKey, FunctionCommandSegment> segments = new LinkedHashMap<>();
+/**
+ * 函数功能：注册指定对象。
+ * 输入：
+ * - segment：FunctionCommandSegment 类型参数。
+ * 输出：无。
+ */
 
     public void register(FunctionCommandSegment segment) {
         segments.put(segment.getFunction().getNameKey(), segment);
     }
+/**
+ * 函数功能：获取指定键或索引对应的对象。
+ * 输入：
+ * - key：IdentifierKey 类型参数。
+ * 输出：FunctionCommandSegment 类型返回值。
+ */
 
     public FunctionCommandSegment get(IdentifierKey key) {
         return segments.get(key);
     }
+/**
+ * 函数功能：获取值集合。
+ * 输入：
+ * - 无。
+ * 输出：Collection<FunctionCommandSegment> 类型集合或迭代结果。
+ */
 
     public Collection<FunctionCommandSegment> values() {
         return segments.values();
     }
+/**
+ * 函数功能：判断当前对象是否为空。
+ * 输入：
+ * - 无。
+ * 输出：判断结果布尔值。
+ */
 
     public boolean isEmpty() {
         return segments.isEmpty();
     }
+/**
+ * 函数功能：生成函数命令片段快照。
+ * 输入：
+ * - 无。
+ * 输出：List<FunctionCommandSegment> 类型集合或迭代结果。
+ */
 
     public List<FunctionCommandSegment> snapshot() {
         return List.copyOf(segments.values());

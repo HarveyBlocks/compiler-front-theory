@@ -12,5 +12,11 @@ import java.io.InputStream;
  * @date 2026-03-25 14:02
  */
 public interface ILoader<T> {
+    /**
+     * 函数功能：从输入流加载对象。
+     * 输入：
+     * - is：提供序列化数据的输入流。
+     * 输出：加载得到的对象。
+     */
     T load(InputStream is) throws IOException;
 }

@@ -4,11 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 基于 {@link List} 的命令节点收集器。
- * <p>
- * 它只维护插入顺序，不做优化或重排。这个简单约束很重要：最终的中间代码顺序必须和语法制导翻译规则
- * 插入节点的顺序一致。讲完本类回到 {@link CommandNodeBuilder} 或
- * {@link org.harvey.vie.theory.semantic.command.CommandSegmentSupport}。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -16,11 +12,23 @@ import java.util.List;
  */
 public class CommandNodeListBuilder implements CommandNodeBuilder {
     private final List<CommandNode> list = new ArrayList<>();
+/**
+ * 函数功能：添加指定元素。
+ * 输入：
+ * - node：CommandNode 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void add(CommandNode node) {
         list.add(node);
     }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：CommandNode[] 类型数组。
+ */
 
     @Override
     public CommandNode[] build() {

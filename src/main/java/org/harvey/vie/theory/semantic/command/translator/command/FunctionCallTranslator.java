@@ -13,18 +13,22 @@ import org.harvey.vie.theory.semantic.tree.node.ShiftReduceSyntaxTreeNode;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 函数支路：翻译函数调用表达式。
+ * 翻译函数调用表达式。
  * <p>
- * 参数求值代码会先按语法中的实参顺序入栈，随后再发出 {@code call functionIndex}，
+ * 参数求值代码会先按既定顺序入栈，随后再发出调用指令，
  * 以保证被调函数读取到的实参与语义分析阶段的顺序一致。
- * 被调函数由 {@link #function(ShiftReduceSemanticContext)} 从 {@link FunctionRecord} 表中恢复。
- * <p>
- * 函数体自身不会混入入口命令，定义支路见 {@link FunctionDefinitionTranslator}；
- * 讲完本支路回到 {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
  *
  * @author Temper
  */
 public class FunctionCallTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
@@ -38,7 +42,10 @@ public class FunctionCallTranslator implements CommandTranslator {
     }
 
     /**
-     * 根据当前归约节点上的函数名恢复被调函数记录。
+     * 函数功能：获取函数记录。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：FunctionRecord 类型返回值。
      */
     private FunctionRecord function(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
@@ -56,3 +63,4 @@ public class FunctionCallTranslator implements CommandTranslator {
         return record;
     }
 }
+

@@ -75,6 +75,12 @@ import java.util.function.BiFunction;
 public class SyntaxDemo {
 
     private static class Predicative {
+        /**
+         * 函数功能：运行预测分析演示入口。
+         * 输入：
+         * - args：命令行参数数组。
+         * 输出：无。
+         */
         public static void main(String[] args) {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 // syntax analyzer
@@ -98,6 +104,12 @@ public class SyntaxDemo {
     );
 
     private static class ShiftReduce {
+        /**
+         * 函数功能：运行移进归约分析演示入口。
+         * 输入：
+         * - args：命令行参数数组。
+         * 输出：无。
+         */
         public static void main(String[] args) {
             SemanticResult result = SyntaxDemo.demo("(id+id)*id", (iter, errCtx) -> {
                 ProductionSetContext context = ProductionSetContextBuilds.build5(TERMINAL_FACTORY);
@@ -136,6 +148,13 @@ public class SyntaxDemo {
                                     ". For can not found in grammar production set.");
     };
 
+    /**
+     * 函数功能：对输入文本执行词法分析并交给指定语法分析流程处理。
+     * 输入：
+     * - text：待分析的源文本。
+     * - syntaxPhaserMapper：将词法单元迭代器和错误上下文映射为语义结果的函数。
+     * 输出：语法分析得到的 SemanticResult；分析失败时返回 null。
+     */
     public static SemanticResult demo(
             String text, BiFunction<SourceTokenIterator, ErrorContext, SemanticResult> syntaxPhaserMapper) {
         LexicalAnalyzer analyzer = lexicalAnalyzer();
@@ -157,6 +176,12 @@ public class SyntaxDemo {
         return null;
     }
 
+    /**
+     * 函数功能：创建演示语法分析使用的词法分析器。
+     * 输入：
+     * - 无。
+     * 输出：配置完成的 LexicalAnalyzer。
+     */
     private static LexicalAnalyzer lexicalAnalyzer() {
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();
         RegexDfaStatusTable table = LexicalDemo.buildTable(alphabetCharacterFactory);
@@ -167,6 +192,16 @@ public class SyntaxDemo {
     public static final boolean FLUSH_TABLE = RuntimeProperties.syntaxFlushTable();
     private static volatile ShiftReduceParsingTable cachedShiftReduceParsingTable;
 
+    /**
+     * 函数功能：构建或加载移进归约分析表并缓存结果。
+     * 输入：
+     * - startHead：文法开始符号名称。
+     * - context：产生式集合上下文。
+     * - filename：分析表序列化文件名。
+     * - tagLoader：语义标签加载器。
+     * - tagComparator：语义标签比较器。
+     * 输出：可用于移进归约分析的 ShiftReduceParsingTable。
+     */
     public static ShiftReduceParsingTable buildShiftReduceParsingTable(
             String startHead,
             ProductionSetContext context,
@@ -202,6 +237,13 @@ public class SyntaxDemo {
         }
     }
 
+    /**
+     * 函数功能：从序列化文件加载移进归约分析表。
+     * 输入：
+     * - filename：分析表序列化文件名。
+     * - tagLoader：语义标签加载器。
+     * 输出：加载得到的 ShiftReduceParsingTable。
+     */
     public static ShiftReduceParsingTable loadShiftReduceParsingTable(
             String filename, SemanticTag.Loader<?> tagLoader) {
         try (InputStream is = new FileInputStream("src/main/resources/serial/" + filename)) {
@@ -212,6 +254,13 @@ public class SyntaxDemo {
         }
     }
 
+    /**
+     * 函数功能：将移进归约分析表保存到序列化文件。
+     * 输入：
+     * - table：待保存的移进归约分析表。
+     * - filename：分析表序列化文件名。
+     * 输出：无。
+     */
     private static void storeTable(ShiftReduceParsingTable table, String filename) throws IOException {
         try (OutputStream os = new FileOutputStream("src/main/resources/serial/" + filename)) {
             int store = table.store(os);
@@ -220,6 +269,12 @@ public class SyntaxDemo {
         }
     }
 
+    /**
+     * 函数功能：创建移进归约分析表加载器。
+     * 输入：
+     * - tagLoader：语义标签加载器。
+     * 输出：配置完成的 ShiftReduceParsingTableImpl.Loader。
+     */
     private static ShiftReduceParsingTableImpl.Loader getLoader(SemanticTag.Loader<?> tagLoader) {
         TokenTypeTerminalSymbol.Loader terminalSymbolLoader = new TokenTypeTerminalSymbol.Loader(new ProgramTokenType.Loader());
         HeadDefineSymbolImpl.Loader headSymbolLoader = new HeadDefineSymbolImpl.Loader();
@@ -236,6 +291,14 @@ public class SyntaxDemo {
         );
     }
 
+    /**
+     * 函数功能：根据产生式上下文构建移进归约分析表。
+     * 输入：
+     * - startHead：文法开始符号名称。
+     * - context：产生式集合上下文。
+     * - tagComparator：语义标签比较器。
+     * 输出：构建完成的 ShiftReduceParsingTable。
+     */
     private static ShiftReduceParsingTable buildShiftReduceParsingTable0(
             String startHead, ProductionSetContext context, SemanticTagComparator<? super SemanticTag> tagComparator) {
         System.out.println("----------first map-------------");
@@ -270,6 +333,12 @@ public class SyntaxDemo {
         return shiftReduceParsingTable;
     }
 
+    /**
+     * 函数功能：输出项目集族及其转移信息。
+     * 输入：
+     * - family：待展示的项目集族。
+     * 输出：无。
+     */
     private static void showItemSetFamily(ItemSetFamily family) {
         int cur = 0;
         for (ItemSet set : family) {
@@ -313,6 +382,12 @@ public class SyntaxDemo {
         }
     }
 
+    /**
+     * 函数功能：构建预测分析表并输出相关文法集合信息。
+     * 输入：
+     * - startHead：文法开始符号名称。
+     * 输出：构建完成的 PredictiveParsingTable。
+     */
     public static PredictiveParsingTable buildPredictiveParsingTable(String startHead) {
         ProductionSetContext context = ProductionSetContextBuilds.build4(TERMINAL_FACTORY);
         System.out.println(context);
@@ -337,6 +412,12 @@ public class SyntaxDemo {
         return predictiveParsingTable;
     }
 
+    /**
+     * 函数功能：运行预测分析表构建演示入口。
+     * 输入：
+     * - args：命令行参数数组。
+     * 输出：无。
+     */
     public static void main(String[] args) {
         buildPredictiveParsingTable("bexpr");
     }

@@ -20,6 +20,12 @@ import static org.harvey.vie.theory.syntax.bu.table.ShiftReduceParsingTable.NONE
 public class ShiftReduceParsingTableImplToString {
 
     // region show string
+    /**
+     * 函数功能：返回当前对象的字符串表示。
+     * 输入：
+     * - table：ShiftReduceParsingTableImpl 类型参数。
+     * 输出：字符串结果。
+     */
     public static String toString(ShiftReduceParsingTableImpl table) {
         ActiveTableElement[][] activeTable = table.getActiveTable();
         TerminalSymbol[] terminalSymbols = table.getTerminalSymbols();

@@ -6,17 +6,21 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 空动作翻译器：明确表示该产生式不产生中间命令。
- * <p>
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose} 会把空列表、空参数表等语义标签映射到这里。
- * 返回的 {@link PlaceholderNodeRegister} 注册时不写入任何 {@link org.harvey.vie.theory.semantic.command.node.CommandNode}。
- * 讲完这里回到 {@link SimpleShrinkTranslator} 或 {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-21 00:24
  */
 public class DoNotingTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

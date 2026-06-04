@@ -14,25 +14,36 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 表达式支路：翻译一元表达式，例如逻辑非 {@code !x} 和算术取负 {@code -x}。
+ * 翻译单目表达式，如逻辑非和算术取负。
  * <p>
- * 如果当前语法树节点已经被常量传播折叠成常量，先通过 {@link ConstantCommandSupport} 直接生成
- * {@code load_st_*_static}。否则先注册操作数命令，再根据 {@link OperatorFactor} 追加
- * {@code st_logical_not_boolean} 或 {@code st_negate_*}。
- * <p>
- * 讲完本支路回到 {@link InSuffixExpressionTranslator} 或
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * 如果该表达式已经在常量传播阶段折叠为常量，就直接复用常量装载逻辑；
+ * 否则先生成操作数求值代码，再补上对应的一元运算指令。
  *
  * @author Temper
  */
 public class UnaryExpressionTranslator implements CommandTranslator {
     private final OperatorFactor operatorFactor;
     private final ProgramTokenType operatorType;
+/**
+ * 函数功能：创建 UnaryExpressionTranslator 对象。
+ * 输入：
+ * - operatorFactor：OperatorFactor 类型参数。
+ * - operatorType：ProgramTokenType 类型参数。
+ * 输出：无。
+ */
 
     public UnaryExpressionTranslator(OperatorFactor operatorFactor, ProgramTokenType operatorType) {
         this.operatorFactor = operatorFactor;
         this.operatorType = operatorType;
     }
+/**
+ * 函数功能：翻译语法节点并返回命令节点注册器。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - children：CommandNodeRegister[] 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
     @Override
     public CommandNodeRegister translate(
@@ -73,3 +84,4 @@ public class UnaryExpressionTranslator implements CommandTranslator {
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
 }
+

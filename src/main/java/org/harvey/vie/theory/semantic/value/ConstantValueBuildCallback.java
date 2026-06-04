@@ -14,9 +14,43 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 import java.nio.charset.StandardCharsets;
 
 /**
- * @author Temper
+ * 在 LR 归约过程中构造编译期常量属性的语义回调。
+ *
+ * 作用：
+ *
+ * ConstantValueBuildCallback 负责常量折叠和一部分常量传播。
+ * 每当语法分析器完成一次 reduce，它会根据产生式语义 tag 判断当前节点是否可以
+ * 在编译期确定值。如果可以，就把 ConstantValue 绑定到当前 HeadNode 上。
+ *
+ * 这与实验任务书中“语法制导翻译及中间代码生成”的目标相配合：
+ *
+ * 1. 语义分析阶段识别常量表达式。
+ * 2. 中间代码生成阶段可以直接装载常量。
+ * 3. 避免为已经确定的表达式生成多余运行期求值指令。
+ *
+ * 注意：
+ *
+ * 该类不负责类型合法性检查。
+ * 类型检查主要由 TypeBuildCallback 和其他语义 callback 完成。
+ * 如果某个表达式不能安全折叠，规则会返回 null，让后续阶段走普通翻译流程。
  */
 public class ConstantValueBuildCallback implements ShiftReduceCallback {
+    /**
+     * production tag 到常量构造规则的映射表。
+     *
+     * 输入：
+     *
+     * 当前归约产生式携带的 ProgramSemanticTag 组合。
+     *
+     * 输出：
+     *
+     * 解析出一个 ConstantRule，用于尝试构造当前节点的 ConstantValue。
+     *
+     * 注意：
+     *
+     * 大部分语句、声明、函数调用、新建对象等节点不产生编译期常量，
+     * 因而映射到 ConstantRule.NONE。
+     */
     private static final ProductionTagStrategy<ConstantRule> RULES = new ProductionTagStrategy<>(ConstantRule.NONE)
             .when(ConstantRule.NONE, ProgramSemanticTag.PROGRAM)
             .when(ConstantRule.NONE, ProgramSemanticTag.NOOP)
@@ -59,6 +93,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
             .when(ConstantRule.RELATION, ProgramSemanticTag.GREATER_EQUAL)
             .when(ConstantRule.ARGUMENT_VALUE, ProgramSemanticTag.ARGUMENT, ProgramSemanticTag.VALUE, ProgramSemanticTag.FORWARD);
 
+    /**
+     * 函数功能：处理规约事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：无。
+     */
     @Override
     public void onReduce(ShiftReduceSemanticContext context, SimpleGrammarProduction production) {
         HeadNode head = currentReducedHead(context);
@@ -69,6 +110,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         ShiftReduceCallback.super.onReduce(context, production);
     }
 
+    /**
+     * 函数功能：转发子节点属性。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue forward(ShiftReduceSemanticContext context, HeadNode head) {
         for (int i = 0; i < head.size(); i++) {
             ConstantValue child = child(context, head, i);
@@ -79,6 +127,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return null;
     }
 
+    /**
+     * 函数功能：创建字面量常量值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue literal(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = head.get(0).toToken().getSource();
         SemanticType type = context.literalType(token);
@@ -95,10 +150,24 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         }
     }
 
+    /**
+     * 函数功能：处理空字面量常量值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue nullLiteral(ShiftReduceSemanticContext context, HeadNode head) {
         return new ConstantValue(SemanticType.nullLiteral(), null);
     }
 
+    /**
+     * 函数功能：计算一元负号常量表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue unaryMinus(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue operand = child(context, head, 1);
         if (operand == null || !operand.getType().isNumericScalar()) {
@@ -110,6 +179,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(operand.getType(), -operand.int32());
     }
 
+    /**
+     * 函数功能：计算逻辑非常量表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue unaryNot(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue operand = child(context, head, 1);
         if (operand == null || !operand.getType().isBooleanScalar()) {
@@ -118,6 +194,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(operand.getType(), !operand.bool());
     }
 
+    /**
+     * 函数功能：计算算术常量表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue arithmetic(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
@@ -142,6 +225,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         throw new CompilerException("unsupported arithmetic operator.");
     }
 
+    /**
+     * 函数功能：计算逻辑常量表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue logical(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
@@ -152,6 +242,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(SemanticType.scalar(SemanticType.Kind.BOOLEAN), result);
     }
 
+    /**
+     * 函数功能：处理相等性表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue equality(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
@@ -174,6 +271,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         );
     }
 
+    /**
+     * 函数功能：处理关系表达式。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue relation(ShiftReduceSemanticContext context, HeadNode head) {
         ConstantValue left = child(context, head, 0);
         ConstantValue right = child(context, head, 2);
@@ -197,6 +301,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(SemanticType.scalar(SemanticType.Kind.BOOLEAN), result);
     }
 
+    /**
+     * 函数功能：计算数值常量结果。
+     * 输入：
+     * - type：SemanticType 类型参数。
+     * - value：double 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue numericResult(SemanticType type, double value) {
         if (type.getKind() == SemanticType.Kind.FLOAT64) {
             return new ConstantValue(type, value);
@@ -204,16 +315,37 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return new ConstantValue(type, (int) value);
     }
 
+    /**
+     * 函数功能：获取标识符对应的常量值。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue identifierConstant(ShiftReduceSemanticContext context, HeadNode head) {
         SourceToken token = head.get(0).toToken().getSource();
         var record = context.getIdentifier(token);
         return record == null ? null : record.getConstantValue();
     }
 
+    /**
+     * 函数功能：获取指定子节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - head：HeadNode 类型参数。
+     * - index：int 类型参数。
+     * 输出：ConstantValue 类型返回值。
+     */
     private static ConstantValue child(ShiftReduceSemanticContext context, HeadNode head, int index) {
         return context.getConstantValue(head.get(index));
     }
 
+    /**
+     * 函数功能：获取当前规约头节点。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * 输出：HeadNode 类型返回值。
+     */
     private static HeadNode currentReducedHead(ShiftReduceSemanticContext context) {
         if (context.getTreeContext().isEmpty() || !context.getTreeContext().peek().isHead()) {
             throw new IllegalStateException("current reduced head is not available");
@@ -221,6 +353,15 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         return context.getTreeContext().peek().toHead();
     }
 
+    /**
+     * 单个产生式对应的常量构造规则。
+     *
+     * 作用：
+     *
+     * ConstantRule 是一个函数式接口。
+     * RULES 表根据 production tag 选出具体 ConstantRule，
+     * 再调用 build 方法尝试为当前归约节点构造 ConstantValue。
+     */
     @FunctionalInterface
     private interface ConstantRule {
         ConstantRule NONE = (context, head) -> null;
@@ -238,6 +379,13 @@ public class ConstantValueBuildCallback implements ShiftReduceCallback {
         ConstantRule RELATION = ConstantValueBuildCallback::relation;
         ConstantRule ARGUMENT_VALUE = ConstantValueBuildCallback::forward;
 
+        /**
+         * 函数功能：构建目标对象。
+         * 输入：
+         * - context：ShiftReduceSemanticContext 类型参数。
+         * - head：HeadNode 类型参数。
+         * 输出：ConstantValue 类型返回值。
+         */
         ConstantValue build(ShiftReduceSemanticContext context, HeadNode head);
     }
 }

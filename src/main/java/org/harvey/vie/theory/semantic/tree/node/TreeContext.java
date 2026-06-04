@@ -11,6 +11,12 @@ import java.util.function.Function;
  * @date 2026-04-19 01:01
  */
 public class TreeContext extends Stack<ShiftReduceSyntaxTreeNode> {
+/**
+ * 函数功能：重置栈顶语义节点。
+ * 输入：
+ * - mapper：Function<ShiftReduceSyntaxTreeNode,ShiftReduceSyntaxTreeNode> 类型参数。
+ * 输出：无。
+ */
 
     public void resetTop(Function<ShiftReduceSyntaxTreeNode,ShiftReduceSyntaxTreeNode> mapper) {
         push(mapper.apply(pop()));

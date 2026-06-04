@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.bu.table.element;
+﻿package org.harvey.vie.theory.syntax.bu.table.element;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,6 +14,12 @@ import lombok.Getter;
 @AllArgsConstructor
 public class ReduceTableElementImpl implements ReduceTableElement {
     private final int production;
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
 
     @Override

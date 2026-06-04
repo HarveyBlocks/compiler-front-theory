@@ -12,6 +12,12 @@ import java.nio.ByteBuffer;
  */
 public class ToBytes {
 
+    /**
+     * 函数功能：将整数转换为字节数组。
+     * 输入：
+     * - value：待转换的整数值。
+     * 输出：整数对应的 byte 数组。
+     */
     public static byte[] fromInt(int value) {
         return ByteBuffer.allocate(4).putInt(value).array();
     }

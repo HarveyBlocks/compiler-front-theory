@@ -12,5 +12,11 @@ import org.harvey.vie.theory.source.character.SourceCharacter;
  * @date 2026-03-25 17:59
  */
 public interface SourceAlphabetCharacterAdaptor {
+    /**
+     * 函数功能：将源字符适配为字母表字符。
+     * 输入：
+     * - ch：待适配的源字符。
+     * 输出：适配得到的 AlphabetCharacter。
+     */
     AlphabetCharacter adapt(SourceCharacter ch);
 }

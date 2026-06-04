@@ -13,6 +13,13 @@ import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
  * @date 2026-04-19 04:25
  */
 public class PassiveErrorCallback implements ShiftReduceCallback {
+    /**
+     * 函数功能：处理语义或语法错误事件。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - errorType：ShiftReduceErrorType 类型参数。
+     * 输出：无。
+     */
     @Override
     public void onError(ShiftReduceSemanticContext context, ShiftReduceErrorType errorType) {
         ShiftReduceCallback.super.onError(context, errorType);

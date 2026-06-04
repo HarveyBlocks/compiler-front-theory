@@ -50,9 +50,22 @@ public final class ProgramSyntaxTestRunner {
     private static final String SERIAL_SYNTAX_TABLE = "syntax_table.data";
     private static final String COMMON_LEXICAL_REPORT = "stage1-common.md";
     private static final String COMMON_SYNTAX_REPORT = "stage2-common.md";
+
+    /**
+     * 函数功能：阻止创建程序语法测试运行器实例。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     private ProgramSyntaxTestRunner() {
     }
 
+    /**
+     * 函数功能：执行所有程序语法语义测试并生成运行报告。
+     * 输入：
+     * - 无。
+     * 输出：本次测试运行的 SemanticRunReport。
+     */
     public static SemanticRunReport run() {
         try {
             Files.createDirectories(REPORT_ROOT_DIR);
@@ -83,6 +96,12 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
+    /**
+     * 函数功能：列出当前配置范围内的测试用例文件。
+     * 输入：
+     * - 无。
+     * 输出：测试用例 Path 列表。
+     */
     private static List<Path> listTestCases() throws IOException {
         String onlyCase = RuntimeProperties.programTestCase();
         try (Stream<Path> stream = Files.walk(TEST_CASE_DIR)) {
@@ -94,18 +113,43 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
+    /**
+     * 函数功能：判断文件名是否表示测试用例文件。
+     * 输入：
+     * - fileName：待判断的文件名。
+     * 输出：是否为测试用例文件的布尔值。
+     */
     private static boolean isTestCaseFile(String fileName) {
         return fileName.endsWith(".txt");
     }
 
+    /**
+     * 函数功能：判断测试用例是否属于阶段报告用例目录。
+     * 输入：
+     * - testCase：待判断的测试用例路径。
+     * 输出：是否为阶段报告用例的布尔值。
+     */
     private static boolean isPhaseReportCase(Path testCase) {
         return testCase.normalize().startsWith(PHASE_REPORT_CASE_DIR.normalize());
     }
 
+    /**
+     * 函数功能：判断测试用例集合中是否包含阶段报告用例。
+     * 输入：
+     * - cases：测试用例路径列表。
+     * 输出：是否包含阶段报告用例的布尔值。
+     */
     private static boolean containsPhaseReportCases(List<Path> cases) {
         return cases.stream().anyMatch(ProgramSyntaxTestRunner::isPhaseReportCase);
     }
 
+    /**
+     * 函数功能：执行单个测试用例并生成对应报告。
+     * 输入：
+     * - testCase：待执行的测试用例路径。
+     * - runReportDir：本次运行报告目录。
+     * 输出：单个测试用例的 TestCaseResult。
+     */
     private static TestCaseResult runOneTestCase(Path testCase, Path runReportDir) throws IOException {
         String caseName = testCase.getFileName().toString().replaceFirst("\\.txt$", "");
         boolean expectedFailure = caseName.contains("invalid");
@@ -164,6 +208,14 @@ public final class ProgramSyntaxTestRunner {
         );
     }
 
+    /**
+     * 函数功能：执行源文本的词法、语法和语义测试流程。
+     * 输入：
+     * - text：待测试的程序源文本。
+     * - errorContext：用于收集编译错误的上下文。
+     * - syntaxTrace：用于记录语法分析过程的追踪报告。
+     * 输出：语义分析结果 SemanticAnalysisResult。
+     */
     public static SemanticAnalysisResult executeSemanticTest(
             String text,
             DefaultErrorContext errorContext,
@@ -207,6 +259,15 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
+    /**
+     * 函数功能：写入本次测试运行的汇总报告。
+     * 输入：
+     * - summaryReport：汇总报告文件路径。
+     * - runId：本次测试运行编号。
+     * - results：全部测试用例结果列表。
+     * - containsPhaseReportCases：是否包含阶段报告用例。
+     * 输出：无。
+     */
     private static void writeSummary(
             Path summaryReport,
             String runId,
@@ -253,6 +314,24 @@ public final class ProgramSyntaxTestRunner {
         Files.writeString(summaryReport, summary.toString(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * 函数功能：写入单个测试用例的详细报告。
+     * 输入：
+     * - report：详细报告文件路径。
+     * - caseName：测试用例名称。
+     * - source：测试用例源代码文本。
+     * - lexicalReport：词法阶段报告。
+     * - syntaxTrace：语法分析追踪报告。
+     * - semanticResult：语义分析结果。
+     * - errorContext：编译错误上下文。
+     * - matchedExpectation：实际结果是否符合预期。
+     * - observedAccepted：实际结果是否被接受。
+     * - observedRejected：实际结果是否被拒绝。
+     * - failure：测试执行异常对象。
+     * - expectedFailure：测试是否预期失败。
+     * - phaseReportCase：是否为阶段报告用例。
+     * 输出：无。
+     */
     private static void writeReport(
             Path report,
             String caseName,
@@ -287,6 +366,13 @@ public final class ProgramSyntaxTestRunner {
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * 函数功能：向报告中写入语义分析相关章节。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - semanticResult：语义分析结果。
+     * 输出：无。
+     */
     private static void writeSemanticSections(StringBuilder builder, SemanticAnalysisResult semanticResult) {
         builder.append("## Struct Table\n\n");
         writeStructTable(builder, semanticResult == null ? null : semanticResult.getStructTable());
@@ -308,6 +394,12 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
+    /**
+     * 函数功能：写入所有用例共享的词法阶段报告。
+     * 输入：
+     * - report：共享词法报告文件路径。
+     * 输出：无。
+     */
     private static void writeCommonLexicalReport(Path report) throws IOException {
         StringBuilder builder = new StringBuilder();
         builder.append("# Experiment 1 Common Lexical Report\n\n");
@@ -319,6 +411,12 @@ public final class ProgramSyntaxTestRunner {
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * 函数功能：写入所有用例共享的语法阶段报告。
+     * 输入：
+     * - report：共享语法报告文件路径。
+     * 输出：无。
+     */
     private static void writeCommonSyntaxReport(Path report) throws IOException {
         ShiftReduceParsingTable table = SyntaxDemo.buildShiftReduceParsingTable(
                 "compilation_unit",
@@ -337,6 +435,13 @@ public final class ProgramSyntaxTestRunner {
         Files.writeString(report, builder.toString(), StandardCharsets.UTF_8);
     }
 
+    /**
+     * 函数功能：向报告中写入词法阶段结果章节。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - lexicalReport：词法阶段报告。
+     * 输出：无。
+     */
     private static void writeLexicalSection(StringBuilder builder, LexicalStageReport lexicalReport) {
         builder.append("- Observed: ").append(lexicalReport.isAccepted() ? "ACCEPT" : "REJECT").append("\n");
         builder.append("- Filtered Tokens: ").append(lexicalReport.getFilteredTokens().size()).append("\n");
@@ -390,6 +495,13 @@ public final class ProgramSyntaxTestRunner {
         }
     }
 
+    /**
+     * 函数功能：向报告中写入语法分析过程追踪章节。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - syntaxTrace：语法分析追踪报告。
+     * 输出：无。
+     */
     private static void writeSyntaxTrace(StringBuilder builder, SyntaxTraceReport syntaxTrace) {
         List<SyntaxTraceReport.TraceEntry> entries = syntaxTrace.snapshot();
         builder.append("- Steps: ").append(entries.size()).append("\n");
@@ -417,6 +529,13 @@ public final class ProgramSyntaxTestRunner {
         builder.append("```\n");
     }
 
+    /**
+     * 函数功能：向报告中写入三地址命令列表。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - commands：待写入的命令字符串列表。
+     * 输出：无。
+     */
     private static void writeCommands(StringBuilder builder, List<String> commands) {
         if (commands == null || commands.isEmpty()) {
             builder.append("_None_\n");
@@ -430,6 +549,13 @@ public final class ProgramSyntaxTestRunner {
         builder.append("```\n");
     }
 
+    /**
+     * 函数功能：向报告中写入结构体表。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - records：结构体记录列表。
+     * 输出：无。
+     */
     private static void writeStructTable(StringBuilder builder, List<StructRecord> records) {
         if (records == null || records.isEmpty()) {
             builder.append("_None_\n");
@@ -445,6 +571,14 @@ public final class ProgramSyntaxTestRunner {
         builder.append("```\n");
     }
 
+    /**
+     * 函数功能：向报告中写入标识符表。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - records：标识符记录数组。
+     * - structTable：结构体记录列表。
+     * 输出：无。
+     */
     private static void writeIdentifierTable(StringBuilder builder, IdentifierRecord[] records, List<StructRecord> structTable) {
         if (records == null || records.length == 0) {
             builder.append("_None_\n");
@@ -456,6 +590,14 @@ public final class ProgramSyntaxTestRunner {
         builder.append("```\n");
     }
 
+    /**
+     * 函数功能：向报告中写入函数命令段章节。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - semanticResult：语义分析结果。
+     * - segment：待写入的函数命令段。
+     * 输出：无。
+     */
     private static void writeFunctionSection(
             StringBuilder builder,
             SemanticAnalysisResult semanticResult,
@@ -478,6 +620,14 @@ public final class ProgramSyntaxTestRunner {
         );
     }
 
+    /**
+     * 函数功能：向报告中写入错误信息章节。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - errorContext：编译错误上下文。
+     * - title：错误章节标题。
+     * 输出：无。
+     */
     private static void writeErrorSection(StringBuilder builder, ErrorContext errorContext, String title) {
         builder.append("\n").append(title).append("\n\n");
         if (errorContext.isEmpty()) {
@@ -491,6 +641,15 @@ public final class ProgramSyntaxTestRunner {
         builder.append("```\n");
     }
 
+    /**
+     * 函数功能：按需写入实验要求的额外阶段报告章节。
+     * 输入：
+     * - builder：报告内容构建器。
+     * - phaseReportCase：是否为阶段报告用例。
+     * - lexicalReport：词法阶段报告。
+     * - syntaxTrace：语法分析追踪报告。
+     * 输出：无。
+     */
     private static void writeRequestedExtraSections(
             StringBuilder builder,
             boolean phaseReportCase,
@@ -512,6 +671,14 @@ public final class ProgramSyntaxTestRunner {
         private final Path summaryReport;
         private final List<TestCaseResult> results;
 
+        /**
+         * 函数功能：创建测试运行报告摘要对象。
+         * 输入：
+         * - runId：本次测试运行编号。
+         * - summaryReport：汇总报告路径。
+         * - results：测试用例结果列表。
+         * 输出：无。
+         */
         public SemanticRunReport(String runId, Path summaryReport, List<TestCaseResult> results) {
             this.runId = runId;
             this.summaryReport = summaryReport;
@@ -538,6 +705,26 @@ public final class ProgramSyntaxTestRunner {
         private final List<CompileErrorMessage> errors;
         private final Throwable failure;
 
+        /**
+         * 函数功能：创建单个测试用例执行结果对象。
+         * 输入：
+         * - caseName：测试用例名称。
+         * - report：测试用例报告路径。
+         * - expectationMatched：实际结果是否符合预期。
+         * - expectedFailure：测试是否预期失败。
+         * - observedAccepted：实际结果是否被接受。
+         * - observedRejected：实际结果是否被拒绝。
+         * - errorCount：编译错误数量。
+         * - phaseReportCase：是否为阶段报告用例。
+         * - lexicalReport：词法阶段报告。
+         * - syntaxTrace：语法分析追踪条目列表。
+         * - commandCount：生成命令数量。
+         * - symbolCount：符号数量。
+         * - semanticResult：语义分析结果。
+         * - errors：编译错误信息列表。
+         * - failure：测试执行异常对象。
+         * 输出：无。
+         */
         private TestCaseResult(
                 String caseName,
                 Path report,
@@ -571,6 +758,12 @@ public final class ProgramSyntaxTestRunner {
             this.failure = failure;
         }
 
+        /**
+         * 函数功能：判断测试用例是否执行成功。
+         * 输入：
+         * - 无。
+         * 输出：是否符合预期的布尔值。
+         */
         public boolean isSuccess() {
             return expectationMatched;
         }
@@ -579,28 +772,63 @@ public final class ProgramSyntaxTestRunner {
     private static final class SyntaxTraceReportProxy implements org.harvey.vie.theory.semantic.callback.bu.ShiftReduceCallback {
         private final SyntaxTraceReport delegate;
 
+        /**
+         * 函数功能：创建语法追踪报告回调代理。
+         * 输入：
+         * - delegate：实际接收回调的语法追踪报告。
+         * 输出：无。
+         */
         private SyntaxTraceReportProxy(SyntaxTraceReport delegate) {
             this.delegate = delegate;
         }
 
+        /**
+         * 函数功能：转发接受前回调到语法追踪报告。
+         * 输入：
+         * - context：当前移进归约语义上下文。
+         * - production：接受阶段使用的简单文法产生式。
+         * 输出：无。
+         */
         @Override
         public void beforeAccept(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
                                  org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
             delegate.beforeAccept(context, production);
         }
 
+        /**
+         * 函数功能：转发接受回调到语法追踪报告。
+         * 输入：
+         * - context：当前移进归约语义上下文。
+         * - production：接受阶段使用的简单文法产生式。
+         * 输出：无。
+         */
         @Override
         public void onAccept(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
                              org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
             delegate.onAccept(context, production);
         }
 
+        /**
+         * 函数功能：转发归约回调到语法追踪报告。
+         * 输入：
+         * - context：当前移进归约语义上下文。
+         * - production：用于归约的简单文法产生式。
+         * 输出：无。
+         */
         @Override
         public void onReduce(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
                              org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction production) {
             delegate.onReduce(context, production);
         }
 
+        /**
+         * 函数功能：转发移进回调到语法追踪报告。
+         * 输入：
+         * - context：当前移进归约语义上下文。
+         * - nextStatus：移进后的目标状态编号。
+         * - token：被移进的源词法单元。
+         * 输出：无。
+         */
         @Override
         public void onShift(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
                             int nextStatus,
@@ -608,6 +836,13 @@ public final class ProgramSyntaxTestRunner {
             delegate.onShift(context, nextStatus, token);
         }
 
+        /**
+         * 函数功能：转发错误回调到语法追踪报告。
+         * 输入：
+         * - context：当前移进归约语义上下文。
+         * - errorType：移进归约错误类型。
+         * 输出：无。
+         */
         @Override
         public void onError(org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext context,
                             org.harvey.vie.theory.semantic.callback.bu.ShiftReduceErrorType errorType) {

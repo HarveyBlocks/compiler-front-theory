@@ -11,7 +11,19 @@ import org.harvey.vie.theory.syntax.grammar.symbol.TerminalSymbol;
  * @date 2026-04-01 18:41
  */
 public interface TerminalNode extends GrammarSyntaxTreeNode {
+    /**
+     * 函数功能：获取终结节点对应的文法终结符号。
+     * 输入：
+     * - 无。
+     * 输出：TerminalSymbol 终结符号。
+     */
     TerminalSymbol getSymbol();
 
+    /**
+     * 函数功能：获取终结节点对应的源词法单元。
+     * 输入：
+     * - 无。
+     * 输出：SourceToken 源词法单元。
+     */
     SourceToken getToken();
 }

@@ -20,6 +20,12 @@ import org.harvey.vie.theory.lexical.alphabet.AlphabetCharacter;
 public class CharRegexNode implements RegexNode {
     private final AlphabetCharacter character;
 
+    /**
+     * 函数功能：返回字符正则节点的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：字符正则节点的字符串表示。
+     */
     @Override
     public String toString() {
         return "" + character;

@@ -14,22 +14,24 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 控制流支路：把 {@code do-while} 翻译为“先执行一次，再检测条件”的跳转结构。
+ * 把 do-while 循环翻译为“先执行一次，再检测条件”的跳转结构。
  * <p>
- * 与 {@link WhileStatementTranslator} 不同，循环体至少会执行一次，因此在条件恒为 {@code false} 时
- * 也仍然需要保留一次循环体代码。普通场景下的结构是：循环体起点标签、循环体、条件检测点标签、
- * 条件求值、{@code if_goto whileStart}、循环结束标签。
- * <p>
- * {@code continue} 在 do-while 中不能跳回循环体开头，而要跳到条件检测点，所以本类调用
- * {@link WhileStatementTranslator#bindLoopLabels(CommandNodeRegister, SemanticLabel, SemanticLabel)}
- * 时把 {@code continueLabel} 设为 {@code beforeTestLabel}。讲完本支路回到
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * 与 while 不同，循环体至少会执行一次，因此在条件恒为 false 时
+ * 也仍然需要保留一次循环体代码。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-21 00:35
  */
 public class DoWhileStatementTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
@@ -46,6 +48,14 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         }
         return onNormalCondition(context, production, children);
     }
+/**
+ * 函数功能：处理普通条件分支。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - children：CommandNodeRegister[] 类型参数。
+ * 输出：NormalCommandNodeRegister 类型返回值。
+ */
 
     private static NormalCommandNodeRegister onNormalCondition(
             ShiftReduceSemanticContext context,
@@ -78,6 +88,13 @@ public class DoWhileStatementTranslator implements CommandTranslator {
         WhileStatementTranslator.bindLoopLabels(children[1], beforeTestLabel, whileEndLabel);
         return new NormalCommandNodeRegister(thisBuilder.build(), production, children);
     }
+/**
+ * 函数功能：处理恒假条件分支。
+ * 输入：
+ * - production：SimpleGrammarProduction 类型参数。
+ * - children：CommandNodeRegister[] 类型参数。
+ * 输出：NormalCommandNodeRegister 类型返回值。
+ */
 
     private static NormalCommandNodeRegister onFalseConstantCondition(
             SimpleGrammarProduction production,

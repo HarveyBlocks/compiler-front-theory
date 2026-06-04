@@ -3,15 +3,7 @@ package org.harvey.vie.theory.semantic.command.command.factory;
 import org.harvey.vie.theory.semantic.type.SemanticType;
 
 /**
- * 命令层面的数据类别。
- * <p>
- * 它不是源语言完整类型系统，而是把 {@link SemanticType} 压缩成命令后缀需要的几类：
- * 标量保留为 {@code boolean}/{@code int32}/{@code float64} 等，数组和结构体统一按 {@link #REF}
- * 处理。这样命令文本可以稳定写成 {@code load_st_ref_address}、{@code assign_from_st_top_to_ref_int32}
- * 等形式。
- * <p>
- * 讲完本枚举回到 {@link CommandFactory} 或
- * {@link org.harvey.vie.theory.semantic.command.command.string.TypedStringCommandFactory}。
+ * Instruction-level data category used by command encoding.
  *
  * @author Temper
  */
@@ -25,14 +17,32 @@ public enum CommandDataType {
     REF("ref");
 
     private final String mnemonic;
+/**
+ * 函数功能：创建 CommandDataType 对象。
+ * 输入：
+ * - mnemonic：String 类型参数。
+ * 输出：无。
+ */
 
     CommandDataType(String mnemonic) {
         this.mnemonic = mnemonic;
     }
+/**
+ * 函数功能：获取操作符助记符。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     public String mnemonic() {
         return mnemonic;
     }
+/**
+ * 函数功能：获取存储类型对应的命令数据类型。
+ * 输入：
+ * - type：SemanticType 类型参数。
+ * 输出：CommandDataType 类型返回值。
+ */
 
     public static CommandDataType forStorage(SemanticType type) {
         if (type.isReferenceType()) {
@@ -40,6 +50,12 @@ public enum CommandDataType {
         }
         return forScalar(type);
     }
+/**
+ * 函数功能：获取值类型对应的命令数据类型。
+ * 输入：
+ * - type：SemanticType 类型参数。
+ * 输出：CommandDataType 类型返回值。
+ */
 
     public static CommandDataType forValue(SemanticType type) {
         if (type.isReferenceType()) {
@@ -47,6 +63,12 @@ public enum CommandDataType {
         }
         return forScalar(type);
     }
+/**
+ * 函数功能：获取标量类型对应的命令数据类型。
+ * 输入：
+ * - type：SemanticType 类型参数。
+ * 输出：CommandDataType 类型返回值。
+ */
 
     private static CommandDataType forScalar(SemanticType type) {
         switch (type.getKind()) {

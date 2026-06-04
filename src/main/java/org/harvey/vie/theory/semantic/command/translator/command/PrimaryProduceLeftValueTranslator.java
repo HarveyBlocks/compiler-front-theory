@@ -12,21 +12,19 @@ import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 左值转右值支路：当 {@code loc} 出现在表达式位置时，把“位置”读取成“值”。
- * <p>
- * {@link IdentifierUseTranslator}、{@link ArrayAtExpressionTranslator}、{@link MemberAccessTranslator}
- * 这类翻译器通常先生成地址或引用定位命令；本类根据
- * {@link org.harvey.vie.theory.semantic.command.LocationKind} 追加
- * {@code st_top_addr_to_val_*} 或 {@code st_top_ref_to_val_*}，让后续算术/逻辑运算看到真实值。
- * <p>
- * 讲完本支路可继续看 {@link AssignStatementTranslator} 对左值写回的处理，或回到
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
- *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-21 00:26
  */
 public class PrimaryProduceLeftValueTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,

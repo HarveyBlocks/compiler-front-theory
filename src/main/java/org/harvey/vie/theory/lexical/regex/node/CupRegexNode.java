@@ -21,6 +21,12 @@ public class CupRegexNode implements RegexNode {
     private RegexNode left;
     private RegexNode right;
 
+    /**
+     * 函数功能：返回选择正则节点的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：选择正则节点的字符串表示。
+     */
     @Override
     public String toString() {
         return "(" + left + ")|(" + right + ")";

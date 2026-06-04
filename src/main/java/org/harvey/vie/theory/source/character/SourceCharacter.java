@@ -11,15 +11,33 @@ package org.harvey.vie.theory.source.character;
 public interface SourceCharacter {
     SourceCharacter EOF = new EofCharacter();
 
+    /**
+     * 函数功能：将源字符转换为字节数组表示。
+     * 输入：
+     * - 无。
+     * 输出：源字符对应的字节数组。
+     */
     byte[] toCharacter();
 }
 
 class EofCharacter implements SourceCharacter {
+    /**
+     * 函数功能：将文件结束字符转换为字节数组表示。
+     * 输入：
+     * - 无。
+     * 输出：文件结束字符对应的字节数组。
+     */
     @Override
     public byte[] toCharacter() {
         throw new UnsupportedOperationException();
     }
 
+    /**
+     * 函数功能：返回文件结束字符的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：文件结束字符的字符串表示。
+     */
     @Override
     public String toString() {
         return "EOF";

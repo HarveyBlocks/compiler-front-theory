@@ -11,5 +11,11 @@ import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
  */
 @FunctionalInterface
 public interface ReducePredicate {
+    /**
+     * 函数功能：判断输入是否满足条件。
+     * 输入：
+     * - production：SimpleGrammarProduction 类型参数。
+     * 输出：判断结果布尔值。
+     */
     boolean test(SimpleGrammarProduction production);
 }

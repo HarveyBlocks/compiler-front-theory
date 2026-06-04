@@ -25,6 +25,12 @@ import java.util.Map;
  */
 public class ProductionSetContextBuilds {
 
+    /**
+     * 函数功能：构建数字加法演示文法的产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext build1(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         GrammarProductionBuilder itemBuilder = contextBuilder.define("item");
@@ -47,7 +53,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
-    // 消解左递归, 有间接递归
+    /**
+     * 函数功能：构建包含间接左递归的演示文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext build2(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         GrammarProductionBuilder sBuilder = contextBuilder.define("S");
@@ -61,7 +72,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
-    // 消解左相同因子
+    /**
+     * 函数功能：构建包含公共左因子的演示文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext build3(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("B").alternateEpsilon();
@@ -108,21 +124,45 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建经典表达式文法的产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext build4(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         return classic(contextBuilder);
     }
 
+    /**
+     * 函数功能：按提示文本获取字符串词法单元类型。
+     * 输入：
+     * - hint：词法单元的提示文本。
+     * 输出：提示文本对应的 TokenType。
+     */
     private static TokenType of(String hint) {
         return StringTokenType.of(hint);
     }
 
+    /**
+     * 函数功能：构建带开始符号包装的经典表达式文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext build5(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S").alternateDefinition("E");
         return classic(contextBuilder);
     }
 
+    /**
+     * 函数功能：向产生式上下文构建器加入经典表达式文法。
+     * 输入：
+     * - contextBuilder：待填充产生式的上下文构建器。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     private static ProductionSetContext classic(ProductionSetContextBuilder contextBuilder) {
         contextBuilder.define("E")
                 .alternateDefinition("E")
@@ -142,6 +182,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建包含类型与表达式歧义的演示文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext build6(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         // S -> expr
@@ -192,26 +238,56 @@ public class ProductionSetContextBuilds {
         private final String hint;
         private static final Map<String, StringTokenType> POOL = new HashMap<>();
 
+        /**
+         * 函数功能：按提示文本获取共享的字符串词法单元类型。
+         * 输入：
+         * - hint：词法单元的提示文本。
+         * 输出：提示文本对应的 TokenType。
+         */
         public static TokenType of(String hint) {
             return POOL.computeIfAbsent(hint, StringTokenType::new);
         }
 
+        /**
+         * 函数功能：序列化字符串词法单元类型。
+         * 输入：
+         * - os：接收序列化数据的输出流。
+         * 输出：写入的字节数。
+         */
         @Override
         public int store(OutputStream os) throws IOException {
             throw new UnsupportedEncodingException("just test");
         }
 
+        /**
+         * 函数功能：获取字符串词法单元类型的优先级。
+         * 输入：
+         * - 无。
+         * 输出：词法单元优先级整数。
+         */
         @Override
         public int getPriority() {
             return 0;
         }
 
+        /**
+         * 函数功能：获取字符串词法单元类型的提示文本。
+         * 输入：
+         * - 无。
+         * 输出：词法单元提示字符串。
+         */
         @Override
         public @NonNull String hint() {
             return hint;
         }
     }
 
+    /**
+     * 函数功能：构建作业题一的文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildSchoolWork1(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -221,6 +297,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建作业题二的文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildSchoolWork2(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -234,6 +316,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建作业题三的文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildSchoolWork3(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -246,6 +334,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建作业题四的文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildSchoolWork4(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -263,6 +357,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建作业题五的文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildSchoolWork5(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("S")
@@ -278,6 +378,12 @@ public class ProductionSetContextBuilds {
         return contextBuilder.build();
     }
 
+    /**
+     * 函数功能：构建作业题七的布尔表达式文法产生式上下文。
+     * 输入：
+     * - terminalFactory：用于创建终结符号的工厂。
+     * 输出：构建完成的 ProductionSetContext。
+     */
     public static ProductionSetContext buildSchoolWork7(TerminalFactory terminalFactory) {
         ProductionSetContextBuilder contextBuilder = new ProductionSetContextBuilderImpl(terminalFactory);
         contextBuilder.define("bexpr")

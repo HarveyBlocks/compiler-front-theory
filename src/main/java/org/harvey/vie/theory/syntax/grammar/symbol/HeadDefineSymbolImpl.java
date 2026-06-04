@@ -1,4 +1,4 @@
-package org.harvey.vie.theory.syntax.grammar.symbol;
+﻿package org.harvey.vie.theory.syntax.grammar.symbol;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -23,11 +23,23 @@ import java.nio.charset.StandardCharsets;
 @AllArgsConstructor
 public class HeadDefineSymbolImpl  extends AbstractTagGrammarSymbol implements HeadDefineSymbol {
     private final String name;
+/**
+ * 函数功能：返回当前对象的字符串表示。
+ * 输入：
+ * - 无。
+ * 输出：字符串结果。
+ */
 
     @Override
     public String toString() {
         return name;
     }
+/**
+ * 函数功能：将对象写入输出流。
+ * 输入：
+ * - os：OutputStream 类型参数。
+ * 输出：整数结果。
+ */
 
     @Override
     public int store(OutputStream os) throws IOException {
@@ -38,6 +50,12 @@ public class HeadDefineSymbolImpl  extends AbstractTagGrammarSymbol implements H
     }
 
     public static class Loader implements HeadDefineSymbol.Loader<HeadDefineSymbolImpl> {
+        /**
+         * 函数功能：从输入流加载对象。
+         * 输入：
+         * - is：InputStream 类型参数。
+         * 输出：HeadDefineSymbolImpl 类型返回值。
+         */
         @Override
         public HeadDefineSymbolImpl load(InputStream is) throws IOException {
             int length = Loaders.loadInteger(is);

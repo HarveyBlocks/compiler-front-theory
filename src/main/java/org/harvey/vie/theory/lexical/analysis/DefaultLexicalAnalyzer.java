@@ -22,6 +22,13 @@ public class DefaultLexicalAnalyzer implements LexicalAnalyzer {
     private final RegexDfaStatusTable table;
     private final SourceAlphabetCharacterAdaptor saca;
 
+    /**
+     * 函数功能：创建源词法单元迭代器。
+     * 输入：
+     * - errorContext：用于收集词法错误的错误上下文。
+     * - resource：待分析的输入资源。
+     * 输出：用于读取源词法单元的 SourceTokenIterator。
+     */
     @Override
     public SourceTokenIterator iterator(ErrorContext errorContext, Resource resource) {
         return new StatusTableTokenIterator(errorContext, resource.toReader(errorContext), saca, table);

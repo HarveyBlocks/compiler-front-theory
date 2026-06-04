@@ -10,29 +10,29 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import org.harvey.vie.theory.semantic.command.register.CommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.NormalCommandNodeRegister;
 import org.harvey.vie.theory.semantic.command.register.PlaceholderNodeRegister;
-import org.harvey.vie.theory.semantic.command.translator.token.BreakTokenTranslator;
-import org.harvey.vie.theory.semantic.command.translator.token.ContinueTokenTranslator;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
 import org.harvey.vie.theory.semantic.type.TypeAttributes;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 /**
- * 控制流支路：把 {@code while} 循环翻译为带首部判定的跳转结构。
+ * 把 while 循环翻译为带首部判定的跳转结构。
  * <p>
- * 典型结构是：循环头标签、条件求值、{@code ifn_goto whileEnd}、循环体、{@code goto whileStart}、
- * 循环尾标签。{@link BreakTokenTranslator} 和 {@link ContinueTokenTranslator} 先生成目标未知的跳转；
- * 本类再用 {@link #bindLoopLabels(CommandNodeRegister, SemanticLabel, SemanticLabel)}
- * 把循环体内尚未解析目标的 {@code break}/{@code continue} 绑定到当前循环。
- * <p>
- * 如果条件被 {@link ConstantConditionSupport} 确定为 {@code false}，整个 while 不可达，直接返回
- * {@link PlaceholderNodeRegister}。讲完本支路可继续看 {@link DoWhileStatementTranslator}，或回到
- * {@link org.harvey.vie.theory.semantic.tag.TagStrategyCompose}。
+ * 除了生成循环首尾标签外，还负责把循环体内尚未解析目标的
+ * {@code break}/{@code continue} 绑定到当前循环的真实出口。
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
  * @date 2026-04-21 00:35
  */
 public class WhileStatementTranslator implements CommandTranslator {
+    /**
+     * 函数功能：翻译语法节点并返回命令节点注册器。
+     * 输入：
+     * - context：ShiftReduceSemanticContext 类型参数。
+     * - production：SimpleGrammarProduction 类型参数。
+     * - children：CommandNodeRegister[] 类型参数。
+     * 输出：CommandNodeRegister 类型返回值。
+     */
     @Override
     public CommandNodeRegister translate(
             ShiftReduceSemanticContext context,
@@ -75,11 +75,12 @@ public class WhileStatementTranslator implements CommandTranslator {
     }
 
     /**
-     * 将循环体中延迟解析的 break/continue 指令绑定到当前循环。
-     *
-     * @param body 循环体对应的命令注册器
-     * @param continueLabel continue 跳转目标
-     * @param breakLabel break 跳转目标
+     * 函数功能：绑定循环体中的跳转标签。
+     * 输入：
+     * - body：CommandNodeRegister 类型参数。
+     * - continueLabel：SemanticLabel 类型参数。
+     * - breakLabel：SemanticLabel 类型参数。
+     * 输出：无。
      */
     static void bindLoopLabels(CommandNodeRegister body, SemanticLabel continueLabel, SemanticLabel breakLabel) {
         for (org.harvey.vie.theory.semantic.command.command.UncertainLabelGotoCommand gotoCommand : body.getUncertainBreaks()) {

@@ -18,8 +18,22 @@ import java.util.*;
  */
 public class DeterministicPredictiveParsingTableFactory implements PredictiveParsingTableFactory {
     private final TerminalMatcherFactory matcherFactory;
+/**
+ * 函数功能：创建 DeterministicPredictiveParsingTableFactory 对象。
+ * 输入：
+ * - matcherFactory：TerminalMatcherFactory 类型参数。
+ * 输出：无。
+ */
 
     public DeterministicPredictiveParsingTableFactory(TerminalMatcherFactory matcherFactory) {this.matcherFactory = matcherFactory;}
+/**
+ * 函数功能：生成单个预测分析表项。
+ * 输入：
+ * - symbol：AlterableSymbol 类型参数。
+ * - builder：PredictiveParsingTableBuilder 类型参数。
+ * - headIndex：int 类型参数。
+ * 输出：无。
+ */
 
     private static void produceEach(AlterableSymbol symbol, PredictiveParsingTableBuilder builder, int headIndex) {
         int rightId;
@@ -58,6 +72,14 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
             }
         }
     }
+/**
+ * 函数功能：根据输入数据创建目标对象。
+ * 输入：
+ * - context：ProductionSetContext 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * - followMap：FollowMap 类型参数。
+ * 输出：PredictiveParsingTable 类型返回值。
+ */
 
     @Override
     public PredictiveParsingTable produce(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
@@ -84,6 +106,14 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
         private final Map<TerminalSymbol, Integer> terminalIndexMap;
         private final List<GrammarConcatenation> concatenationList;
         private final PredictiveParsingTableElementBuilder[][] table;
+/**
+ * 函数功能：创建 PredictiveParsingTableBuilder 对象。
+ * 输入：
+ * - context：ProductionSetContext 类型参数。
+ * - firstMap：FirstMap 类型参数。
+ * - followMap：FollowMap 类型参数。
+ * 输出：无。
+ */
 
         public PredictiveParsingTableBuilder(ProductionSetContext context, FirstMap firstMap, FollowMap followMap) {
             this.context = context;
@@ -108,10 +138,22 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
                 }
             }
         }
+/**
+ * 函数功能：获取非终结符数量。
+ * 输入：
+ * - 无。
+ * 输出：整数结果。
+ */
 
         public int headLength() {
             return followMap.size();
         }
+/**
+ * 函数功能：添加语法符号连接体。
+ * 输入：
+ * - concatenation：GrammarConcatenation 类型参数。
+ * 输出：整数结果。
+ */
 
 
         public int addConcatenation(GrammarConcatenation concatenation) {
@@ -119,6 +161,12 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
             concatenationList.add(concatenation);
             return rightId;
         }
+/**
+ * 函数功能：获取终结符编号。
+ * 输入：
+ * - terminalSymbol：TerminalSymbol 类型参数。
+ * 输出：整数结果。
+ */
 
         public int terminalId(TerminalSymbol terminalSymbol) {
             Integer index = terminalIndexMap.get(terminalSymbol);
@@ -127,26 +175,65 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
             }
             return index;
         }
+/**
+ * 函数功能：获取 FIRST 集合。
+ * 输入：
+ * - concatenation：GrammarConcatenation 类型参数。
+ * 输出：FirstSet 类型返回值。
+ */
 
         public FirstSet first(GrammarConcatenation concatenation) {
             return firstMap.first(concatenation);
         }
+/**
+ * 函数功能：获取 FOLLOW 集合。
+ * 输入：
+ * - headId：int 类型参数。
+ * 输出：FollowSet 类型返回值。
+ */
 
         public FollowSet follow(int headId) {
             return followMap.get(headSymbolArray[headId]);
         }
+/**
+ * 函数功能：设置指定位置的元素。
+ * 输入：
+ * - headIndex：int 类型参数。
+ * - terminalIndex：int 类型参数。
+ * - rightId：int 类型参数。
+ * 输出：无。
+ */
 
         public void set(int headIndex, int terminalIndex, int rightId) {
             table[headIndex][terminalIndex].set(rightId);
         }
+/**
+ * 函数功能：设置结束标记对应的表项。
+ * 输入：
+ * - i：int 类型参数。
+ * - rightId：int 类型参数。
+ * 输出：无。
+ */
 
         public void setEndMark(int i, int rightId) {
             set(i, END_MARK_REFERENCE, rightId);
         }
+/**
+ * 函数功能：获取指定头部符号的候选式集合。
+ * 输入：
+ * - i：int 类型参数。
+ * 输出：GrammarAlternation 类型返回值。
+ */
 
         public GrammarAlternation getAlternation(int i) {
             return context.getAlternation(headSymbolArray[i]);
         }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - matcherFactory：TerminalMatcherFactory 类型参数。
+ * 输出：PredictiveParsingTable 类型返回值。
+ */
 
 
         public PredictiveParsingTable build(TerminalMatcherFactory matcherFactory) {
@@ -169,6 +256,12 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
 
     private static class PredictiveParsingTableElementBuilder {
         private Integer rightId;
+/**
+ * 函数功能：设置指定位置的元素。
+ * 输入：
+ * - rightId：int 类型参数。
+ * 输出：无。
+ */
 
 
         public void set(int rightId) {
@@ -178,6 +271,12 @@ public class DeterministicPredictiveParsingTableFactory implements PredictivePar
             }
             this.rightId = rightId;
         }
+/**
+ * 函数功能：构建目标对象。
+ * 输入：
+ * - 无。
+ * 输出：PredictiveParsingTableElement 类型返回值。
+ */
 
         public PredictiveParsingTableElement build() {
             return new DeterministicPredictiveParsingTableElement(rightId);

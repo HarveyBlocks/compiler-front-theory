@@ -11,5 +11,11 @@ import java.io.InputStream;
  * @date 2026-03-25 13:55
  */
 public interface TokenTypeFactory {
+    /**
+     * 函数功能：从输入流生产词法单元类型。
+     * 输入：
+     * - is：提供词法单元类型数据的输入流。
+     * 输出：生产得到的 TokenType。
+     */
     TokenType produce(InputStream is);
 }

@@ -9,6 +9,12 @@ import org.harvey.vie.theory.semantic.type.TypeResolver;
  * @author Temper
  */
 public class ProgramTypeResolver implements TypeResolver {
+    /**
+     * 函数功能：解析字面量词法单元对应的语义类型。
+     * 输入：
+     * - token：字面量对应的源词法单元。
+     * 输出：字面量对应的 SemanticType。
+     */
     @Override
     public SemanticType literalType(SourceToken token) {
         ProgramTokenType tokenType = tokenType(token);
@@ -31,6 +37,12 @@ public class ProgramTypeResolver implements TypeResolver {
         }
     }
 
+    /**
+     * 函数功能：解析类型词法单元对应的语义类型。
+     * 输入：
+     * - token：类型对应的源词法单元。
+     * 输出：类型词法单元对应的 SemanticType。
+     */
     @Override
     public SemanticType typeToken(SourceToken token) {
         ProgramTokenType tokenType = tokenType(token);
@@ -54,6 +66,12 @@ public class ProgramTypeResolver implements TypeResolver {
         }
     }
 
+    /**
+     * 函数功能：获取源词法单元的程序词法类型。
+     * 输入：
+     * - token：源词法单元。
+     * 输出：ProgramTokenType 类型；词法单元为空时返回 null。
+     */
     private ProgramTokenType tokenType(SourceToken token) {
         return token == null ? null : (ProgramTokenType) token.getType();
     }

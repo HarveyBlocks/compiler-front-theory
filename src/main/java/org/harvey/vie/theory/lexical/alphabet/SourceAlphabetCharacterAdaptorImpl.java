@@ -18,6 +18,12 @@ import org.harvey.vie.theory.source.character.SourceCharacter;
 public class SourceAlphabetCharacterAdaptorImpl implements SourceAlphabetCharacterAdaptor {
     private AlphabetCharacterFactory factory;
 
+    /**
+     * 函数功能：将源字符转换为字母表字符。
+     * 输入：
+     * - ch：待转换的源字符。
+     * 输出：转换得到的 AlphabetCharacter。
+     */
     @Override
     public AlphabetCharacter adapt(SourceCharacter ch) {
         if (ch instanceof AsciiCharacter) {

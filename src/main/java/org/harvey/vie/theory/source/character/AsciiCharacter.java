@@ -15,11 +15,23 @@ import lombok.Getter;
 public class AsciiCharacter implements SourceCharacter {
     private final byte ascii;
 
+    /**
+     * 函数功能：将 ASCII 源字符转换为字节数组表示。
+     * 输入：
+     * - 无。
+     * 输出：ASCII 源字符对应的字节数组。
+     */
     @Override
     public byte[] toCharacter() {
         return new byte[]{ascii};
     }
 
+    /**
+     * 函数功能：返回 ASCII 源字符的字符串表示。
+     * 输入：
+     * - 无。
+     * 输出：ASCII 源字符的字符串表示。
+     */
     @Override
     public String toString() {
         return Character.toString(ascii);

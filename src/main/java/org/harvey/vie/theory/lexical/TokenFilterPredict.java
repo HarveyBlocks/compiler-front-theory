@@ -14,7 +14,10 @@ import java.util.function.Predicate;
 @FunctionalInterface
 public interface TokenFilterPredict extends Predicate<SourceToken> {
     /**
-     * @return true for retain, false for give up.
+     * 函数功能：判断源词法单元是否保留。
+     * 输入：
+     * - token：待判断的源词法单元。
+     * 输出：是否保留该词法单元的布尔值。
      */
     @Override
     boolean test(SourceToken token);

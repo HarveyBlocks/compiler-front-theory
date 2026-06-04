@@ -18,6 +18,12 @@ public abstract class AbstractErrorMessage implements CompileErrorMessage {
     private final int offset;
     private final String message;
 
+    /**
+     * 函数功能：返回错误偏移量和错误信息组成的字符串。
+     * 输入：
+     * - 无。
+     * 输出：错误信息的字符串表示。
+     */
     @Override
     public String toString() {
         return offset + ": " + message;

@@ -14,18 +14,7 @@ import org.harvey.vie.theory.semantic.type.TypeResolver;
 import org.harvey.vie.theory.semantic.value.ConstantValue;
 
 /**
- * 带类型文本命令工厂：把语义命令编码成演示用的三地址码/四元式风格文本。
- * <p>
- * 这里是“实际输出长什么样”的核心文件。它不会生成 JVM 字节码，而是返回 {@link StringCommand}
- * 或 {@link StringSupplierCommand}。命令名通常由“动作 + 命令数据类型”组成，例如
- * {@code load_st_int32_address 0}、{@code st_plus_int32}、
- * {@code assign_from_st_top_to_ref_boolean}。
- * <p>
- * 标签跳转命令使用 {@link StringSupplierCommand}，因为标签下标要等
- * {@link org.harvey.vie.theory.semantic.command.node.LabelNode} 展开后才知道。
- * 讲完本类继续看结果如何展开和打印：
- * {@link org.harvey.vie.theory.semantic.command.SemanticResultCallback} 与
- * {@link org.harvey.vie.theory.semantic.command.ThreeAddressCodePrinter}。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -33,8 +22,20 @@ import org.harvey.vie.theory.semantic.value.ConstantValue;
  */
 public class TypedStringCommandFactory implements TypedCommandFactory {
     private final TypeResolver typeResolver;
+/**
+ * 函数功能：创建 TypedStringCommandFactory 对象。
+ * 输入：
+ * - typeResolver：TypeResolver 类型参数。
+ * 输出：无。
+ */
 
     public TypedStringCommandFactory(TypeResolver typeResolver) {this.typeResolver = typeResolver;}
+/**
+ * 函数功能：生成加载字面量的命令。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
 
     @Override
@@ -44,6 +45,12 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
                                  "_static " +
                                  SourceTokenStringMapping.utf8(token));
     }
+/**
+ * 函数功能：生成加载标识符地址的命令。
+ * 输入：
+ * - record：IdentifierRecord 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand loadIdentifierAddress(IdentifierRecord record) {
@@ -52,6 +59,12 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
                                  "_address " +
                                  record.getOffset());
     }
+/**
+ * 函数功能：生成加载常量的命令。
+ * 输入：
+ * - constantValue：ConstantValue 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand loadConstant(ConstantValue constantValue) {
@@ -60,11 +73,25 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
                                  "_static " +
                                  constantValue);
     }
+/**
+ * 函数功能：生成新建结构体命令。
+ * 输入：
+ * - record：StructRecord 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand newStruct(StructRecord record) {
         return new StringCommand("new_struct " + record.getTableIndex());
     }
+/**
+ * 函数功能：生成新建数组命令。
+ * 输入：
+ * - elementType：CommandDataType 类型参数。
+ * - totalDimensions：int 类型参数。
+ * - specifiedDimensions：int 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand newArray(CommandDataType elementType, int totalDimensions, int specifiedDimensions) {
@@ -72,66 +99,147 @@ public class TypedStringCommandFactory implements TypedCommandFactory {
                 "new_array_" + elementType.mnemonic() + " " + totalDimensions + " " + specifiedDimensions
         );
     }
+/**
+ * 函数功能：生成栈顶运算命令。
+ * 输入：
+ * - operatorFactor：OperatorFactor 类型参数。
+ * - operandType：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand stOperator(OperatorFactor operatorFactor, CommandDataType operandType) {
         return new StringCommand("st_" + operatorFactor.mnemonic() + "_" + operandType.mnemonic());
     }
+/**
+ * 函数功能：生成栈顶地址取值命令。
+ * 输入：
+ * - type：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand stTopAddrToVal(CommandDataType type) {
         return new StringCommand("st_top_addr_to_val_" + type.mnemonic());
     }
+/**
+ * 函数功能：生成栈顶引用取值命令。
+ * 输入：
+ * - type：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand stTopRefToVal(CommandDataType type) {
         return new StringCommand("st_top_ref_to_val_" + type.mnemonic());
     }
+/**
+ * 函数功能：生成从栈顶赋值到地址的命令。
+ * 输入：
+ * - type：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand assignFromStTopToAddr(CommandDataType type) {
         return new StringCommand("assign_from_st_top_to_addr_" + type.mnemonic());
     }
+/**
+ * 函数功能：生成从栈顶赋值到引用的命令。
+ * 输入：
+ * - type：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand assignFromStTopToRef(CommandDataType type) {
         return new StringCommand("assign_from_st_top_to_ref_" + type.mnemonic());
     }
+/**
+ * 函数功能：生成基于地址偏移的命令。
+ * 输入：
+ * - elementType：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand biasFromStTopToAddr(CommandDataType elementType) {
         return new StringCommand("bias_from_st_top_to_addr_" + elementType.mnemonic());
     }
+/**
+ * 函数功能：生成基于引用偏移的命令。
+ * 输入：
+ * - elementType：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand biasFromStTopToRef(CommandDataType elementType) {
         return new StringCommand("bias_from_st_top_to_ref_" + elementType.mnemonic());
     }
+/**
+ * 函数功能：生成基于引用偏移的命令。
+ * 输入：
+ * - fieldType：CommandDataType 类型参数。
+ * - offset：int 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand biasFromStTopToRef(CommandDataType fieldType, int offset) {
         return new StringCommand("bias_from_st_top_to_ref_" + fieldType.mnemonic() + " " + offset);
     }
+/**
+ * 函数功能：生成栈顶类型转换命令。
+ * 输入：
+ * - from：CommandDataType 类型参数。
+ * - to：CommandDataType 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand stTopCast(CommandDataType from, CommandDataType to) {
         return new StringCommand("st_top_" + from.mnemonic() + "_cast_" + to.mnemonic());
     }
+/**
+ * 函数功能：生成条件为真时跳转的命令。
+ * 输入：
+ * - label：SemanticLabel 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand ifGoto(SemanticLabel label) {
         return new StringSupplierCommand(() -> "if_goto " + label.getIndex());
     }
+/**
+ * 函数功能：生成条件为假时跳转的命令。
+ * 输入：
+ * - label：SemanticLabel 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand ifnGoto(SemanticLabel label) {
         return new StringSupplierCommand(() -> "ifn_goto " + label.getIndex());
     }
+/**
+ * 函数功能：生成跳转命令。
+ * 输入：
+ * - label：SemanticLabel 类型参数。
+ * 输出：SemanticCommand 类型返回值。
+ */
 
     @Override
     public SemanticCommand gotoCommand(SemanticLabel label) {
         return new StringSupplierCommand(() -> "goto " + label.getIndex());
     }
+/**
+ * 函数功能：生成未确定标签的跳转命令。
+ * 输入：
+ * - token：SourceToken 类型参数。
+ * 输出：UncertainLabelGotoCommand 类型返回值。
+ */
 
     @Override
     public UncertainLabelGotoCommand gotoCommandUncertainLabel(SourceToken token) {

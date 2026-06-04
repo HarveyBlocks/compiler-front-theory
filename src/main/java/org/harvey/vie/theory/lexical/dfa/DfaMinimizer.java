@@ -14,6 +14,13 @@ import org.harvey.vie.theory.lexical.nfa.status.StatusVertex;
  * @date 2026-03-23 22:10
  */
 public interface DfaMinimizer {
+    /**
+     * 函数功能：最小化 DFA 状态表。
+     * 输入：
+     * - factory：用于创建状态表的工厂。
+     * - dfaStatus：待最小化的 DFA 状态图。
+     * 输出：最小化后的 DFA 状态表。
+     */
     <M, V extends StatusVertex, P extends DfaStatusTable<M, V>> P minimize(
             DfaStatusTableFactory<M, V, P> factory,
             DfaStatusGraph<M, V> dfaStatus);

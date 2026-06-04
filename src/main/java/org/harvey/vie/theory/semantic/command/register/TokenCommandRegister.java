@@ -7,14 +7,7 @@ import org.harvey.vie.theory.semantic.command.node.TerminalNode;
 import java.util.List;
 
 /**
- * 终结命令注册器：包装一条已经生成好的 {@link SemanticCommand}。
- * <p>
- * 常量 token、真实赋值/运算命令、goto 命令等最终都会以 {@link TerminalNode} 的形式写入命令树。
- * 如果这条命令是 {@code break}/{@code continue} 产生的未绑定跳转，本类也会携带对应的
- * {@link UncertainLabelGotoCommand} 列表，供外层循环翻译器绑定。
- * <p>
- * 讲完本类回到 {@link CommandNodeRegister}，下一步看 {@link TerminalNode#flat(java.util.List)}
- * 如何把命令加入线性列表。
+ * TODO
  *
  * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
  * @version 1.0
@@ -24,10 +17,24 @@ public class TokenCommandRegister implements CommandNodeRegister {
     private final SemanticCommand command;
     private final List<UncertainLabelGotoCommand> uncertainBreaks;
     private final List<UncertainLabelGotoCommand> uncertainContinues;
+/**
+ * 函数功能：创建 TokenCommandRegister 对象。
+ * 输入：
+ * - command：SemanticCommand 类型参数。
+ * 输出：无。
+ */
 
     public TokenCommandRegister(SemanticCommand command) {
         this(command, List.of(), List.of());
     }
+/**
+ * 函数功能：创建 TokenCommandRegister 对象。
+ * 输入：
+ * - command：SemanticCommand 类型参数。
+ * - uncertainBreaks：List<UncertainLabelGotoCommand> 类型参数。
+ * - uncertainContinues：List<UncertainLabelGotoCommand> 类型参数。
+ * 输出：无。
+ */
 
     public TokenCommandRegister(
             SemanticCommand command,
@@ -37,16 +44,34 @@ public class TokenCommandRegister implements CommandNodeRegister {
         this.uncertainBreaks = uncertainBreaks;
         this.uncertainContinues = uncertainContinues;
     }
+/**
+ * 函数功能：注册指定对象。
+ * 输入：
+ * - outer：CommandNodeBuilder 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void register(CommandNodeBuilder outer) {
         outer.add(new TerminalNode(command));
     }
+/**
+ * 函数功能：获取未确定的 break 跳转列表。
+ * 输入：
+ * - 无。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     @Override
     public List<UncertainLabelGotoCommand> getUncertainBreaks() {
         return uncertainBreaks;
     }
+/**
+ * 函数功能：获取未确定的 continue 跳转列表。
+ * 输入：
+ * - 无。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     @Override
     public List<UncertainLabelGotoCommand> getUncertainContinues() {

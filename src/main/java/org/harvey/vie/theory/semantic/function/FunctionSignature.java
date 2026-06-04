@@ -17,6 +17,14 @@ public class FunctionSignature {
     private final SourceToken nameToken;
     private final SemanticType returnType;
     private final HeadNode declarationNode;
+/**
+ * 函数功能：创建 FunctionSignature 对象。
+ * 输入：
+ * - nameToken：SourceToken 类型参数。
+ * - returnType：SemanticType 类型参数。
+ * - declarationNode：HeadNode 类型参数。
+ * 输出：无。
+ */
 
     public FunctionSignature(SourceToken nameToken, SemanticType returnType, HeadNode declarationNode) {
         this.nameKey = IdentifierKey.generate(nameToken);

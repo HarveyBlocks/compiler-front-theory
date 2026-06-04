@@ -14,12 +14,26 @@ import org.harvey.vie.theory.lexical.analysis.token.SourceToken;
 public class IdentifierTokenNode extends TokenNode implements ShiftReduceSyntaxTreeNode {
     private final int no;
     private final int offset;
+/**
+ * 函数功能：创建 IdentifierTokenNode 对象。
+ * 输入：
+ * - source：SourceToken 类型参数。
+ * - no：int 类型参数。
+ * - offset：int 类型参数。
+ * 输出：无。
+ */
 
     public IdentifierTokenNode(SourceToken source, int no, int offset) {
         super(source);
         this.no = no;
         this.offset = offset;
     }
+/**
+ * 函数功能：判断节点是否为标识符节点。
+ * 输入：
+ * - 无。
+ * 输出：判断结果布尔值。
+ */
 
     @Override
     public boolean isIdentifier() {

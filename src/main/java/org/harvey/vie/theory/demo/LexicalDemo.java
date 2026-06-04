@@ -31,6 +31,12 @@ import java.util.List;
  */
 @Slf4j
 public class LexicalDemo {
+    /**
+     * 函数功能：构建演示用的正则词法 DFA 状态表。
+     * 输入：
+     * - alphabetCharacterFactory：用于创建正则字母表字符的工厂。
+     * 输出：构建完成的 RegexDfaStatusTable 状态表。
+     */
     public static RegexDfaStatusTable buildTable(AlphabetCharacterFactory alphabetCharacterFactory) {
         LexicalDirector director = new DefaultLexicalDirector(alphabetCharacterFactory);
         RegexDfaStatusTable table;
@@ -60,10 +66,24 @@ public class LexicalDemo {
         return table;
     }
 
+    /**
+     * 函数功能：运行词法分析演示入口。
+     * 输入：
+     * - args：命令行参数数组。
+     * 输出：无。
+     */
     public static void main(String[] args) {
         extracted();
     }
 
+    /**
+     * 函数功能：对指定文本执行词法分析并输出识别结果。
+     * 输入：
+     * - text：待分析的源文本。
+     * - alphabetCharacterFactory：词法分析使用的字母表字符工厂。
+     * - table：词法分析使用的 DFA 状态表。
+     * 输出：无。
+     */
     public static void testLexical(
             String text, AlphabetCharacterFactory alphabetCharacterFactory, RegexDfaStatusTable table) {
         Resource resource = new AsciiStringResource(text);
@@ -87,6 +107,12 @@ public class LexicalDemo {
         }
     }
 
+    /**
+     * 函数功能：执行词法状态表构建、序列化加载和分析测试流程。
+     * 输入：
+     * - 无。
+     * 输出：无。
+     */
     private static void extracted() {
         // region 1. RegexDfaStatusTable
         AlphabetCharacterFactory alphabetCharacterFactory = new RegexAlphabetCharacterFactory();

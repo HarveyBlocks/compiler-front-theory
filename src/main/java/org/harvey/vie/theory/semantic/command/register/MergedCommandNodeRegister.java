@@ -8,40 +8,63 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * 合并注册器：注册时只输出主分支命令，但未绑定跳转信息会同时合并多个分支。
- * <p>
- * 这个类主要服务于常量条件优化。例如 {@code if (true) then else other} 只应输出 then 分支命令；
- * 但为了保证死分支里的非法 {@code break}/{@code continue} 仍能被顶层诊断，extras 分支里的
- * {@link UncertainLabelGotoCommand} 也会被收集出来。
- * <p>
- * 讲完本类回到 {@link CommandNodeRegister}，或看控制流优化入口
- * {@link org.harvey.vie.theory.semantic.command.translator.command.IfElseStatementTranslator}。
- *
  * @author Temper
  */
 public class MergedCommandNodeRegister implements CommandNodeRegister {
     private final CommandNodeRegister primary;
     private final List<CommandNodeRegister> extras;
+/**
+ * 函数功能：创建 MergedCommandNodeRegister 对象。
+ * 输入：
+ * - primary：CommandNodeRegister 类型参数。
+ * - extras：CommandNodeRegister... 类型参数。
+ * 输出：无。
+ */
 
     public MergedCommandNodeRegister(CommandNodeRegister primary, CommandNodeRegister... extras) {
         this.primary = primary;
         this.extras = Arrays.asList(extras);
     }
+/**
+ * 函数功能：注册指定对象。
+ * 输入：
+ * - outer：CommandNodeBuilder 类型参数。
+ * 输出：无。
+ */
 
     @Override
     public void register(CommandNodeBuilder outer) {
         primary.register(outer);
     }
+/**
+ * 函数功能：获取未确定的 break 跳转列表。
+ * 输入：
+ * - 无。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     @Override
     public List<UncertainLabelGotoCommand> getUncertainBreaks() {
         return merge(primary.getUncertainBreaks(), true);
     }
+/**
+ * 函数功能：获取未确定的 continue 跳转列表。
+ * 输入：
+ * - 无。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     @Override
     public List<UncertainLabelGotoCommand> getUncertainContinues() {
         return merge(primary.getUncertainContinues(), false);
     }
+/**
+ * 函数功能：合并命令节点注册器。
+ * 输入：
+ * - seed：List<UncertainLabelGotoCommand> 类型参数。
+ * - breaks：boolean 类型参数。
+ * 输出：List<UncertainLabelGotoCommand> 类型集合或迭代结果。
+ */
 
     private List<UncertainLabelGotoCommand> merge(List<UncertainLabelGotoCommand> seed, boolean breaks) {
         List<UncertainLabelGotoCommand> result = new ArrayList<>(seed);
@@ -51,3 +74,4 @@ public class MergedCommandNodeRegister implements CommandNodeRegister {
         return result;
     }
 }
+

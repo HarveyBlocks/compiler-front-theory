@@ -18,6 +18,12 @@ import java.io.StringReader;
 public class AsciiStringResource implements Resource {
     private final String s;
 
+    /**
+     * 函数功能：将 ASCII 字符串资源转换为源读取器。
+     * 输入：
+     * - errorContext：用于收集读取错误的错误上下文。
+     * 输出：可读取该资源内容的 SourceReader。
+     */
     @Override
     public SourceReader toReader(ErrorContext errorContext) {
         return new AsciiStringSourceReader(new StringReader(s), errorContext);

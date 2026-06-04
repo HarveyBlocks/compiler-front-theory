@@ -12,6 +12,13 @@ import lombok.Getter;
  */
 @Getter
 public class LexicalErrorMessage extends AbstractErrorMessage {
+    /**
+     * 函数功能：创建词法分析阶段错误信息。
+     * 输入：
+     * - offset：错误在源内容中的偏移量。
+     * - message：错误描述信息。
+     * 输出：无。
+     */
     public LexicalErrorMessage(int offset, String message) {
         super(offset, message);
     }

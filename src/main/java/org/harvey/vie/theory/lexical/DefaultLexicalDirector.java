@@ -40,6 +40,12 @@ public class DefaultLexicalDirector implements LexicalDirector {
     private final DfaMinimizer dfaMinimizer;
     private final RegexDfaStatusTableFactory regexDfaStatusTableFactory;
 
+    /**
+     * 函数功能：创建默认词法分析构建指挥器。
+     * 输入：
+     * - factory：用于创建字母表字符的工厂。
+     * 输出：无。
+     */
     public DefaultLexicalDirector(AlphabetCharacterFactory factory) {
         this.regexParser = new DefaultRegexParser(factory);
         this.regexNfaAdaptor = new DefaultRegexNfaAdaptor();
@@ -48,11 +54,23 @@ public class DefaultLexicalDirector implements LexicalDirector {
         this.regexDfaStatusTableFactory = new RegexDfaStatusTableFactory();
     }
 
+    /**
+     * 函数功能：将单个词法模式构建为正则 DFA 状态表。
+     * 输入：
+     * - pattern：待构建的词法模式。
+     * 输出：构建完成的 RegexDfaStatusTable。
+     */
     @Override
     public RegexDfaStatusTable direct(LexicalPattern pattern) throws ParseException {
         return direct(List.of(pattern));
     }
 
+    /**
+     * 函数功能：将多个词法模式构建为正则 DFA 状态表。
+     * 输入：
+     * - patterns：待构建的词法模式列表。
+     * 输出：构建完成的 RegexDfaStatusTable。
+     */
     @Override
     public RegexDfaStatusTable direct(List<LexicalPattern> patterns) throws ParseException {
         List<RegexTypePair> pairs = new ArrayList<>();

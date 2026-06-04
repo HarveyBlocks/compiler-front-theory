@@ -9,35 +9,19 @@ import org.harvey.vie.theory.semantic.command.translator.TokenTranslatorStrategy
 import org.harvey.vie.theory.semantic.command.translator.command.CommandTranslator;
 import org.harvey.vie.theory.semantic.command.translator.token.TokenTranslator;
 import org.harvey.vie.theory.semantic.context.ShiftReduceSemanticContext;
-import org.harvey.vie.theory.semantic.tag.TagStrategyCompose;
 import org.harvey.vie.theory.syntax.grammar.produce.SimpleGrammarProduction;
 
 import java.util.Stack;
 
-/**
- * 讲解主线第 1 站：语法制导翻译的事件入口。
- * <p>
- * 在《编译原理》里，语法制导翻译通常把“语义动作”挂在产生式上：语法分析器移进一个 token 或规约一个产生式时，
- * 同步计算语义属性或生成中间代码。本类正是这个项目的语义动作入口。它监听移进/规约事件，把每个 token
- * 或产生式翻译成 {@link CommandNodeRegister}，也就是后续可以继续组合的“命令片段注册器”。
- * <p>
- * 这里没有生成 JVM 字节码，也没有写二进制指令文件；本模块生成的是
- * {@link org.harvey.vie.theory.semantic.command.command.SemanticCommand} 对象，最后由
- * {@link ThreeAddressCodePrinter} 打印成三地址码/四元式风格的文本命令，例如
- * {@code load_st_int32_address 0}、{@code st_plus_int32}、{@code ifn_goto 32}。
- * <p>
- * 移进 token 时走 {@link TokenTranslatorStrategy}，规约产生式时走
- * {@link CommandTranslatorStrategy}；两类策略都返回 {@link CommandNodeRegister}。这些注册器先保留
- * “命令树”和未绑定的 {@code break}/{@code continue}，等语法分析 accept 前再展开成线性命令。
- * <p>
- * 主线下一站：{@link TagStrategyCompose}。下一站会解释“规约到某个产生式时，究竟选择哪个翻译器”。
- *
- * @author <a href="mailto:harvey.blocks@outlook.com">Harvey Blocks</a>
- * @version 1.0
- * @date 2026-04-19 19:10
- */
 public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeRegister> implements
         ShiftReduceCallback {
+    /**
+     * 函数功能：创建 CommandBuildCallback 对象。
+     * 输入：
+     * - shiftStrategies：TokenTranslatorStrategy 类型参数。
+     * - reduceStrategies：CommandTranslatorStrategy 类型参数。
+     * 输出：无。
+     */
     public CommandBuildCallback(
             TokenTranslatorStrategy shiftStrategies,
             CommandTranslatorStrategy reduceStrategies) {
@@ -47,6 +31,13 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
     private static class CommandSupplier implements Supplier<CommandNodeRegister> {
         private final TokenTranslatorStrategy shiftStrategies;
         private final CommandTranslatorStrategy reduceStrategies;
+/**
+ * 函数功能：创建 CommandSupplier 对象。
+ * 输入：
+ * - shiftStrategies：TokenTranslatorStrategy 类型参数。
+ * - reduceStrategies：CommandTranslatorStrategy 类型参数。
+ * 输出：无。
+ */
 
         public CommandSupplier(
                 TokenTranslatorStrategy shiftStrategies,
@@ -55,36 +46,57 @@ public class CommandBuildCallback extends BuildStackContextCallback<CommandNodeR
             this.reduceStrategies = reduceStrategies;
 
         }
+/**
+ * 函数功能：获取语义栈上下文。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * 输出：Stack<CommandNodeRegister> 类型返回值。
+ */
 
         @Override
         public Stack<CommandNodeRegister> getStackContext(ShiftReduceSemanticContext context) {
-            // 命令生成和语法分析共用同一个移进-规约节奏，但命令结果单独压在 commandContext 里。
-            // 语法栈负责状态转移，commandContext 负责保存每个 token/产生式对应的命令片段。
             return context.getCommandContext();
         }
+/**
+ * 函数功能：创建子节点数组。
+ * 输入：
+ * - n：int 类型参数。
+ * 输出：CommandNodeRegister[] 类型数组。
+ */
 
         @Override
         public CommandNodeRegister[] instanceChildrenArray(int n) {
             return new CommandNodeRegister[n];
         }
+/**
+ * 函数功能：在规约时创建语法树节点。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - production：SimpleGrammarProduction 类型参数。
+ * - children：CommandNodeRegister[] 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
         @Override
         public CommandNodeRegister instanceNodeOnReduce(
                 ShiftReduceSemanticContext context,
                 SimpleGrammarProduction production,
                 CommandNodeRegister[] children) {
-            // 规约时，先用产生式上的语义标签在 {@link TagStrategyCompose} 里找翻译器；
-            // children 保持语法右部顺序，翻译器据此拼接、插入跳转、绑定标签或做类型相关命令。
             CommandTranslator translator = reduceStrategies.get(production);
             return translator.translate(context, production, children);
         }
+/**
+ * 函数功能：在移进时创建语法树节点。
+ * 输入：
+ * - context：ShiftReduceSemanticContext 类型参数。
+ * - token：SourceToken 类型参数。
+ * 输出：CommandNodeRegister 类型返回值。
+ */
 
 
         @Override
         public CommandNodeRegister instanceNodeOnShift(
                 ShiftReduceSemanticContext context, SourceToken token) {
-            // 移进时只处理单个 token。常量、break、continue 会立即产生命令；普通标识符和类型 token
-            // 先占位，等对应产生式规约且符号表/类型信息已经准备好时再生成真实命令。
             TokenTranslator tokenTranslator = shiftStrategies.get(token.getType());
             return tokenTranslator.translate(context, token);
         }
